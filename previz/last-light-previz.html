@@ -1,0 +1,818 @@
+<title>Last Light Previz</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Syncopate:wght@400;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: one 16:9 film stage, a transport strip under it, then the shot sheet beside a narrow column of key ticks. */
+:root{
+  color-scheme:dark;
+  --void:#060507; --panel:#100e13; --line:#2b2632; --ink:#ece5d8; --dim:#978d80;
+  --ember:#ffa24a; --ember-deep:#c8541a; --cold:#9bdcff;
+  --font-display:'Syncopate','Eurostile','Arial Narrow',sans-serif;
+  --font-body:'IBM Plex Sans',system-ui,'Segoe UI',sans-serif;
+  --font-mono:'IBM Plex Mono',ui-monospace,Consolas,monospace;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{background:var(--void);color:var(--ink);font:400 15px/1.55 var(--font-body)}
+.wrap{max-width:1180px;margin:0 auto;padding-block:22px 48px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:flex;flex-direction:column;gap:18px}
+header{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 18px}
+h1{font:700 17px var(--font-display);letter-spacing:.28em;margin:0;color:var(--ink);text-wrap:balance}
+h1 em{font-style:normal;color:var(--ember)}
+header p{margin:0;color:var(--dim);font-size:13px}
+h2{font:700 11px var(--font-display);letter-spacing:.32em;color:var(--dim);margin:0 0 10px;text-transform:uppercase}
+
+/* ---- the film stage ---- */
+.stage{position:relative;aspect-ratio:16/9;width:100%;max-width:100%;background:#000;overflow:hidden;container-type:inline-size;border:1px solid var(--line);cursor:pointer}
+.stage canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+.ov{position:absolute;pointer-events:none}
+.bar{left:0;right:0;height:11%;background:#000}
+#barT{top:0}#barB{bottom:0}
+#white{inset:0;background:#fff;opacity:0}
+#flash{inset:0;background:radial-gradient(circle,#fff3dc,#ffa24a);opacity:0}
+#flick{inset:0;background:#000;opacity:0}
+#vig{inset:0;background:radial-gradient(ellipse at center,transparent 55%,rgba(0,0,0,.5) 100%)}
+#year{top:2.2%;left:0;right:0;text-align:center;font:500 1.55cqw var(--font-mono);color:var(--ink);letter-spacing:.06em;opacity:0}
+#year small{color:var(--dim);font-size:.68em;letter-spacing:.34em;margin-right:1.1em}
+#rate{top:6.9%;left:0;right:0;text-align:center;font:400 .88cqw var(--font-mono);color:var(--ember);letter-spacing:.22em;padding-left:.22em;opacity:0}
+#cap{left:0;right:0;top:88.4%;text-align:center;font:700 1.2cqw var(--font-display);letter-spacing:.42em;padding-left:.42em;color:var(--ember);text-transform:uppercase;opacity:0}
+#det{left:0;right:0;top:93.3%;text-align:center;font:400 1.02cqw var(--font-mono);color:var(--ink);opacity:0}
+#read{right:3%;top:15%;text-align:right;font:400 1.05cqw var(--font-mono);color:var(--ink);line-height:1.75;opacity:0}
+#read b{color:var(--dim);font-weight:400;letter-spacing:.22em;font-size:.78em;margin-right:.9em}
+#read .hot{color:var(--ember)}
+#slate{left:2%;top:3.7%;font:400 .92cqw var(--font-mono);color:var(--dim);letter-spacing:.12em}
+#title{left:0;right:0;top:43%;text-align:center}
+#title .eyebrow{font:400 .82cqw var(--font-display);letter-spacing:.9em;padding-left:.9em;color:var(--dim);margin-bottom:1.3cqw}
+#title .main{font:700 2.9cqw var(--font-display);letter-spacing:.28em;padding-left:.28em;white-space:nowrap}
+#title .main span{background:linear-gradient(#fff4dc 20%,#ffa24a 95%);-webkit-background-clip:text;background-clip:text;color:transparent;display:inline-block;white-space:pre;opacity:0}
+#lines{inset:0;width:100%;height:100%}
+#lines line{stroke:var(--cold);stroke-width:1;opacity:0;vector-effect:non-scaling-stroke}
+.edu{position:absolute;pointer-events:none;max-width:31%;font:400 1.08cqw/1.45 var(--font-mono);color:var(--cold);background:rgba(4,8,12,.78);border-left:2px solid var(--cold);padding:.5cqw .8cqw;opacity:0}
+.edu i{display:block;font-style:normal;font-size:.68em;letter-spacing:.34em;opacity:.65}
+.dot{position:absolute;pointer-events:none;width:.7cqw;height:.7cqw;margin:-.35cqw 0 0 -.35cqw;border:1px solid var(--cold);border-radius:50%;opacity:0}
+#bigplay{inset:0;display:grid;place-items:center}
+#bigplay span{font:700 1.1cqw var(--font-display);letter-spacing:.4em;padding:.9cqw 1.4cqw .9cqw 1.8cqw;border:1px solid var(--ember);color:var(--ember);background:rgba(0,0,0,.55)}
+#nogl{inset:0;display:grid;place-items:center;color:var(--ink);padding:8%;text-align:center}
+
+/* ---- transport ---- */
+.transport{display:flex;flex-direction:column;gap:8px;background:var(--panel);border:1px solid var(--line);padding:12px 14px}
+.segs{display:flex;gap:2px;height:22px}
+.segs button{min-width:0;border:0;background:#1d1921;color:var(--dim);font:500 10px var(--font-mono);cursor:pointer;padding:0;overflow:hidden}
+.segs button:hover{background:#2a2430;color:var(--ink)}
+.segs button.on{background:var(--ember-deep);color:#fff}
+#scrub{width:100%;margin:0;accent-color:var(--ember)}
+.row{display:flex;flex-wrap:wrap;align-items:center;gap:10px 18px}
+.row .grow{flex:1 1 220px;min-width:0;font:400 13px var(--font-mono);font-variant-numeric:tabular-nums;color:var(--ink)}
+.row .grow b{color:var(--ember);font-weight:500}
+.btn{font:600 12px var(--font-body);letter-spacing:.06em;background:var(--ember);color:#160b02;border:0;padding:8px 16px;cursor:pointer;min-width:84px}
+.btn.ghost{background:transparent;color:var(--ink);border:1px solid var(--line);min-width:0}
+.btn:hover{filter:brightness(1.12)}
+label.tog{display:inline-flex;align-items:center;gap:7px;font-size:13px;color:var(--ink);cursor:pointer;white-space:nowrap}
+label.tog input{accent-color:var(--ember);width:15px;height:15px;margin:0}
+label.tog.key{color:var(--cold)}
+select{background:var(--void);color:var(--ink);border:1px solid var(--line);font:400 13px var(--font-mono);padding:5px 6px}
+:focus-visible{outline:2px solid var(--cold);outline-offset:2px}
+
+/* ---- sheet ---- */
+.sheet{display:grid;grid-template-columns:minmax(0,1.9fr) minmax(0,1fr);gap:22px;align-items:start}
+@media (max-width:860px){.sheet{grid-template-columns:minmax(0,1fr)}}
+.shots{display:flex;flex-direction:column;gap:2px}
+.shot{display:grid;grid-template-columns:minmax(0,150px) minmax(0,1fr);gap:4px 18px;padding:13px 14px;background:var(--panel);border-left:2px solid var(--line);cursor:pointer;text-align:left;color:inherit;font:inherit;border-top:0;border-right:0;border-bottom:0;width:100%}
+.shot:hover{border-left-color:var(--dim)}
+.shot.on{border-left-color:var(--ember);background:#17131a}
+@media (max-width:560px){.shot{grid-template-columns:minmax(0,1fr)}}
+.shot .hd{min-width:0}
+.shot .n{font:400 11px var(--font-mono);color:var(--dim);letter-spacing:.14em}
+.shot .nm{font:700 12px/1.4 var(--font-display);letter-spacing:.16em;color:var(--ink);margin:3px 0 5px;text-transform:uppercase}
+.shot.on .nm{color:var(--ember)}
+.shot .tk{font:400 12px var(--font-mono);color:var(--dim);font-variant-numeric:tabular-nums}
+.shot dl{margin:0;display:grid;grid-template-columns:62px minmax(0,1fr);gap:3px 10px;font-size:13px;min-width:0}
+.shot dt{font:400 10px/1.9 var(--font-mono);letter-spacing:.14em;color:var(--dim);text-transform:uppercase}
+.shot dd{margin:0;min-width:0;color:var(--ink)}
+.shot dd.snd{color:#d9c7a8}
+aside{display:flex;flex-direction:column;gap:22px;min-width:0}
+table{border-collapse:collapse;width:100%;font-size:13px}
+td,th{padding:5px 8px 5px 0;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+th{font:400 10px var(--font-mono);letter-spacing:.14em;color:var(--dim);text-transform:uppercase}
+td.k{font:500 12px var(--font-mono);color:var(--ember);white-space:nowrap}
+td.t{font:400 12px var(--font-mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+.tw{overflow-x:auto}
+ul.plain{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:9px;font-size:13px}
+ul.plain li{padding-left:12px;border-left:1px solid var(--line)}
+ul.plain.cold li{border-left-color:var(--cold)}
+ul.plain span{font:400 11px var(--font-mono);color:var(--dim);display:block}
+.fine{color:var(--dim);font-size:12px;margin:0}
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>TA-01 · <em>LAST LIGHT</em></h1>
+    <p>Previz v2 for TON 618 Addition. 10 shots, 850 ticks (42.5 s at 20 ticks a second). All art here is drawn by this page.</p>
+  </header>
+
+  <div class="stage" id="stage" tabindex="0" aria-label="Film preview. Click or press Space to play or pause.">
+    <canvas id="cv"></canvas>
+    <div class="ov" id="vig"></div>
+    <div class="ov" id="flick"></div>
+    <div class="ov" id="flash"></div>
+    <div class="ov" id="white"></div>
+    <div class="ov bar" id="barT"></div>
+    <div class="ov bar" id="barB"></div>
+    <svg class="ov" id="lines" viewBox="0 0 100 100" preserveAspectRatio="none"></svg>
+    <div class="ov" id="year"></div>
+    <div class="ov" id="rate"></div>
+    <div class="ov" id="read"></div>
+    <div class="ov" id="title"><div class="eyebrow">TON 618 ADDITION</div><div class="main" id="titleMain"></div></div>
+    <div class="ov" id="cap"></div>
+    <div class="ov" id="det"></div>
+    <div class="ov" id="slate"></div>
+    <div class="ov" id="bigplay"><span>PLAY ▶</span></div>
+  </div>
+
+  <div class="transport">
+    <div class="segs" id="segs" aria-label="Shots"></div>
+    <input type="range" id="scrub" min="0" max="850" step="1" value="0" aria-label="Scrub the film, in ticks">
+    <div class="row">
+      <button class="btn" id="play" type="button">Play</button>
+      <button class="btn ghost" id="restart" type="button">Restart</button>
+      <div class="grow" id="readout"></div>
+      <label class="tog key"><input type="checkbox" id="edu"> Educational labels</label>
+      <label class="tog"><input type="checkbox" id="snd"> Sound sketch</label>
+      <label class="tog"><input type="checkbox" id="slateOn" checked> Shot slate</label>
+      <label class="tog"><input type="checkbox" id="loopOn"> Loop</label>
+      <label class="tog">Speed <select id="speed"><option value="0.25">0.25×</option><option value="0.5">0.5×</option><option value="1" selected>1×</option><option value="2">2×</option></select></label>
+    </div>
+    <p class="fine">Space plays and pauses. Arrow keys step one tick, Shift + arrow ten. The sound sketch is rough synth placeholders for the planned cues, made by the page.</p>
+  </div>
+
+  <div class="sheet">
+    <section>
+      <h2>Shot list</h2>
+      <div class="shots" id="shots"></div>
+    </section>
+    <aside>
+      <section>
+        <h2>Key ticks</h2>
+        <div class="tw"><table id="keys"><thead><tr><th>Name</th><th>Tick</th><th>What happens</th></tr></thead><tbody></tbody></table></div>
+      </section>
+      <section>
+        <h2>Educational labels</h2>
+        <ul class="plain cold" id="eduList"></ul>
+      </section>
+      <section>
+        <h2>For the game</h2>
+        <ul class="plain">
+          <li>Everyone in the dark sees the whole film (Adam, 13 November).</li>
+          <li>From tick 200 to the burst the film is our own full-screen space scene, so TON 618's own sky hole and its time effects in the dark are covered and never fought.</li>
+          <li>The server brings everyone back at tick 690, ten ticks into the white, so nobody sees the jump. The film has to keep running across that dimension change.</li>
+          <li>Shot 2 shows only a glow in the raised hand, so it fits TON 618's item and the Stellar Remote alike.</li>
+          <li>Music cues M1 and M2 are placeholders until the music is chosen.</li>
+        </ul>
+      </section>
+      <p class="fine">Nothing here comes from TON 618, The Shooting Star or SS-21 Quasar. The black hole, stars, land and sounds are generated by this page's own code.</p>
+    </aside>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+(function(){
+'use strict';
+
+/* ================= helpers ================= */
+const clamp=(x,a,b)=>Math.min(b,Math.max(a,x)), sat=x=>clamp(x,0,1), lerp=(a,b,u)=>a+(b-a)*u;
+const lin=(a,b,x)=>sat((x-a)/(b-a));
+const ss=(a,b,x)=>{const u=lin(a,b,x);return u*u*(3-2*u)};
+const easeOut=u=>1-(1-u)*(1-u);
+function keys(k,x){ if(x<=k[0][0])return k[0][1]; for(let i=1;i<k.length;i++){ if(x<=k[i][0]){ const u=(x-k[i-1][0])/(k[i][0]-k[i-1][0]); return lerp(k[i-1][1],k[i][1],u);} } return k[k.length-1][1]; }
+function rng(seed){ return function(){ seed|=0; seed=seed+0x6D2B79F5|0; let t=Math.imul(seed^seed>>>15,1|seed); t=t+Math.imul(t^t>>>7,61|t)^t; return ((t^t>>>14)>>>0)/4294967296; }; }
+const SUP={'-':'⁻','0':'⁰','1':'¹','2':'²','3':'³','4':'⁴','5':'⁵','6':'⁶','7':'⁷','8':'⁸','9':'⁹'};
+const sup=n=>String(n).split('').map(c=>SUP[c]).join('');
+function sci(log,d){ d=d===undefined?1:d; let e=Math.floor(log), m=Math.pow(10,log-e), ms=m.toFixed(d); if(parseFloat(ms)>=10){ms=(1).toFixed(d);e++;} return ms+' × 10'+sup(e); }
+const yearsText=L=> L<6 ? Math.round(Math.pow(10,L)).toLocaleString('en-US') : sci(L);
+
+/* ================= two clocks =================
+   g  = game ticks from the cast (0 to 850): what the page shows and what the game will use.
+   t  = storyboard time (0 to 660): what every curve below is written in.
+   RT is the retime table between them (straight lines between its points; every point is a key tick). */
+const RT=[[0,0],[50,65],[60,78],[90,118],[150,200],[200,270],[220,330],[262,385],[300,440],[390,540],[470,625],[488,665],[500,680],[510,690],[540,720],[560,745],[660,850]];
+const RTi=RT.map(k=>[k[1],k[0]]);
+const toGame=t=>keys(RT,t), toSb=g=>keys(RTi,g);
+const G_END=850, S_END=660;
+
+/* ================= timeline data (game ticks) ================= */
+const KEYROWS=[
+  ['CAST',0,'The cast reaches the client; the film starts; bars slide in.'],
+  ['PRESS',78,'The item is pressed: a flash in the hand; it starts to charge.'],
+  ['RACE',118,'Time is released: a massive wave leaves the caster in every direction; the counters start.'],
+  ['COSMOS',200,'Flash cut from the dark into our own space scene.'],
+  ['CROSS',270,'Space falls colder than the hole (about 10¹² years): it starts to shrink.'],
+  ['STARS_OUT',377,'The last star goes out (about 10¹⁴ years).'],
+  ['PAIRS',440,'Hawking pairs become visible; the black-hole era.'],
+  ['SHRINK',540,'The hole visibly shrinks, faster and faster.'],
+  ['GOOGOL',625,'A point of light; the counter nears 10¹⁰⁰.'],
+  ['HUSH',665,'All sound and motion stop for 15 ticks.'],
+  ['BURST',680,'The final burst: a ring of light, then full white.'],
+  ['RESTORE',690,'Server runs the restore, hidden by the white.'],
+  ['CLEAR',720,'A wave from the caster rolls the white away: the overworld is back.'],
+  ['END',850,'Camera handed back; bars gone.']
+];
+const SHOTS=[
+ {n:1,name:'The Dark',a:0,b:65,
+  cam:'Behind the caster\'s right shoulder, low, a slow push in.',
+  scr:'The void floor and no light but TON618 hanging in the sky. The caster is a silhouette, the item at their side.',
+  hud:'AFTER TON 618 · the world: devoured',
+  snd:'A low room drone. The far hiss of the hole.',mus:'None.'},
+ {n:2,name:'The Press',a:65,b:118,
+  cam:'Tight over the shoulder: the raised hand in front, TON618 beyond.',
+  scr:'The item is raised at the hole and pressed at tick 78: a flash in the hand and a small ring over the floor. Then it charges, the glow in the hand growing. Only a glow is shown, so it fits either item.',
+  hud:'LAST LIGHT · armed',
+  snd:'Press click and a glass ping (78). A low thump. A hum rising under the charge.',mus:'None.'},
+ {n:3,name:'Time Lets Go',a:118,b:200,
+  cam:'Holds wide as the wave leaves, then lifts past the caster and zooms on TON618 until its shadow fills the frame.',
+  scr:'At 118 a massive wave of light bursts from the item and races out over the void in every direction, a wall of light to the horizon. Behind it time runs fast: streaks rush over the floor, dust shoots upward, the light flickers. The title sits inside the hole\'s shadow (132 to 197). Flash cut at 200.',
+  hud:'Year counter and "1 second = … years" start · title TA-01 · LAST LIGHT',
+  snd:'A deep whoomp as the wave leaves (118), wind rushing after it. Clock ticks speeding into a whir. A bell on the title (137). A whoosh into the cut.',mus:'Cue M1 starts at 137: a slow pad.'},
+ {n:4,name:'The Universe Cools',a:200,b:330,
+  cam:'Our own space scene. Snaps back from the hole to a wide, slow orbit.',
+  scr:'TON618 and its disk among stars and galaxies. The whole sky wheels past in streaks, like a time-lapse of years in a blink. The SPACE temperature falls from 2.7 K and at tick 270 drops below the hole\'s own.',
+  hud:'THE UNIVERSE COOLS, then COLDER THAN THE HOLE (270) · years 10⁹ to 10¹²',
+  snd:'Deep space hum. A long falling sigh at 270.',mus:'M1 continues.'},
+ {n:5,name:'The Last Stars',a:330,b:440,
+  cam:'The orbit goes on, drifting closer.',
+  scr:'The star streaks flare and go out, blue ones first, red ones last (all out by 377). Galaxies fade. The disk starves and gutters out. A few cinders, then black.',
+  hud:'THE LAST STARS, then THE DEGENERATE ERA · years to 10⁴⁰',
+  snd:'A soft tick for each star going out, thinning to nothing. The disk\'s hum winds down.',mus:'M1 thins to one note.'},
+ {n:6,name:'Pairs',a:440,b:540,
+  cam:'Close on the edge of the shadow, drifting along it.',
+  scr:'In the dark, particle pairs pop into being at the horizon: the blue one falls in, the gold one escapes. A faint glow begins. MASS and TEMP readouts appear.',
+  hud:'THE BLACK HOLE ERA · Hawking radiation · years 10⁴⁰ to 10⁹⁰',
+  snd:'Tiny crackles, one for each pair, over near silence.',mus:'M1 returns and builds slowly.'},
+ {n:7,name:'Smaller, Hotter',a:540,b:625,
+  cam:'Back to the whole hole, pushing in as it shrinks. The shake grows.',
+  scr:'The pairs become a storm. The hole shrinks faster and faster; its glow goes red, orange, white.',
+  hud:'EVAPORATING · smaller · hotter · faster · years to 10⁹⁹',
+  snd:'The crackle thickens into a rising hiss. A rising tone under it.',mus:'M1 builds to its peak.'},
+ {n:8,name:'Last Light',a:625,b:680,
+  cam:'Still pushing in, on a single point of light.',
+  scr:'A blue-white point. At 665 everything stops and the point pinches to a pin. At 680 the burst: a ring of light blows outward and the screen goes white.',
+  hud:'A GOOGOL OF YEARS · 10¹⁰⁰',
+  snd:'Everything rises to 665, then true silence for 15 ticks. The burst: a deep boom and a white crash.',mus:'Cut dead at 665.'},
+ {n:9,name:'The White',a:680,b:745,
+  cam:'Nothing but white, then close behind the caster at the overworld spawn.',
+  scr:'The white holds while the server brings everyone back (690). At 720 a wave of light bursts from the caster and rolls out over the land in every direction; the world is there again behind it.',
+  hud:'None, then THE WORLD RETURNS (730)',
+  snd:'The crash rings out into a high tone. A wide whoosh as the wave rolls out (720).',mus:'Cue M2 at 720: one warm chord.'},
+ {n:10,name:'Morning',a:745,b:850,
+  cam:'Rises and pulls back over the caster facing the sun, then settles behind them. Bars slide away from 825.',
+  scr:'The wave reaches the horizon and the sky clears. The world as it was: grass, trees, water, clouds, the square sun. Motes of light settle on the land. The caster lowers the item.',
+  hud:'THE WORLD RETURNS · what fell in comes back out (to 798)',
+  snd:'The overworld\'s own ambience.',mus:'M2 resolves and is out by 850.'}
+];
+/* captions and everything below: storyboard time */
+const CAPS=[
+ [4,48,'After TON 618','the world: devoured'],
+ [54,88,'Last Light','armed'],
+ [154,198,'The universe cools','space is warmer than the hole: it still grows'],
+ [200,218,'Colder than the hole','from here on, TON618 loses mass'],
+ [224,260,'The last stars','about 10¹⁴ years'],
+ [264,298,'The degenerate era','nothing left to fall in'],
+ [304,388,'The black hole era','Hawking radiation'],
+ [394,468,'Evaporating','smaller · hotter · faster'],
+ [472,498,'A googol of years','10¹⁰⁰'],
+ [548,610,'The world returns','what fell in comes back out']
+];
+
+/* the film's numbers, all functions of storyboard time so the scrubber is exact */
+const logYears=t=>keys([[90,0],[120,3.5],[150,9],[185,11],[200,12],[220,12.6],[256,14],[300,40],[390,90],[440,99],[470,99.9],[500,100]],t);
+const logSpaceK=t=>keys([[150,0.431],[200,-18.03],[220,-21],[300,-30]],t);
+const LOG_M0=41.118;                      // 66 billion Suns in kg (log10)
+const LOG_SUN=30.2986;
+const holeScale=t=> t<390?1 : t<470? 1-0.85*Math.pow((t-390)/80,1.6) : Math.max(0.004,0.15*Math.pow(Math.max(0,1-(t-470)/30),1.5));
+const logMassKg=t=> t<=470 ? LOG_M0+Math.log10(holeScale(t)) : keys([[470,LOG_M0+Math.log10(0.15)],[488,22],[498,6],[500,0]],t);
+const logHoleK=t=>23.089-logMassKg(t);    // T = 1.227e23 K / M(kg)
+function integ(rate){ const A=new Float32Array(S_END+3); for(let i=1;i<A.length;i++)A[i]=A[i-1]+rate(i-1); return t=>{const i=Math.floor(clamp(t,0,S_END)),f=clamp(t,0,S_END)-i;return lerp(A[i],A[i+1],f);}; }
+const phase=integ(t=> t<90?0.006 : t<150? 0.006*Math.pow(18,(t-90)/60) : 0.108);   // the disk's turning
+const skyW=t=> t<150?0:lerp(0.012,0.03,lin(150,230,t));                            // the sky's wheeling, radians per storyboard tick
+const skyRot=integ(skyW);
+const heatKeys=[[0,[0.9,0.2,0.05]],[0.4,[1,0.6,0.2]],[0.7,[1,0.95,0.85]],[1,[0.72,0.86,1]]];
+function heatRGB(h){ for(let i=1;i<heatKeys.length;i++){ if(h<=heatKeys[i][0]){ const u=(h-heatKeys[i-1][0])/(heatKeys[i][0]-heatKeys[i-1][0]),a=heatKeys[i-1][1],b=heatKeys[i][1]; return [lerp(a[0],b[0],u),lerp(a[1],b[1],u),lerp(a[2],b[2],u)]; } } return heatKeys[3][1]; }
+const heatAt=t=>keys([[300,0],[390,0.18],[470,0.72],[488,0.95],[500,1]],t);
+const glowAt=t=>keys([[300,0],[390,0.2],[470,1.0],[488,1.6],[494,0.6],[497,0.5],[500,3]],t);
+
+/* ================= DOM ================= */
+const $=id=>document.getElementById(id);
+const stage=$('stage'), cv=$('cv');
+const el={white:$('white'),flash:$('flash'),flick:$('flick'),barT:$('barT'),barB:$('barB'),year:$('year'),rate:$('rate'),read:$('read'),cap:$('cap'),det:$('det'),slate:$('slate'),title:$('title'),titleMain:$('titleMain'),lines:$('lines'),bigplay:$('bigplay'),readout:$('readout'),scrub:$('scrub'),play:$('play')};
+const TITLE='TA-01 · LAST LIGHT';
+const titleSpans=TITLE.split('').map(c=>{const s=document.createElement('span');s.textContent=c;el.titleMain.appendChild(s);return s;});
+function setText(node,key,html){ if(node._k!==key){node._k=key;node.innerHTML=html;} }
+
+const segBtns=[], shotCards=[];
+SHOTS.forEach(s=>{
+  const b=document.createElement('button'); b.type='button'; b.style.flex=(s.b-s.a)+' 1 0'; b.textContent=s.n; b.title=s.name; b.addEventListener('click',()=>seek(s.a)); $('segs').appendChild(b); segBtns.push(b);
+  const c=document.createElement('button'); c.type='button'; c.className='shot';
+  c.innerHTML='<div class="hd"><div class="n">SHOT '+String(s.n).padStart(2,'0')+'</div><div class="nm">'+s.name+'</div><div class="tk">'+s.a+' to '+s.b+' · '+((s.b-s.a)/20).toFixed(2).replace(/0$/,'')+' s</div></div>'+
+   '<dl><dt>Camera</dt><dd>'+s.cam+'</dd><dt>Screen</dt><dd>'+s.scr+'</dd><dt>HUD</dt><dd>'+s.hud+'</dd><dt>Sound</dt><dd class="snd">'+s.snd+'</dd><dt>Music</dt><dd class="snd">'+s.mus+'</dd></dl>';
+  c.addEventListener('click',()=>{seek(s.a);stage.scrollIntoView({block:'nearest',behavior:'smooth'});}); $('shots').appendChild(c); shotCards.push(c);
+});
+KEYROWS.forEach(r=>{const tr=document.createElement('tr');tr.innerHTML='<td class="k">'+r[0]+'</td><td class="t">'+r[1]+'</td><td>'+r[2]+'</td>';tr.style.cursor='pointer';tr.addEventListener('click',()=>seek(r[1]));$('keys').tBodies[0].appendChild(tr);});
+
+/* ================= three.js ================= */
+let renderer;
+try{ renderer=new THREE.WebGLRenderer({canvas:cv,antialias:true}); }catch(e){ renderer=null; }
+if(!renderer){ const d=document.createElement('div'); d.className='ov'; d.id='nogl'; d.textContent='This browser could not start WebGL, so the film preview cannot draw. The shot list below still has every shot, tick and cue.'; stage.appendChild(d); el.bigplay.hidden=true; return; }
+renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,2));
+
+const UP=new THREE.Vector3(0,1,0);
+const glowTex=(function(){const c=document.createElement('canvas');c.width=c.height=256;const g=c.getContext('2d');const gr=g.createRadialGradient(128,128,0,128,128,128);gr.addColorStop(0,'rgba(255,255,255,1)');gr.addColorStop(.12,'rgba(255,255,255,.6)');gr.addColorStop(.4,'rgba(255,255,255,.13)');gr.addColorStop(1,'rgba(255,255,255,0)');g.fillStyle=gr;g.fillRect(0,0,256,256);return new THREE.CanvasTexture(c);})();
+function glowSprite(color){ return new THREE.Sprite(new THREE.SpriteMaterial({map:glowTex,color:color,blending:THREE.AdditiveBlending,depthWrite:false,transparent:true})); }
+
+/* --- our black hole: one camera-facing quad, analytic disk + lensed arc + shadow --- */
+const HOLE_R=0.16; // shadow radius as a fraction of the quad's half-size
+const holeFrag=`
+varying vec2 vUv;
+uniform float uPhase,uDisk,uHeat,uGlow,uTilt;
+float hash(vec2 p){ p=fract(p*vec2(123.34,456.21)); p+=dot(p,p+45.32); return fract(p.x*p.y); }
+float noise(vec2 p){ vec2 i=floor(p), f=fract(p); f=f*f*(3.0-2.0*f); return mix(mix(hash(i),hash(i+vec2(1.0,0.0)),f.x),mix(hash(i+vec2(0.0,1.0)),hash(i+vec2(1.0,1.0)),f.x),f.y); }
+float fbm(vec2 p){ float a=0.5,s=0.0; for(int i=0;i<4;i++){ s+=a*noise(p); p=p*2.03+vec2(17.0,9.0); a*=0.5; } return s; }
+float gs(float x){ return exp(-x*x); }
+vec3 diskCol(float x){ return mix(vec3(0.85,0.2,0.03),vec3(1.0,0.6,0.2),smoothstep(0.0,0.6,x))+vec3(1.0,0.9,0.75)*smoothstep(0.55,1.0,x)*0.9; }
+vec3 heatCol(float h){ vec3 c=mix(vec3(0.9,0.2,0.05),vec3(1.0,0.6,0.2),smoothstep(0.0,0.4,h)); c=mix(c,vec3(1.0,0.95,0.85),smoothstep(0.4,0.7,h)); return mix(c,vec3(0.72,0.86,1.0),smoothstep(0.7,1.0,h)); }
+void main(){
+  vec2 p=(vUv-0.5)*2.0; float R=${HOLE_R.toFixed(3)};
+  float d=length(p)+1e-5; float arcR=d/R;
+  vec2 q=vec2(p.x,p.y/uTilt); float r=length(q)+1e-5; float rr=r/R;
+  float rin=1.9, rout=5.2;
+  float band=smoothstep(rin,rin*1.18,rr)*(1.0-smoothstep(rout*0.5,rout,rr));
+  float a2=atan(q.y,q.x)+uPhase*(0.6+0.8/rr);
+  float sw=fbm(vec2(cos(a2),sin(a2))*rr*1.3+vec2(rr*2.2,0.0));
+  float inner=clamp(1.0-(rr-rin)/(rout-rin),0.0,1.0);
+  float dop=1.0+0.55*(-q.x/r);
+  vec3 dc=diskCol(inner)*band*(0.3+1.1*sw)*dop*(0.35+1.7*inner*inner);
+  float shadow=1.0-smoothstep(0.97,1.03,arcR);
+  float front=1.0-smoothstep(-0.01,0.01,p.y);
+  float diskVis=mix(1.0-shadow,1.0,front);
+  float arc=smoothstep(1.02,1.14,arcR)*(1.0-smoothstep(1.25,1.95,arcR));
+  float topw=0.5+0.5*smoothstep(-0.4,0.6,p.y/d);
+  float a3=atan(p.y,p.x)+uPhase*0.6;
+  float an=fbm(vec2(cos(a3),sin(a3))*2.3+arcR*2.0);
+  vec3 ac=diskCol(0.8)*arc*topw*(0.45+0.9*an)*(1.0+0.4*(-p.x/d))*(1.0-front*shadow);
+  float ring=gs((arcR-1.04)/0.025);
+  vec3 col=(dc*diskVis+ac+vec3(1.0,0.86,0.62)*ring*0.9)*uDisk;
+  col+=vec3(1.0,0.5,0.15)*exp(-d*d/(R*R*26.0))*0.05*uDisk*(1.0-shadow);
+  vec3 hot=heatCol(uHeat);
+  float halo=exp(-max(arcR-1.0,0.0)/(0.3+uHeat*1.3));
+  col+=hot*(halo*(1.0-shadow)*0.7+ring*1.4)*uGlow;
+  col*=1.0-smoothstep(0.8,1.0,d);
+  float a=max(shadow,clamp(max(col.r,max(col.g,col.b)),0.0,1.0));
+  gl_FragColor=vec4(col,a);
+}`;
+function makeHole(size){
+  const m=new THREE.ShaderMaterial({uniforms:{uPhase:{value:0},uDisk:{value:1},uHeat:{value:0},uGlow:{value:0},uTilt:{value:0.2}},
+    vertexShader:'varying vec2 vUv;void main(){vUv=uv;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0);}',fragmentShader:holeFrag,
+    transparent:true,depthWrite:false,blending:THREE.CustomBlending,blendEquation:THREE.AddEquation,blendSrc:THREE.OneFactor,blendDst:THREE.OneMinusSrcAlphaFactor});
+  return new THREE.Mesh(new THREE.PlaneGeometry(size,size),m);
+}
+/* soft additive points whose colour already carries their alpha */
+function makeDots(n){
+  const g=new THREE.BufferGeometry();
+  g.setAttribute('position',new THREE.BufferAttribute(new Float32Array(n*3),3));
+  g.setAttribute('aCol',new THREE.BufferAttribute(new Float32Array(n*3),3));
+  g.setAttribute('aSize',new THREE.BufferAttribute(new Float32Array(n),1));
+  const m=new THREE.ShaderMaterial({uniforms:{uScale:{value:600}},
+    vertexShader:'attribute vec3 aCol;attribute float aSize;uniform float uScale;varying vec3 vC;void main(){vC=aCol;vec4 mv=modelViewMatrix*vec4(position,1.0);gl_PointSize=max(aSize*uScale/max(-mv.z,0.01),1.0);gl_Position=projectionMatrix*mv;}',
+    fragmentShader:'varying vec3 vC;void main(){float d=length(gl_PointCoord-0.5);float a=smoothstep(0.5,0.0,d);gl_FragColor=vec4(vC*a*a,1.0);}',
+    transparent:true,depthWrite:false,blending:THREE.AdditiveBlending,fog:false});
+  const p=new THREE.Points(g,m); p.frustumCulled=false; return p;
+}
+/* a wall of light: an open cylinder, brightest at its foot, used for both waves */
+function makeWall(color){
+  const g=new THREE.CylinderGeometry(1,1,1,128,1,true); g.translate(0,0.5,0);
+  const m=new THREE.ShaderMaterial({uniforms:{uA:{value:0},uCol:{value:new THREE.Color(color)}},
+    vertexShader:'varying vec2 vUv;void main(){vUv=uv;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0);}',
+    fragmentShader:'varying vec2 vUv;uniform float uA;uniform vec3 uCol;void main(){float a=pow(1.0-vUv.y,2.5)*uA;gl_FragColor=vec4(uCol*a,1.0);}',
+    transparent:true,depthWrite:false,side:THREE.DoubleSide,blending:THREE.AdditiveBlending,fog:false});
+  const w=new THREE.Mesh(g,m); w.frustumCulled=false; w.visible=false; return w;
+}
+/* a blocky figure: feet at the origin, facing -z, right arm on a shoulder pivot with the item in its hand */
+function makeCaster(){
+  const px=1.8/32, g=new THREE.Group();
+  const box=(w,h,d,col)=>new THREE.Mesh(new THREE.BoxGeometry(w*px,h*px,d*px),new THREE.MeshLambertMaterial({color:col}));
+  const add=(m,x,y,z,parent)=>{m.position.set(x*px,y*px,z*px);(parent||g).add(m);return m;};
+  add(box(4,12,4,0x2c3246),-2,6,0); add(box(4,12,4,0x2c3246),2,6,0);
+  add(box(8,12,4,0x4c6a78),0,18,0); add(box(8,8,8,0xb08a70),0,28,0);
+  add(box(8.6,3,8.6,0x2a2019),0,31,0);
+  add(box(4,12,4,0x4c6a78),-6,18,0);
+  const pivot=new THREE.Group(); pivot.position.set(6*px,22*px,0); g.add(pivot);
+  add(box(4,12,4,0x4c6a78),0,-4,0,pivot);
+  const item=new THREE.Mesh(new THREE.BoxGeometry(3*px,3*px,3*px),new THREE.MeshBasicMaterial({color:0xfff0d0})); add(item,0,-11.5,-0.5,pivot);
+  const glow=glowSprite(0xffb060); glow.position.copy(item.position); pivot.add(glow);
+  const light=new THREE.PointLight(0xffd0a0,0,9); light.position.copy(item.position); pivot.add(light);
+  return {g,pivot,item,glow,light};
+}
+
+/* ---------- scene A: TON 618's devoured dark ---------- */
+const HD=new THREE.Vector3(0.34,0.2,-1).normalize();       // where TON618 hangs
+const FD=new THREE.Vector3(0.34,0,-1).normalize();         // the same, flat
+const RD=new THREE.Vector3(-FD.z,0,FD.x);                  // right of it
+const P0=new THREE.Vector3(0.5,0,0.5);
+const at=(f,r,u)=>P0.clone().addScaledVector(FD,f).addScaledVector(RD,r).addScaledVector(UP,u);
+const dark=new THREE.Scene(); dark.background=new THREE.Color(0x000000);
+const camDark=new THREE.PerspectiveCamera(46,16/9,0.05,6000);
+const floorMat=new THREE.ShaderMaterial({uniforms:{uCam:{value:new THREE.Vector3()},uHole:{value:HD.clone()},uC:{value:new THREE.Vector2(P0.x,P0.z)},uLight:{value:1},uWaveR:{value:0},uWaveA:{value:0},uRace:{value:0},uT:{value:0}},
+  vertexShader:'varying vec3 vW;void main(){vec4 w=modelMatrix*vec4(position,1.0);vW=w.xyz;gl_Position=projectionMatrix*viewMatrix*w;}',
+  fragmentShader:`varying vec3 vW;uniform vec3 uCam;uniform vec3 uHole;uniform vec2 uC;uniform float uLight,uWaveR,uWaveA,uRace,uT;
+  float h1(float n){ return fract(sin(n*12.9898)*43758.5453); }
+  void main(){ vec2 g=abs(fract(vW.xz)-0.5); float dist=length(vW.xz-uCam.xz);
+    float line=smoothstep(0.465,0.5,max(g.x,g.y))*exp(-dist*0.07);
+    vec3 V=normalize(vW-uCam); vec3 Rf=reflect(V,vec3(0.0,1.0,0.0)); float s=max(dot(Rf,uHole),0.0);
+    float sheen=pow(s,90.0)*0.5+pow(s,10.0)*0.045;
+    vec3 col=vec3(0.012,0.011,0.014)+vec3(0.045,0.04,0.05)*line+vec3(1.0,0.55,0.2)*sheen*uLight;
+    // the time wave: a bright front with a glowing tail behind it
+    vec2 dv=vW.xz-uC; float dc=length(dv); float wf=dc-uWaveR; float wd=1.5+uWaveR*0.02;
+    float front=exp(-wf*wf/(wd*wd)); float tail=wf<0.0?exp(wf/(5.0+uWaveR*0.1)):0.0;
+    col+=(vec3(1.0,0.85,0.65)*front*1.3+vec3(1.0,0.5,0.18)*tail*0.4)*uWaveA;
+    // behind the wave: dashes of light rushing outward along the floor
+    float hh=h1(floor(atan(dv.y,dv.x)*30.0));
+    float dash=fract(dc*0.035-uT*(0.6+hh)+hh*7.0);
+    float st=step(0.7,hh)*smoothstep(0.0,0.1,dash)*(1.0-smoothstep(0.1,0.55,dash));
+    col+=vec3(1.0,0.6,0.28)*st*uRace*0.55*step(dc,uWaveR)*exp(-dist*0.02)*smoothstep(1.5,6.0,dc);
+    gl_FragColor=vec4(col,1.0); }`});
+const floor=new THREE.Mesh(new THREE.PlaneGeometry(6000,6000),floorMat); floor.rotation.x=-Math.PI/2; dark.add(floor);
+const holeDarkPos=P0.clone().addScaledVector(HD,1000);
+const holeDark=makeHole(700); holeDark.position.copy(holeDarkPos); dark.add(holeDark);
+const HOLE_DARK_R=700/2*HOLE_R;
+dark.add(new THREE.AmbientLight(0x15131a));
+const keyD=new THREE.DirectionalLight(0xffa45c,1.15); keyD.position.copy(HD); dark.add(keyD);
+const fillD=new THREE.DirectionalLight(0x3d5068,0.65); fillD.position.set(-FD.x,0.8,-FD.z); dark.add(fillD);
+const casterD=makeCaster(); casterD.g.position.copy(P0); casterD.g.rotation.y=Math.atan2(-FD.x,-FD.z); dark.add(casterD.g);
+const pressRing=new THREE.Mesh(new THREE.RingGeometry(0.94,1,96),new THREE.MeshBasicMaterial({color:0xffc88a,transparent:true,blending:THREE.AdditiveBlending,depthWrite:false,side:THREE.DoubleSide})); pressRing.rotation.x=-Math.PI/2; pressRing.position.set(P0.x,0.03,P0.z); dark.add(pressRing);
+const wallD=makeWall(0xffb878); wallD.position.copy(P0); dark.add(wallD);
+const NM=420, motes=makeDots(NM), moteBase=new Float32Array(NM*3);
+(function(){const r=rng(11);for(let i=0;i<NM;i++){moteBase[i*3]=P0.x+(r()-0.5)*30;moteBase[i*3+1]=r()*10;moteBase[i*3+2]=P0.z+(r()-0.5)*30;motes.geometry.attributes.aSize.array[i]=0.03+r()*0.05;}})();
+dark.add(motes);
+const moteLines=new THREE.LineSegments(new THREE.BufferGeometry(),new THREE.LineBasicMaterial({color:0xffa050,transparent:true,opacity:0,blending:THREE.AdditiveBlending,depthWrite:false}));
+moteLines.geometry.setAttribute('position',new THREE.BufferAttribute(new Float32Array(NM*6),3)); moteLines.frustumCulled=false; dark.add(moteLines);
+
+/* ---------- scene B: our own space ---------- */
+const cosmos=new THREE.Scene(); cosmos.background=new THREE.Color(0x000000);
+const camCos=new THREE.PerspectiveCamera(40,16/9,0.1,12000);
+const skyTilt=new THREE.Group(); skyTilt.rotation.z=0.42; const skySpin=new THREE.Group(); skyTilt.add(skySpin); cosmos.add(skyTilt);
+const NS=5200;
+const starData=(function(){
+  const r=rng(618), pos=new Float32Array(NS*3), col=new Float32Array(NS*3), death=new Float32Array(NS), size=new Float32Array(NS);
+  for(let i=0;i<NS;i++){
+    const z=r()*2-1, a=r()*6.2832, s=Math.sqrt(1-z*z), R=4000, squash=r()<0.45?0.25:1;   // a soft band so the sky has a shape
+    pos[i*3]=Math.cos(a)*s*R; pos[i*3+1]=z*R*squash; pos[i*3+2]=Math.sin(a)*s*R;
+    const k=r(); let c,dth;
+    if(i<60){ c=[1.0,0.5,0.32]; dth=2; }                                     // cinders of the degenerate era
+    else if(k<0.2){ c=[0.72,0.82,1.0]; dth=0.06+r()*0.34; }                 // blue: first to die
+    else if(k<0.6){ c=[1.0,0.96,0.86]; dth=0.25+r()*0.4; }                  // sunlike
+    else { c=[1.0,0.62,0.42]; dth=0.5+r()*0.5; }                            // red dwarfs: last
+    col[i*3]=c[0];col[i*3+1]=c[1];col[i*3+2]=c[2]; death[i]=dth; size[i]=(i<60?2.2:1.2)+Math.pow(r(),6)*4.5;
+  }
+  return {pos,col,death,size};
+})();
+const stars=(function(){
+  const g=new THREE.BufferGeometry();
+  g.setAttribute('position',new THREE.BufferAttribute(starData.pos,3)); g.setAttribute('aCol',new THREE.BufferAttribute(starData.col,3));
+  g.setAttribute('aDeath',new THREE.BufferAttribute(starData.death,1)); g.setAttribute('aSize',new THREE.BufferAttribute(starData.size,1));
+  const m=new THREE.ShaderMaterial({uniforms:{uEra:{value:0},uPx:{value:1},uCinder:{value:0}},
+    vertexShader:`attribute vec3 aCol;attribute float aDeath;attribute float aSize;uniform float uEra,uPx,uCinder;varying vec3 vC;
+    void main(){ float alive=1.0-smoothstep(aDeath-0.02,aDeath,uEra); float fx=(uEra-aDeath+0.02)/0.014; float flare=exp(-fx*fx);
+      if(aDeath>1.5){ alive=uCinder; flare=0.0; }
+      vC=mix(aCol,vec3(1.0,0.45,0.25),smoothstep(0.0,1.0,uEra)*0.45)*(alive+2.2*flare*step(aDeath,1.5));
+      gl_PointSize=aSize*uPx*(0.7+0.3*alive+0.9*flare); gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0); }`,
+    fragmentShader:'varying vec3 vC;void main(){float d=length(gl_PointCoord-0.5);float a=smoothstep(0.5,0.0,d);gl_FragColor=vec4(vC*a*a,1.0);}',
+    transparent:true,depthWrite:false,blending:THREE.AdditiveBlending});
+  const p=new THREE.Points(g,m); p.frustumCulled=false; return p;
+})();
+skySpin.add(stars);
+/* each star's trail: a line from where it is back along the sky's turning (the time-lapse look) */
+const trails=(function(){
+  const pos=new Float32Array(NS*6), col=new Float32Array(NS*6), death=new Float32Array(NS*2), end=new Float32Array(NS*2);
+  for(let i=0;i<NS;i++){ for(let k=0;k<2;k++){ const o=(i*2+k)*3; pos[o]=starData.pos[i*3];pos[o+1]=starData.pos[i*3+1];pos[o+2]=starData.pos[i*3+2]; col[o]=starData.col[i*3];col[o+1]=starData.col[i*3+1];col[o+2]=starData.col[i*3+2]; death[i*2+k]=starData.death[i]; end[i*2+k]=k; } }
+  const g=new THREE.BufferGeometry();
+  g.setAttribute('position',new THREE.BufferAttribute(pos,3)); g.setAttribute('aCol',new THREE.BufferAttribute(col,3)); g.setAttribute('aDeath',new THREE.BufferAttribute(death,1)); g.setAttribute('aEnd',new THREE.BufferAttribute(end,1));
+  const m=new THREE.ShaderMaterial({uniforms:{uEra:{value:0},uTrail:{value:0},uCinder:{value:0}},
+    vertexShader:`attribute vec3 aCol;attribute float aDeath;attribute float aEnd;uniform float uEra,uTrail,uCinder;varying vec3 vC;
+    void main(){ float alive=1.0-smoothstep(aDeath-0.02,aDeath,uEra); if(aDeath>1.5)alive=uCinder;
+      float a=-aEnd*uTrail; float c=cos(a), s=sin(a); vec3 p=vec3(c*position.x+s*position.z,position.y,-s*position.x+c*position.z);
+      vC=mix(aCol,vec3(1.0,0.45,0.25),uEra*0.45)*alive*(1.0-aEnd)*0.6;
+      gl_Position=projectionMatrix*modelViewMatrix*vec4(p,1.0); }`,
+    fragmentShader:'varying vec3 vC;void main(){gl_FragColor=vec4(vC,1.0);}',
+    transparent:true,depthWrite:false,blending:THREE.AdditiveBlending});
+  const l=new THREE.LineSegments(g,m); l.frustumCulled=false; return l;
+})();
+skySpin.add(trails);
+const galaxies=(function(){
+  const r=rng(77), out=[];
+  for(let i=0;i<9;i++){
+    const c=document.createElement('canvas'); c.width=c.height=128; const g=c.getContext('2d');
+    g.translate(64,64); g.rotate(r()*3.14); g.scale(1,0.3+r()*0.5);
+    const gr=g.createRadialGradient(0,0,0,0,0,62); gr.addColorStop(0,'rgba(255,240,220,.9)'); gr.addColorStop(.18,'rgba(220,200,255,.35)'); gr.addColorStop(.6,'rgba(150,170,255,.08)'); gr.addColorStop(1,'rgba(0,0,0,0)');
+    g.fillStyle=gr; g.beginPath(); g.arc(0,0,62,0,6.2832); g.fill();
+    const s=new THREE.Sprite(new THREE.SpriteMaterial({map:new THREE.CanvasTexture(c),blending:THREE.AdditiveBlending,depthWrite:false,transparent:true}));
+    const z=r()*1.6-0.8,a=r()*6.2832,q=Math.sqrt(1-z*z); s.position.set(Math.cos(a)*q*3600,z*3600,Math.sin(a)*q*3600); const sc=260+r()*520; s.scale.set(sc,sc,1); s.userData.o=0.35+r()*0.4; skySpin.add(s); out.push(s);
+  } return out;
+})();
+const HOLE_COS_SIZE=40, R0=HOLE_COS_SIZE/2*HOLE_R; // 3.2
+const holeGroup=new THREE.Group(); cosmos.add(holeGroup);
+const holeCos=makeHole(HOLE_COS_SIZE); holeGroup.add(holeCos);
+const NP=1700, pairs=makeDots(NP*2); pairs.renderOrder=2; holeGroup.add(pairs);
+const pBorn=new Float32Array(NP), pLife=new Float32Array(NP), pTh=new Float32Array(NP);
+(function(){const r=rng(1998);for(let i=0;i<NP;i++){const f=i/NP; const b=f<0.16?302+86*Math.sqrt(f/0.16):390+97*Math.pow((f-0.16)/0.84,0.55); pBorn[i]=b; pLife[i]=lerp(30,12,lin(300,488,b))*(0.8+0.4*r()); const g=(r()+r()+r()-1.5)*0.9; pTh[i]=(b<392&&r()<0.68)?0.12+g*0.55:r()*6.2832;}})();
+const flare=glowSprite(0xffffff); flare.material.depthTest=false; flare.renderOrder=3; cosmos.add(flare);
+const shock=new THREE.Mesh(new THREE.RingGeometry(0.9,1,128),new THREE.MeshBasicMaterial({color:0xd6e8ff,transparent:true,blending:THREE.AdditiveBlending,depthWrite:false,depthTest:false,side:THREE.DoubleSide})); shock.renderOrder=4; shock.visible=false; holeGroup.add(shock);
+
+/* ---------- scene C: the overworld, back ---------- */
+const world=new THREE.Scene(); const SKY=new THREE.Color(0.80,0.88,1.0); world.background=SKY.clone(); world.fog=new THREE.Fog(SKY,34,84);
+const camW=new THREE.PerspectiveCamera(58,16/9,0.05,4000);
+const SUN=new THREE.Vector3(0.8,0.19,-0.3).normalize(), SF=new THREE.Vector3(SUN.x,0,SUN.z).normalize(), SR=new THREE.Vector3(-SF.z,0,SF.x);
+world.add(new THREE.HemisphereLight(0xcfe2ff,0x6b5a45,0.75)); const sunL=new THREE.DirectionalLight(0xfff0d0,0.95); sunL.position.copy(SUN); world.add(sunL);
+function vnoise(x,z){ const xi=Math.floor(x),zi=Math.floor(z),xf=x-xi,zf=z-zi; const h=(a,b)=>{const n=Math.sin(a*127.1+b*311.7)*43758.5453;return n-Math.floor(n);}; const u=xf*xf*(3-2*xf),w=zf*zf*(3-2*zf); return lerp(lerp(h(xi,zi),h(xi+1,zi),u),lerp(h(xi,zi+1),h(xi+1,zi+1),u),w); }
+const WATER=6, SPAWN_H=8;
+function height(x,z){ const n=vnoise(x*0.045+3.1,z*0.045+7.7)+vnoise(x*0.11,z*0.11)*0.45+vnoise(x*0.23,z*0.23)*0.15; const h=lerp(SPAWN_H,2.5+n*8.5,ss(4,13,Math.hypot(x,z))); return Math.max(1,Math.round(h)); }
+(function(){
+  const N=48, cnt=(2*N)*(2*N), cube=new THREE.BoxGeometry(1,1,1);
+  const dirt=new THREE.InstancedMesh(cube,new THREE.MeshLambertMaterial({color:0xffffff}),cnt), tops=new THREE.InstancedMesh(cube,new THREE.MeshLambertMaterial({color:0xffffff}),cnt);
+  const M=new THREE.Matrix4(), C=new THREE.Color(), r=rng(5); let i=0,j=0;
+  for(let x=-N;x<N;x++)for(let z=-N;z<N;z++){
+    const h=height(x,z), v=r();
+    M.makeScale(1,h,1); M.setPosition(x+0.5,h/2,z+0.5); dirt.setMatrixAt(i,M);
+    if(h<=WATER) C.setRGB(0.80+v*0.04,0.74+v*0.04,0.54); else C.setRGB(0.42+v*0.04,0.30+v*0.03,0.2); dirt.setColorAt(i,C); i++;
+    if(h>WATER){ M.makeScale(1.01,0.24,1.01); M.setPosition(x+0.5,h-0.11,z+0.5); tops.setMatrixAt(j,M); C.setRGB(0.36+v*0.07,0.62+v*0.09,0.25+v*0.04); tops.setColorAt(j,C); j++; }
+  }
+  tops.count=j; world.add(dirt); world.add(tops);
+  const water=new THREE.Mesh(new THREE.PlaneGeometry(2*N,2*N),new THREE.MeshLambertMaterial({color:0x3a6fd8,transparent:true,opacity:0.74})); water.rotation.x=-Math.PI/2; water.position.y=WATER+0.38; world.add(water);
+  const tr=rng(42), trunkM=new THREE.MeshLambertMaterial({color:0x6b4a2b}), leafM=new THREE.MeshLambertMaterial({color:0x2f7a34});
+  for(let k=0,made=0;k<160&&made<30;k++){ const x=Math.round((tr()-0.5)*84), z=Math.round((tr()-0.5)*84), h=height(x,z);
+    const al=-(x*SF.x+z*SF.z), sd=x*SR.x+z*SR.z; if(h<=WATER||Math.hypot(x,z)<6||(al>-5&&al<22&&Math.abs(sd-2)<10))continue; made++;
+    const th=4+Math.floor(tr()*2); const t=new THREE.Mesh(cube,trunkM); t.scale.set(1,th,1); t.position.set(x+0.5,h+th/2,z+0.5); world.add(t);
+    const l1=new THREE.Mesh(cube,leafM); l1.scale.set(5,2,5); l1.position.set(x+0.5,h+th,z+0.5); world.add(l1);
+    const l2=new THREE.Mesh(cube,leafM); l2.scale.set(3,2,3); l2.position.set(x+0.5,h+th+2,z+0.5); world.add(l2); }
+})();
+const skyDome=new THREE.Mesh(new THREE.SphereGeometry(2500,24,16),new THREE.ShaderMaterial({uniforms:{uSun:{value:SUN.clone()},uWhite:{value:0}},side:THREE.BackSide,depthWrite:false,fog:false,
+  vertexShader:'varying vec3 vD;void main(){vD=position;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0);}',
+  fragmentShader:'varying vec3 vD;uniform vec3 uSun;uniform float uWhite;void main(){vec3 d=normalize(vD);float h=clamp(d.y,0.0,1.0);vec3 c=mix(vec3(0.80,0.88,1.0),vec3(0.33,0.56,0.93),pow(h,0.55));float s=max(dot(d,uSun),0.0);c+=vec3(1.0,0.75,0.45)*(pow(s,6.0)*0.3+pow(s,70.0)*0.5);gl_FragColor=vec4(mix(c,vec3(1.0),uWhite),1.0);}'}));
+world.add(skyDome);
+const sunSq=new THREE.Mesh(new THREE.PlaneGeometry(150,150),new THREE.MeshBasicMaterial({color:0xfffbe6,fog:false})); world.add(sunSq);
+const clouds=(function(){const r=rng(9),out=[],m=new THREE.MeshBasicMaterial({color:0xffffff,fog:false,transparent:true,opacity:0.92});for(let i=0;i<14;i++){const c=new THREE.Mesh(new THREE.BoxGeometry(10+r()*16,1.4,7+r()*10),m);c.userData.x=(r()-0.5)*220;c.position.set(0,40+r()*8,(r()-0.5)*220);world.add(c);out.push(c);}return out;})();
+const WP=new THREE.Vector3(0,SPAWN_H,0);
+const casterW=makeCaster(); casterW.g.position.copy(WP); casterW.g.rotation.y=Math.atan2(-SF.x,-SF.z); world.add(casterW.g);
+const wallW=makeWall(0xfff0d0); wallW.position.set(0,SPAWN_H-4,0); world.add(wallW);
+const NW=260, wm=makeDots(NW), wmData=[];
+(function(){const r=rng(31);for(let i=0;i<NW;i++){const a=r()*6.2832,d=2+Math.sqrt(r())*34,x=Math.cos(a)*d,z=Math.sin(a)*d;wmData.push({x,z,y0:20+r()*18,g:height(Math.floor(x),Math.floor(z))+0.3,s:548+r()*46,d:50+r()*36});wm.geometry.attributes.aSize.array[i]=0.25+r()*0.35;}})();
+world.add(wm);
+
+/* ================= drawing (t = storyboard time) ================= */
+let activeCam=camDark, curHolePos=holeDarkPos, curHoleR=HOLE_DARK_R, pxScale=600;
+const tmp=new THREE.Vector3(), tmp2=new THREE.Vector3();
+function shake(cam,t,amp){ if(amp<=0)return; cam.rotateX(amp*(Math.sin(t*7.13)+Math.sin(t*12.7+1.3))*0.5); cam.rotateY(amp*(Math.sin(t*8.31+2.0)+Math.sin(t*14.9))*0.5); }
+function setCam(cam,pos,tgt,fov){ cam.position.copy(pos); cam.fov=fov; cam.updateProjectionMatrix(); cam.lookAt(tgt); }
+function poseCaster(c,arm,glow,flash){ c.pivot.rotation.x=arm; const s=0.3+glow; c.glow.scale.set(s,s,1); c.glow.material.opacity=Math.min(1,0.5+glow); c.light.intensity=0.25+flash*3.5; }
+
+function drawDark(t){
+  let pos,tgt,fov;
+  if(t<50){ const u=t/50; pos=at(lerp(-5.4,-4.4,u),1.9,lerp(1.45,1.7,u)); tgt=at(40,3,6.5); fov=46; }
+  else if(t<90){ const u=ss(50,90,t); pos=at(lerp(-1.6,-1.4,u),0.7,lerp(1.48,1.54,u)); tgt=pos.clone().addScaledVector(HD,100).addScaledVector(RD,-9).addScaledVector(UP,-13); fov=40; }
+  else { const u=lin(90,150,t), m=ss(98,150,t); pos=at(lerp(-3.6,7,m),lerp(1.3,0.2,m),lerp(2.2,9,m)); tgt=at(40,1,5).lerp(holeDarkPos,ss(100,132,t)); fov=lerp(50,11,Math.pow(lin(100,150,t),1.5)); }
+  setCam(camDark,pos,tgt,fov);
+  const pf=t>=60?Math.exp(-(t-60)/7):0, rf=t>=90?Math.exp(-(t-90)/8):0, race=lin(90,150,t);
+  shake(camDark,t,0.006*pf+0.014*rf+0.0035*lin(112,150,t));
+  holeDark.quaternion.copy(camDark.quaternion);
+  const hu=holeDark.material.uniforms; hu.uPhase.value=phase(t); hu.uDisk.value=1+0.25*race; hu.uGlow.value=0; hu.uHeat.value=0;
+  // the massive wave at RACE
+  const wu=lin(90,135,t), wR=520*Math.pow(wu,1.3), wA=t>=90?1-ss(0.7,1,wu):0, fu=floorMat.uniforms;
+  fu.uCam.value.copy(camDark.position); fu.uWaveR.value=t<90?0:(wu>=1?1e5:wR); fu.uWaveA.value=wA; fu.uRace.value=race>0?0.35+0.65*race:0; fu.uT.value=phase(t)*4;
+  wallD.visible=wA>0.001; wallD.scale.set(Math.max(wR,0.01),5+wR*0.07,Math.max(wR,0.01)); wallD.material.uniforms.uA.value=wA*0.6;
+  poseCaster(casterD,lerp(0.25,1.82,ss(34,56,t)),0.25+1.7*pf+0.9*lin(64,90,t)*(1-lin(90,96,t))+2.6*rf+race*(0.5+0.3*Math.sin(t*1.3)),pf+rf);
+  { const u=(t-60)/30; pressRing.visible=u>0&&u<1; const s=1+13*easeOut(sat(u)); pressRing.scale.set(s,s,1); pressRing.material.opacity=(1-sat(u))*(1-sat(u))*0.8; }
+  const pa=motes.geometry.attributes.position.array, ca=motes.geometry.attributes.aCol.array, la=moteLines.geometry.attributes.position.array, lift=race*race*70;
+  for(let i=0;i<NM;i++){ const k=0.6+(i%7)*0.1, x=moteBase[i*3], z=moteBase[i*3+2], y=(moteBase[i*3+1]+lift*k)%10;
+    pa[i*3]=x; pa[i*3+1]=y; pa[i*3+2]=z; const b=0.10+0.5*race; ca[i*3]=b;ca[i*3+1]=b*0.6;ca[i*3+2]=b*0.3;
+    la[i*6]=x; la[i*6+1]=y; la[i*6+2]=z; la[i*6+3]=x; la[i*6+4]=y-race*race*2.4*k; la[i*6+5]=z; }
+  motes.geometry.attributes.position.needsUpdate=true; motes.geometry.attributes.aCol.needsUpdate=true; motes.material.uniforms.uScale.value=pxScale/Math.tan(fov*Math.PI/360);
+  moteLines.geometry.attributes.position.needsUpdate=true; moteLines.material.opacity=race*0.6; moteLines.visible=race>0;
+  activeCam=camDark; curHolePos=holeDarkPos; curHoleR=HOLE_DARK_R;
+  renderer.render(dark,camDark);
+}
+
+function drawCosmos(t){
+  const tt=Math.min(t,500), az=0.25+(tt-150)*0.0032, elv=0.2;
+  let dist,fov,limb=0;
+  if(tt<300){ dist=keys([[150,46],[165,104],[185,138],[220,146],[300,104]],tt); fov=40; }
+  else if(tt<390){ dist=lerp(16,12.5,lin(300,390,tt)); fov=30; limb=1; }
+  else if(tt<470){ dist=lerp(34,14,ss(390,470,tt)); fov=34; }
+  else { dist=lerp(14,8,lin(470,500,tt)); fov=34; }
+  tmp.set(Math.sin(az)*Math.cos(elv),Math.sin(elv),Math.cos(az)*Math.cos(elv)).multiplyScalar(dist);
+  const tgt=new THREE.Vector3();
+  if(limb){ tmp2.copy(tmp).negate().normalize().cross(UP).normalize(); tgt.addScaledVector(tmp2,lerp(3.25,2.85,lin(300,390,tt))).addScaledVector(UP,0.55); }
+  setCam(camCos,tmp,tgt,fov);
+  const sh=tt<488?lin(400,488,tt):0; shake(camCos,t,0.011*sh*sh);
+  const hs=holeScale(tt);
+  holeGroup.quaternion.copy(camCos.quaternion); holeCos.scale.setScalar(hs);
+  const hu=holeCos.material.uniforms; hu.uPhase.value=phase(tt);
+  hu.uDisk.value=(1-ss(236,292,tt))*(tt<236?1:0.82+0.18*Math.sin(tt*2.1)); hu.uHeat.value=heatAt(tt); hu.uGlow.value=glowAt(tt);
+  // the sky: wheeling, streaking, dying
+  const era=keys([[150,0],[220,0.3],[256,1.0]],tt), cinder=ss(240,262,tt)*(1-ss(266,300,tt))*0.7;
+  skySpin.rotation.y=skyRot(tt);
+  const su=stars.material.uniforms; su.uEra.value=era; su.uCinder.value=cinder; su.uPx.value=pxScale/360;
+  const tu=trails.material.uniforms; tu.uEra.value=era; tu.uCinder.value=cinder; tu.uTrail.value=skyW(tt)*5; trails.visible=tt<302;
+  const gf=1-ss(195,250,tt); galaxies.forEach(g=>{g.material.opacity=g.userData.o*gf; g.visible=gf>0.001;});
+  const warm=1-lin(150,205,tt); cosmos.background.setRGB(0.034*warm,0.017*warm,0.03*warm);
+  // the pairs
+  const pa=pairs.geometry.attributes.position.array, ca=pairs.geometry.attributes.aCol.array, sa=pairs.geometry.attributes.aSize.array;
+  const Rs=R0*hs, hc=heatRGB(heatAt(tt)), sz=0.24*Math.max(hs,0.3)*(limb?0.8:1.25);
+  for(let i=0;i<NP;i++){
+    const u=(tt-pBorn[i])/pLife[i], A=i*6, B=A+3;
+    if(u<0||u>1||tt>=490){ ca[A]=ca[A+1]=ca[A+2]=ca[B]=ca[B+1]=ca[B+2]=0; sa[i*2]=sa[i*2+1]=0; continue; }
+    const th=pTh[i], pop=1+2*(1-lin(0,0.12,u)), fin=Math.min(u/0.06,1);
+    const rA=(1.10-0.24*u*u)*Rs, tA=th+0.05+0.35*u, aA=fin*(1-ss(0.35,0.8,u))*pop*0.9;
+    const rB=(1.10+0.25*u+3.0*u*u)*Rs, tB=th-0.05-0.12*u, aB=fin*(1-ss(0.6,1,u))*pop;
+    pa[A]=Math.cos(tA)*rA; pa[A+1]=Math.sin(tA)*rA; pa[A+2]=0; pa[B]=Math.cos(tB)*rB; pa[B+1]=Math.sin(tB)*rB; pa[B+2]=0;
+    ca[A]=0.4*aA; ca[A+1]=0.72*aA; ca[A+2]=1.0*aA;
+    ca[B]=lerp(1.0,hc[0],0.5)*aB; ca[B+1]=lerp(0.8,hc[1],0.5)*aB; ca[B+2]=lerp(0.45,hc[2],0.5)*aB;
+    sa[i*2]=sz*0.85; sa[i*2+1]=sz;
+  }
+  pairs.geometry.attributes.position.needsUpdate=true; pairs.geometry.attributes.aCol.needsUpdate=true; pairs.geometry.attributes.aSize.needsUpdate=true;
+  pairs.material.uniforms.uScale.value=pxScale/Math.tan(fov*Math.PI/360);
+  const fs=keys([[385,0],[390,2],[470,7],[486,9],[494,1.2],[497,0.9],[500,260],[504,600]],t), fo=keys([[385,0],[392,0.22],[470,0.8],[486,1],[494,0.9],[497,1]],t);
+  flare.visible=fs>0.001; flare.scale.set(fs,fs,1); flare.material.opacity=fo; flare.material.color.setRGB(hc[0],hc[1],hc[2]);
+  // the burst's ring
+  const bu=lin(496,503.5,t); shock.visible=bu>0&&bu<1; const bs=0.2+12*Math.pow(bu,1.3); shock.scale.set(bs,bs,1); shock.material.opacity=(1-bu)*0.95;
+  activeCam=camCos; curHolePos=holeGroup.position; curHoleR=Rs;
+  renderer.render(cosmos,camCos);
+}
+
+function drawWorld(t){
+  const a=ss(540,612,t), b=ss(612,660,t);
+  const back=lerp(lerp(3.2,10,a),4.6,b), up=lerp(lerp(2.4,4.6,a),2.7,b), side=lerp(lerp(1.2,3,a),1.1,b);
+  tmp.copy(WP).addScaledVector(SF,-back).addScaledVector(UP,up).addScaledVector(SR,side);
+  tmp2.copy(WP).addScaledVector(SF,30).addScaledVector(UP,lerp(lerp(2.0,-0.3,a),1.6,b));
+  setCam(camW,tmp,tmp2,58);
+  shake(camW,t,t>=540?0.012*Math.exp(-(t-540)/9):0);
+  // the returning wave: the world exists inside its radius, white outside
+  const wu=lin(540,592,t), R=120*Math.pow(wu,1.6), wh=1-ss(574,602,t);
+  world.fog.near=Math.min(Math.max(R-6,0.001),34); world.fog.far=Math.min(R+3,84);
+  world.fog.color.setRGB(lerp(SKY.r,1,wh),lerp(SKY.g,1,wh),lerp(SKY.b,1,wh)); world.background.copy(world.fog.color);
+  skyDome.material.uniforms.uWhite.value=1-ss(550,590,t);
+  wallW.visible=wu>0&&R<118; wallW.scale.set(Math.max(R,0.01),18,Math.max(R,0.01)); wallW.material.uniforms.uA.value=0.75*(1-lin(55,118,R));
+  skyDome.position.copy(camW.position); sunSq.position.copy(camW.position).addScaledVector(SUN,1900); sunSq.lookAt(camW.position);
+  clouds.forEach(c=>{c.position.x=c.userData.x+(t-540)*0.02;});
+  poseCaster(casterW,lerp(1.82,0.25,ss(576,612,t)),0.35*(1-ss(560,620,t))+1.2*(t>=540?Math.exp(-(t-540)/10):0),0);
+  const pa=wm.geometry.attributes.position.array, ca=wm.geometry.attributes.aCol.array;
+  for(let i=0;i<NW;i++){ const m=wmData[i], u=(t-m.s)/m.d; if(u<=0||u>=1){ca[i*3]=ca[i*3+1]=ca[i*3+2]=0;continue;} const e=u*u*(3-2*u), al=Math.sin(Math.PI*u)*0.85; pa[i*3]=m.x; pa[i*3+1]=lerp(m.y0,m.g,e); pa[i*3+2]=m.z; ca[i*3]=al; ca[i*3+1]=al*0.9; ca[i*3+2]=al*0.65; }
+  wm.geometry.attributes.position.needsUpdate=true; wm.geometry.attributes.aCol.needsUpdate=true; wm.material.uniforms.uScale.value=pxScale/Math.tan(58*Math.PI/360);
+  activeCam=camW; curHolePos=null;
+  renderer.render(world,camW);
+}
+
+/* ---------- educational labels (storyboard time) ---------- */
+function project(v){ tmp.copy(v).project(activeCam); return [(tmp.x*0.5+0.5)*100,(1-(tmp.y*0.5+0.5))*100]; }
+function holeAnchor(k){ if(!curHolePos)return [50,50]; tmp2.set(1,0,0).applyQuaternion(activeCam.quaternion); return project(tmp2.multiplyScalar(k*curHoleR).add(curHolePos)); }
+const EDU=[
+ {a:8,b:48,anchor:()=>holeAnchor(1),off:[9,-16],text:'A real black hole: 40 to 66 billion Suns.'},
+ {a:154,b:218,anchor:()=>holeAnchor(1),off:[-10,12],text:'Hawking temperature: about 10⁻¹⁸ K. Space is 2.7 K today, so it still grows. It shrinks only once space is colder.'},
+ {a:224,b:260,anchor:()=>[24,31],off:[5,7],text:'About 10¹⁴ years: the last red dwarf stars burn out.'},
+ {a:264,b:298,anchor:()=>holeAnchor(1.6),off:[10,-14],text:'Left over: white dwarfs, neutron stars, black holes.'},
+ {a:304,b:388,anchor:()=>holeAnchor(1.02),off:[-12,14],text:'Hawking radiation: quantum particle pairs appear at the horizon. One falls in, one escapes, and the hole loses mass.'},
+ {a:394,b:468,anchor:()=>holeAnchor(1.1),off:[11,13],text:'Smaller means hotter means faster: temperature goes as 1 / mass.'},
+ {a:472,b:497,anchor:()=>holeAnchor(0),off:[-11,-15],text:'About 10¹⁰⁰ years. The end is a burst of gamma rays.'},
+ {a:552,b:642,anchor:()=>[52,60],off:[10,-22],text:'The information paradox: does what fell in come back out in the radiation? Still debated. Here, it does.'}
+];
+EDU.forEach(e=>{ e.box=document.createElement('div'); e.box.className='edu'; e.box.innerHTML='<i>PHYSICS</i>'+e.text; stage.appendChild(e.box);
+  e.dot=document.createElement('div'); e.dot.className='dot'; stage.appendChild(e.dot);
+  e.line=document.createElementNS('http://www.w3.org/2000/svg','line'); el.lines.appendChild(e.line);
+  const ga=Math.round(toGame(e.a)), gb=Math.round(toGame(e.b));
+  const li=document.createElement('li'); li.innerHTML='<span>ticks '+ga+' to '+gb+' · '+((gb-ga)/20).toFixed(1)+' s</span>'+e.text; li.style.cursor='pointer'; li.addEventListener('click',()=>{$('edu').checked=true;seek(toGame(e.a+8));}); $('eduList').appendChild(li); });
+function drawEdu(t,on){
+  const W=stage.clientWidth,Hh=stage.clientHeight; if(!W||!Hh)return;
+  EDU.forEach(e=>{
+    const o=on&&t>=e.a&&t<=e.b?Math.min(lin(e.a,e.a+4,t),1-lin(e.b-4,e.b,t)):0;
+    e.box.style.opacity=o; e.dot.style.opacity=o; e.line.style.opacity=o*0.7; if(o<=0)return;
+    const an=e.anchor(), w=e.box.offsetWidth/W*100, h=e.box.offsetHeight/Hh*100;
+    let x=e.off[0]>=0?an[0]+e.off[0]:an[0]+e.off[0]-w; x=clamp(x,2,98-w); const y=clamp(an[1]+e.off[1]-h/2,13,86-h);
+    e.box.style.left=x+'%'; e.box.style.top=y+'%'; e.dot.style.left=an[0]+'%'; e.dot.style.top=an[1]+'%';
+    e.line.setAttribute('x1',an[0]); e.line.setAttribute('y1',an[1]); e.line.setAttribute('x2',x+w/2<an[0]?x+w:x); e.line.setAttribute('y2',y+h/2);
+  });
+}
+
+/* ---------- HUD (t = storyboard time, g = game tick) ---------- */
+function drawHud(t,g){
+  const barIn=ss(0,10,t)*(1-ss(636,656,t)); el.barT.style.transform='translateY('+(-(1-barIn)*100)+'%)'; el.barB.style.transform='translateY('+((1-barIn)*100)+'%)';
+  el.white.style.opacity= t<498?0 : t<501?Math.pow((t-498)/3,2) : t<540?1 : 1-lin(540,546,t);
+  el.flash.style.opacity= t<146?0 : t<150?lin(146,150,t)*0.9 : 0.9*(1-lin(150,158,t));
+  el.flick.style.opacity= (t>92&&t<150)?0.10*lin(92,120,t)*(0.5+0.5*Math.sin(t*t*0.045)) : 0;
+  // caption
+  let cap=null; for(const c of CAPS){ if(t>=c[0]&&t<=c[1]){cap=c;break;} }
+  if(cap){ const o=Math.min(lin(cap[0],cap[0]+4,t),1-lin(cap[1]-4,cap[1],t))*barIn; el.cap.style.opacity=o; el.det.style.opacity=o*0.8; setText(el.cap,cap[2],cap[2]); setText(el.det,cap[3],cap[3]); }
+  else { el.cap.style.opacity=0; el.det.style.opacity=0; }
+  // year counter, and how fast time is going
+  const yo=lin(90,96,t)*(1-lin(536,548,t)); el.year.style.opacity=yo;
+  if(yo>0){ const txt=t>=500?'10'+sup(100):yearsText(logYears(t)); setText(el.year,txt,'<small>YEARS</small>'+txt); }
+  const ro2=lin(92,98,t)*(1-lin(486,490,t)); el.rate.style.opacity=ro2;
+  if(ro2>0){ const per=(Math.pow(10,logYears(toSb(g+0.5)))-Math.pow(10,logYears(toSb(g-0.5))))*20; const txt=per>0?yearsText(Math.log10(Math.max(per,1))):'0'; setText(el.rate,txt,'1 SECOND = '+txt+' YEARS'); }
+  // readouts
+  let ro=0, html='';
+  if(t>=152&&t<300){ ro=Math.min(lin(152,158,t),1-lin(290,298,t)); const ls=logSpaceK(t), cold=ls<logHoleK(t);
+    html='<div><b>SPACE</b>'+(t<152.5?'2.7 K':ls<-29.9?'&lt; 10'+sup(-30)+' K':sci(ls)+' K')+'</div><div><b>TON618</b>'+sci(logHoleK(t))+' K</div>'+(cold?'<div class="hot">space is colder: it shrinks</div>':'<div>&nbsp;</div>'); }
+  else if(t>=304&&t<501){ ro=lin(304,310,t); const lm=logMassKg(t);
+    html='<div><b>MASS</b>'+(lm>LOG_SUN?sci(lm-LOG_SUN)+' Suns':lm>0.5?sci(lm)+' kg':'0')+'</div><div class="'+(t>=390?'hot':'')+'"><b>TEMP</b>'+(lm>0.5?sci(logHoleK(t))+' K':'∞')+'</div>'; }
+  el.read.style.opacity=ro; if(ro>0) setText(el.read,html,html);
+  // title card
+  if(t>=100&&t<=148){ el.title.style.opacity=1-lin(140,148,t); el.title.firstElementChild.style.opacity=lin(100,106,t); titleSpans.forEach((s,i)=>{s.style.opacity=lin(102+i*1.1,107+i*1.1,t);}); }
+  else el.title.style.opacity=0;
+}
+
+/* ================= playback (tick = game ticks) ================= */
+let tick=0, playing=false, lastTs=0, dirty=true, lastAudioT=0;
+const ui={edu:$('edu'),snd:$('snd'),slate:$('slateOn'),loop:$('loopOn'),speed:$('speed')};
+function shotAt(g){ for(const s of SHOTS){ if(g<s.b)return s; } return SHOTS[SHOTS.length-1]; }
+function draw(g){
+  const t=toSb(g);
+  if(t<150)drawDark(t); else if(t<504)drawCosmos(t); else drawWorld(t);
+  drawHud(t,g); drawEdu(t,ui.edu.checked);
+  const s=shotAt(g), gi=Math.floor(g);
+  el.slate.style.opacity=ui.slate.checked?1:0; setText(el.slate,s.n+':'+gi,'SHOT '+String(s.n).padStart(2,'0')+' · '+s.name.toUpperCase()+' · '+gi);
+  setText(el.readout,s.n+':'+gi,'tick <b>'+gi+'</b> / '+G_END+' · '+(g/20).toFixed(2)+' s · shot '+s.n+' <b>'+s.name+'</b>');
+  if(document.activeElement!==el.scrub||playing) el.scrub.value=gi;
+  segBtns.forEach((b,i)=>b.classList.toggle('on',SHOTS[i]===s)); shotCards.forEach((c,i)=>c.classList.toggle('on',SHOTS[i]===s));
+}
+function setPlaying(p){ playing=p; el.play.textContent=p?'Pause':'Play'; el.bigplay.hidden=p||tick>0; if(p&&ui.snd.checked)audioInit(); dirty=true; }
+function seek(g){ tick=clamp(g,0,G_END); lastAudioT=toSb(tick); el.bigplay.hidden=playing||tick>0; dirty=true; }
+function toggle(){ if(!playing&&tick>=G_END)seek(0); setPlaying(!playing); }
+function loop(ts){
+  if(playing){ const dt=Math.min(0.1,(ts-lastTs)/1000); tick+=dt*20*parseFloat(ui.speed.value);
+    if(tick>=G_END){ if(ui.loop.checked){tick=0;lastAudioT=0;} else {tick=G_END;setPlaying(false);} } dirty=true; }
+  lastTs=ts;
+  if(dirty){ dirty=false; draw(tick); }
+  audioFrame(toSb(tick));
+  requestAnimationFrame(loop);
+}
+function resize(){ const w=stage.clientWidth,h=stage.clientHeight; if(!w||!h)return; renderer.setSize(w,h,false); pxScale=h*renderer.getPixelRatio()/2; [camDark,camCos,camW].forEach(c=>{c.aspect=w/h;c.updateProjectionMatrix();}); dirty=true; }
+if(window.ResizeObserver)new ResizeObserver(resize).observe(stage); else window.addEventListener('resize',resize);
+resize();
+el.play.addEventListener('click',toggle); stage.addEventListener('click',toggle);
+$('restart').addEventListener('click',()=>{seek(0);setPlaying(true);});
+el.scrub.addEventListener('input',()=>seek(parseFloat(el.scrub.value)));
+[ui.edu,ui.slate].forEach(c=>c.addEventListener('change',()=>{dirty=true;}));
+ui.snd.addEventListener('change',()=>{ if(ui.snd.checked)audioInit(); });
+document.addEventListener('keydown',e=>{ const tag=(e.target.tagName||'').toLowerCase(); if(tag==='select'||(tag==='input'&&e.target.type!=='range'&&e.target.type!=='checkbox'))return;
+  if(e.code==='Space'){ if(tag==='button')return; e.preventDefault(); toggle(); }
+  else if(e.code==='ArrowRight'&&tag!=='input'){ e.preventDefault(); seek(Math.floor(tick)+(e.shiftKey?10:1)); }
+  else if(e.code==='ArrowLeft'&&tag!=='input'){ e.preventDefault(); seek(Math.ceil(tick)-(e.shiftKey?10:1)); } });
+
+/* ================= sound sketch (rough synth placeholders for the planned cues; storyboard time) ================= */
+let AC=null, master=null, V=null;
+function audioInit(){
+  if(AC){ if(AC.state==='suspended')AC.resume(); return; }
+  const Ctx=window.AudioContext||window.webkitAudioContext; if(!Ctx)return;
+  try{ AC=new Ctx(); }catch(e){ AC=null; return; }
+  master=AC.createGain(); master.gain.value=0; master.connect(AC.destination);
+  const nb=AC.createBuffer(1,AC.sampleRate*2,AC.sampleRate), nd=nb.getChannelData(0); for(let i=0;i<nd.length;i++)nd[i]=Math.random()*2-1;
+  const osc=(type,f,dest)=>{const o=AC.createOscillator();o.type=type;o.frequency.value=f;const g=AC.createGain();g.gain.value=0;o.connect(g);g.connect(dest||master);o.start();return {o,g};};
+  const nz=(ftype,f,q)=>{const s=AC.createBufferSource();s.buffer=nb;s.loop=true;const fl=AC.createBiquadFilter();fl.type=ftype;fl.frequency.value=f;fl.Q.value=q||0.7;const g=AC.createGain();g.gain.value=0;s.connect(fl);fl.connect(g);g.connect(master);s.start();return {f:fl,g};};
+  const lp=AC.createBiquadFilter(); lp.type='lowpass'; lp.frequency.value=140; lp.connect(master);
+  V={nb,d1:osc('sawtooth',41,lp),d2:osc('sawtooth',41.7,lp),charge:osc('sine',90),whir:osc('sine',200),rise:osc('triangle',110),
+     pad:[220,261.63,329.63].map(f=>osc('sine',f)),pad2:[261.63,329.63,392,523.25].map(f=>osc('sine',f)),
+     hiss:nz('bandpass',900,0.8),rush:nz('bandpass',700,0.6),wind:nz('bandpass',500,0.5)};
+}
+function blip(freq,dur,gain,type){ const o=AC.createOscillator(),g=AC.createGain(),n=AC.currentTime; o.type=type||'sine'; o.frequency.value=freq; g.gain.setValueAtTime(gain,n); g.gain.exponentialRampToValueAtTime(0.0001,n+dur); o.connect(g); g.connect(master); o.start(n); o.stop(n+dur+0.02); return o; }
+function burst(dur,gain,freq){ const s=AC.createBufferSource(),f=AC.createBiquadFilter(),g=AC.createGain(),n=AC.currentTime; s.buffer=V.nb; f.type='lowpass'; f.frequency.value=freq; g.gain.setValueAtTime(gain,n); g.gain.exponentialRampToValueAtTime(0.0001,n+dur); s.connect(f); f.connect(g); g.connect(master); s.start(n); s.stop(n+dur+0.02); }
+const CUES=[
+ [60,()=>{burst(0.05,0.5,5000);blip(1568,0.5,0.18);blip(55,0.5,0.5);}],
+ [90,()=>{const o=blip(64,2.2,0.9);o.frequency.exponentialRampToValueAtTime(26,AC.currentTime+2.0);burst(1.6,0.5,1800);}],
+ [104,()=>{blip(220,2.6,0.2);blip(440,2.2,0.1);blip(660,1.6,0.04);}],
+ [147,()=>{burst(0.5,0.35,2500);}],
+ [200,()=>{const o=blip(520,2.2,0.09);o.frequency.exponentialRampToValueAtTime(90,AC.currentTime+2.1);}],
+ [500,()=>{const o=blip(70,2.6,0.9);o.frequency.exponentialRampToValueAtTime(28,AC.currentTime+2.4);burst(2.8,0.7,9000);blip(2093,3.2,0.05);}],
+ [540,()=>{burst(2.2,0.45,1400);blip(523.25,2.4,0.06);blip(783.99,2.4,0.04);}]
+];
+let pairPtr=0;
+function audioFrame(t){
+  if(!AC||!V)return; const n=AC.currentTime, set=(p,v)=>p.setTargetAtTime(v,n,0.04), on=playing&&ui.snd.checked;
+  set(master.gain,on?0.6:0); if(!on){ lastAudioT=t; return; }
+  const dr=keys([[0,0.2],[150,0.2],[162,0.1],[470,0.1],[486,0.14],[488,0],[660,0]],t); set(V.d1.g.gain,dr); set(V.d2.g.gain,dr);
+  const cu=lin(62,90,t); set(V.charge.g.gain,t>62&&t<90?0.1*cu:0); V.charge.o.frequency.setTargetAtTime(90+130*cu*cu,n,0.03);
+  const wu=lin(90,150,t); set(V.whir.g.gain,t>90&&t<150?0.05*wu:0); V.whir.o.frequency.setTargetAtTime(200*Math.pow(8,wu),n,0.03);
+  set(V.rush.g.gain,t>90&&t<150?0.12*(1-0.5*wu):0);
+  const ru=lin(390,488,t); set(V.rise.g.gain,t>390&&t<488?0.02+0.09*ru*ru:0); V.rise.o.frequency.setTargetAtTime(110*Math.pow(2,ru*4),n,0.03);
+  const pd=keys([[104,0],[130,0.045],[220,0.045],[280,0.015],[310,0.03],[470,0.07],[487,0.08],[488,0]],t); V.pad.forEach((p,i)=>set(p.g.gain,(t>250&&t<300&&i>0)?0:pd));
+  const p2=keys([[538,0],[552,0.055],[620,0.05],[658,0]],t); V.pad2.forEach(p=>set(p.g.gain,p2));
+  const hu=lin(330,488,t); set(V.hiss.g.gain,t>330&&t<488?0.22*hu*hu:0); V.hiss.f.frequency.setTargetAtTime(700+5500*hu,n,0.05);
+  set(V.wind.g.gain,keys([[535,0],[560,0.05],[640,0.04],[660,0]],t));
+  if(t>lastAudioT&&t-lastAudioT<6){
+    CUES.forEach(c=>{ if(lastAudioT<c[0]&&t>=c[0])c[1](); });
+    if(t>90&&t<150){ const cp=x=>Math.pow((x-90)/60,2)*26; if(Math.floor(cp(t))>Math.floor(cp(Math.max(90,lastAudioT))))burst(0.03,0.22,6000); }
+    if(t>220&&t<262&&Math.floor(t*0.9)>Math.floor(lastAudioT*0.9))blip(1800+Math.random()*1600,0.12,0.03);
+    while(pairPtr<NP&&pBorn[pairPtr]<lastAudioT)pairPtr++;
+    let fired=false; while(pairPtr<NP&&pBorn[pairPtr]<=t){ if(!fired&&t<488){blip(2400+Math.random()*4200,0.04,0.035,'square');fired=true;} pairPtr++; }
+  } else pairPtr=0;
+  lastAudioT=t;
+}
+
+window.__lastlight={seek:seek,play:()=>setPlaying(true),pause:()=>setPlaying(false),toSb:toSb,toGame:toGame};
+requestAnimationFrame(loop);
+})();
+</script>
