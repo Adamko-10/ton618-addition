@@ -4,12 +4,14 @@
 `C:\Users\User\Desktop\ton 618 addition` (on the VM), model **Fable 5.2**, effort **High**, ponytail **off** (if the
 session says ponytail is on, type "stop ponytail"). Send it:
 
-> Read prompts\FABLE-PREVIZ-AND-FILM-PROMPT.md and do what it says below the line.
+> Read prompts\FABLE-PREVIZ-AND-FILM-PROMPT.md and do Part 1 (the previz), as it says below the line.
 
 Part 1 (the previz) can start now. When the previz is approved and the TON 618 Opus session says the mod is ready for
-its film, send the same session (or a new Fable one): "Do Part 2 of prompts\FABLE-PREVIZ-AND-FILM-PROMPT.md."
+its film (CLAUDE.md §7 says "ready"), send the same session (or a new Fable one): "Do Part 2 of
+prompts\FABLE-PREVIZ-AND-FILM-PROMPT.md."
 
-Written 2026-11-13 by the SA Series session, from Adam's words (quoted below).
+Written 2026-11-13 by the SA Series session, from Adam's words (quoted below); updated the same evening with Adam's
+first brainstorm picks (TA-01 · Last Light, the devoured world, the world coming back).
 
 ---
 
@@ -30,7 +32,9 @@ later: "keep in mind animation and previz will be made by fable".
   `reviews\fable\PROPOSALS.md`; the Opus session applies the ones I pick.
 - **Keep notes as you go** in `previz\HANDOVER.md`: what's done, what's next, decisions, my feedback. If your usage
   runs out mid-way, the next session must be able to pick up from that file alone.
-- Read `BRIEF.md` (the addon's brief) and `CLAUDE.md` (the Opus session's handoff, once it exists) first.
+- Read first: `CLAUDE.md` (the Opus session's handoff; §1, §2, §5, §6 and above all **§7 "For Fable: the film"**,
+  which wins over this prompt where they differ), `docs/TON618-NOTES.md` (what TON 618 does and how its devoured dark
+  works) and `BRIEF.md` (the addon's brief).
 - Never use rimuru_dev's assets (textures, shaders, sounds, models, code). Make our own in his style. NASA, ESO and
   Solar System Scope imagery is fine with credit (Solar System Scope: CC BY 4.0): ask me before downloading anything
   (file, source, size).
@@ -39,10 +43,24 @@ later: "keep in mind animation and previz will be made by fable".
 - This VM has **no Node and no ffmpeg** (ask me before installing anything). PowerShell and Git Bash are here; JDK 21
   at `C:\Program Files\Eclipse Adoptium\jdk-21.0.13.9-hotspot`.
 
-## The skill to film
+## The skill to film: TA-01 · Last Light
 
-A new skill that can only be used **after TON 618 has been used** in that world: the remote fast-forwards time so far
-that the black hole evaporates. My words: "you know how black holes slowly disappear because tiny particles of dark
+**Decided with Adam (2026-11-13; details in `CLAUDE.md` §2, §5, §7):**
+- The addon is **TON 618 Addition**; the skill is **TA-01 · Last Light** (title card).
+- It only works **in TON 618's devoured world**: after a no-limit TON 618 has devoured the world, every player is in
+  its dark dimension (a void floor, no light, TON618 hanging in the sky; see TON 618's CurseForge gallery for how it
+  looks, copy nothing). The film **starts there**.
+- It's fired from **TON 618's own item** (its H menu) **or The Shooting Star's Stellar Remote** (when that's
+  installed): film the press so it works with either.
+- Time fast-forwards until TON618 evaporates; **the final burst brings the world back** for everyone (the server sends
+  everyone to the overworld spawn). So the film **ends back in the overworld**: the burst is the hand-over (for
+  example a white-out that clears onto the world).
+- Educational labels: in the film only, off by default (the previz has the switch). The world coming back is the
+  fantasy part; the honest physics hook for a label is the **black hole information paradox** (does what fell in come
+  back out in the radiation? still debated).
+
+Adam's original idea: a new skill that can only be used **after TON 618 has been used** in that world: the remote
+fast-forwards time so far that the black hole evaporates. My words: "you know how black holes slowly disappear because tiny particles of dark
 matter go apart and smash back together extremely fast and it disintegrates a tiny amount of matter in physics, lets
 make it so when ton 618 is used you can use the remote to fast forward time so extremely fast that it disintegrates
 the black hole".
@@ -62,12 +80,10 @@ not dark matter: the film's text uses the right physics.) Material to use as you
 educational mode setting that just adds little text poiting towards something in physics"). The previz gets a switch
 to show the film with and without them.
 
-How TON 618 looks: read its CurseForge page and gallery (https://www.curseforge.com/minecraft/mc-mods/ton618). If the
-Opus session has decompiled its jar into a scratch folder, it says where in `CLAUDE.md`; read that too. Match the
-style; copy nothing.
-
-Which item fires it (The Shooting Star's Stellar Remote, TON 618's own item, or both) is still being decided with the
-Opus session: check `CLAUDE.md`, or film the remote/item neutrally and ask me.
+How TON 618 looks: read its CurseForge page and gallery (https://www.curseforge.com/minecraft/mc-mods/ton618) and
+`docs/TON618-NOTES.md` (the Opus session read its decompiled jar; `CLAUDE.md` §4 says where the decompiled source is,
+if it's still there). TON 618 runs its own time effects in the dark (drag, stop, rewind, gravitational waves): plan
+the film so it doesn't fight them. Match the style; copy nothing.
 
 ## Part 1: the previz (now)
 
