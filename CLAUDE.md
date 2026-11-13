@@ -15,7 +15,10 @@ first** (Adam's brief, his own words at its end), then this file. Fable's part: 
   1.21.1].jar`. Adam's profile needs TON 618 1.1.0 and **RimuLib 1.2.3** (TON 618 needs it; the SA Series accepts it).
 - Fable's previz v2 is approved (`previz/`, committed for Fable in `7319b36`); §7 says **ready**: Adam can send Fable
   "Do Part 2 of prompts\FABLE-PREVIZ-AND-FILM-PROMPT.md".
-- Next: Adam's test results; the open questions in §3 when they matter; then TA-02 · Quasar Jets (§10).
+- 2026-11-14 ~00:30: at Adam's word ("yes send it") the idle Fable session (`local_3da78c21-...`, "Fable: TA-01 Last
+  Light previz") was sent "Do Part 2" with a pointer to §7; its turn started.
+- Next: Adam's test results; Fable's film (its proposals in `reviews\fable\PROPOSALS.md`); the open questions in §3
+  when they matter; then TA-02 · Quasar Jets (§10).
 
 ## 0. Rules (Adam's; also in `C:\Users\User\.claude\CLAUDE.md`)
 
@@ -37,8 +40,8 @@ first** (Adam's brief, his own words at its end), then this file. Fable's part: 
   `reviews\fable\FINDINGS.md`. **Opus builds everything else and applies only the proposals Adam picks.** Fable never
   refactors our code.
 - Subagents only when Adam asks. Ask before deleting his files. Ask before installing anything on the VM.
-- Ponytail: **off** for this creative work; tell Adam when to switch (lite for fixes, ports, releases, CI) and if a
-  session hook says it came back on.
+- **No ponytail** (Adam, 2026-11-14: "lets just not use ponytail"). Keep it off and don't advise switching levels; if
+  a session hook turns it back on, turn it off ("stop ponytail") without asking him.
 - Update this file at the end of every turn and commit it on its own.
 - Adam plays on his own PC (Modrinth, NeoForge 1.21.1), not the VM: test jars go in
   `C:\Users\User\Desktop\test builds\<date> <what>\`; tell him the path.
