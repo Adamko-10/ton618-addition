@@ -1,0 +1,19 @@
+# Other people's jars (TON 618, RimuLib, The Shooting Star): never commit them
+libs/*.jar
+libs/mappings/
+
+# Gradle and game runs
+.gradle/
+build/
+run/
+out/
+*.log
+
+# IDEs
+.idea/
+*.iml
+.vscode/
+
+# Decompiled code of other mods never belongs here (decompile into a scratch folder outside the repo)
+decompiled/
+scratch/
