@@ -40,8 +40,12 @@ first** (Adam's brief, his own words at its end), then this file. Fable's part: 
   `reviews\fable\FINDINGS.md`. **Opus builds everything else and applies only the proposals Adam picks.** Fable never
   refactors our code.
 - Subagents only when Adam asks. Ask before deleting his files. Ask before installing anything on the VM.
-- **No ponytail** (Adam, 2026-11-14: "lets just not use ponytail"). Keep it off and don't advise switching levels; if
-  a session hook turns it back on, turn it off ("stop ponytail") without asking him.
+- **No ponytail** (Adam, 2026-11-14: "lets just not use ponytail", then "every project": now also in his global
+  `C:\Users\User\.claude\CLAUDE.md`). Keep it off and don't advise switching levels; if a session hook turns it back
+  on, turn it off ("stop ponytail") without asking him.
+- On the VM Adam wants test jars in **Downloads** too (his global rules, 2026-11-13), with a copy in `test builds\`.
+  2026-11-14: copying 0.1.0 to `C:\Users\User\Downloads\` was blocked by the session's permission check; it is only in
+  `test builds\` (Adam told).
 - Update this file at the end of every turn and commit it on its own.
 - Adam plays on his own PC (Modrinth, NeoForge 1.21.1), not the VM: test jars go in
   `C:\Users\User\Desktop\test builds\<date> <what>\`; tell him the path.
