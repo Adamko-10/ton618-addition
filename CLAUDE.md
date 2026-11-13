@@ -4,14 +4,18 @@ Handoff notes for every Claude session in this folder (`C:\Users\User\Desktop\to
 Started 2026-11-13 by an Opus 5.5 session (xhigh) that was started from Adam's SA Series session. **Read `BRIEF.md`
 first** (Adam's brief, his own words at its end), then this file. Fable's part: `prompts\FABLE-PREVIZ-AND-FILM-PROMPT.md`.
 
-### >>> RESUME HERE (2026-11-13 evening, the VM): first brainstorm done, nothing built yet <<<
+### >>> RESUME HERE (2026-11-14 ~00:20, the VM): the base is built (0.1.0); Adam tests it; Fable's Part 2 can start <<<
 
-- Done: read the brief; read TON 618's page; downloaded TON 618 1.1.0 and RimuLib 1.2.3 (NeoForge) into `libs/` (Adam's
-  OK); decompiled TON 618 into the session scratch folder and wrote what it does in **`docs/TON618-NOTES.md`**; made
-  this folder a git repo (`main`, no remote); Adam answered the first brainstorm round (§2).
-- Next: Adam's go-ahead to build the NeoForge 1.21.1 base (§8), then ask the open questions in §3 at the moment they
-  matter. Fable's previz (Part 1) can start any time (Adam runs it); it doesn't wait for code. §7 tells Fable where its
-  film goes.
+- **Built (2026-11-14, `a786dc6`)**: TA-01 · Last Light on NeoForge 1.21.1 (§8): joins TON 618's menu and the Stellar
+  Remote, castable only in TON 618's dark, film to everyone in the dark, sunrise + `ton618 restore` at tick 690, server
+  and client configs, the film's contract and a **placeholder film** (bars, year counter, title, white, labels as
+  text) in Fable's package. Compiles; a dev server (TON 618 1.1.0 + RimuLib 1.2.3) logged "TA-01 · Last Light joined
+  TON 618's menu (ton618:ton_618) as skill #2". **Not yet cast in a game** (Adam tests).
+- **Test jar**: `C:\Users\User\Desktop\test builds\2026-11-14 TON 618 Addition base\TON 618 Addition 0.1.0 [NeoForge
+  1.21.1].jar`. Adam's profile needs TON 618 1.1.0 and **RimuLib 1.2.3** (TON 618 needs it; the SA Series accepts it).
+- Fable's previz v2 is approved (`previz/`, committed for Fable in `7319b36`); §7 says **ready**: Adam can send Fable
+  "Do Part 2 of prompts\FABLE-PREVIZ-AND-FILM-PROMPT.md".
+- Next: Adam's test results; the open questions in §3 when they matter; then TA-02 · Quasar Jets (§10).
 
 ## 0. Rules (Adam's; also in `C:\Users\User\.claude\CLAUDE.md`)
 
@@ -75,16 +79,24 @@ Skills carry a code like the SA Series: **TA-xx · Name** (TA = TON 618 Addition
   - **Name: "TON 618 Addition"** exactly (case sensitive). Mod id `ton618_addition`; Java package
     `dev.adamko.ton618addition` (Opus's pick, a conventional default).
   - **Skill name: Last Light**, with codes: **TA-01 · Last Light**, TA-02 · Quasar Jets.
+- 2026-11-13, Fable's previz v2 approved by Adam (`previz/NOTES.md`): 850 ticks, 10 shots, two waves (pictures only),
+  everyone in the dark sees the whole film, **the return is always a morning**.
+- 2026-11-14 (Adam, before the build): **who may cast = a server setting, default everyone**
+  (`who_can_cast = EVERYONE|OPERATORS`); **who watches = everyone in the dark**.
+- 2026-11-14 (Opus's defaults, tell Adam if he wants others): cooldown 60 s; default keys **B** on TON 618's item and
+  **V** on the Stellar Remote (two copies of the skill, so two keys that never clash); outside the dark the menu shows
+  the warning "Only in the dark, after TON 618 has devoured the world" when Last Light is picked, and a cast there says
+  why in the action bar; the burst's restore is TON 618's own command; the overworld jumps to the next sunrise
+  (`morning_on_return`, on by default).
 
 ## 3. Open questions (ask when they matter, as clickable choices)
 
-1. **Who may cast Last Light on a server?** It brings the world back for everyone, which TON 618 leaves to operators
-   (`/ton618 restore`). Everyone / operators only / a config switch (default?). Ask before building the server side.
-2. Last Light's cooldown, and whether the caster needs anything (just holding the item?).
-3. What the menu shows when the world is not devoured (locked with a reason, e.g. "TON618 hasn't devoured this world
-   yet"; the SA Series shows locks the same way).
-4. Music for the film (the SA Series has its own tracks); sounds are Fable's film work or ours?
-5. Other extras later (§10).
+1. Music for the film (the SA Series has its own tracks; the previz has M1/M2 placeholders). Who makes the sounds:
+   Fable's film work (its `sounds/film/`) or ours?
+2. Should the waves do anything in the world (push entities, sway grass)? Now pictures only (previz point 7).
+3. An in-game switch for educational mode in TON 618's H menu (a plate, as the SA Series draws with `UiApi.onMenuDraw`)?
+   Now: Mods, TON 618 Addition, Config (NeoForge's screen), or the client toml.
+4. Other extras later (§10).
 
 ## 4. TON 618 facts
 
@@ -119,10 +131,30 @@ grows; it only shrinks after the universe cools below that. The fast-forward can
 "The world comes back" is the fantasy part; the honest physics hook is the **black hole information paradox** (does
 what fell in come back out in the radiation? still debated): a good educational label.
 
-How it will join (to build, §8): `SkillApi.whenRegistered("ton618", ...)` + `extend` (TON 618's set `ton618:ton_618`)
-and, when The Shooting Star is loaded, `SkillApi.whenRegistered("shooting_star_demo", ...)` + `extend` on the Stellar
-Remote set (as the SA Series does). Devoured check: the command storage flag (or `ton618 status`). Burst: run
-`ton618 restore` from the server's own command source.
+**How it is built (2026-11-14, `dev.adamko.ton618addition`):**
+- `link/Ton618Link`: the only place that touches TON 618/The Shooting Star. `install()` (from `FMLConstructModEvent`'s
+  queue, as the SA Series does): `RimulibApi.connect(..., "1.2.3")`, `NetApi.toClient(LastLightFx.PACKET)`,
+  `SkillApi.whenRegistered("ton618", ...)` + `extend` on set `ton618:ton_618` (`ON_TON618`), and
+  `whenRegistered("shooting_star_demo", ...)` + `extend` on the Stellar Remote (`ON_REMOTE`; the set holding an enum of
+  skills, as the SA Series picks it). `devoured(server)` reads command storage `ton618:ton618` `devoured`;
+  `inDark(player)`: dimension `ton618:devoured`; `restore(server)` runs `ton618 restore` as the server (permission 4,
+  output suppressed) and returns whether the flag cleared. The sky hole's facts (`HOLE_DIRECTION`, `HOLE_DISTANCE`,
+  `HOLE_SHADOW_RADIUS`) for the film.
+- `lastlight/LastLight`: `cast` checks (enabled, who may cast, one at a time, devoured, in the dark), sends
+  `LastLightFx` to everyone in the dark, logs; `tick` (server tick) at `RESTORE` (690) sets the next sunrise (if
+  `morning_on_return`) and restores (an error and a red chat line in the dark if the restore failed), clears at `END`
+  (850); `arrived` sends the film to anyone entering the dark (or logging in there) before the burst. The clock is
+  `overworld game time - cast game time` (the dark shares the overworld's game time).
+- `lastlight/LastLightClock` (key ticks, from the previz), `LastLightInfo` (id `last_light`, title, colour 0xBFE0FF,
+  cooldown 1200, keys), `LastLightSkill` (no sliders; `selectWarning` from the client).
+- `Ton618AdditionConfig` (COMMON, `config/ton618_addition-common.toml`, `[last_light]`: `enabled`, `who_can_cast`,
+  `morning_on_return`); `client/Ton618AdditionClientConfig` (CLIENT, `[film] educational_mode = false`); NeoForge's own
+  config screen is registered (Mods, TON 618 Addition, Config).
+- Checked in TON 618 1.1.0's jar: its cast path ends in the set's `cast`, so our extended caster gets it; its per-skill
+  `ton618.yml` only lists its own skill, so Last Light is never locked by it; RimuLib's `Tuning.clampFor` handles a
+  skill without power.
+- Not handled yet: SS-21 Quasar can hide later API skills from the Stellar Remote's menu (§10); the SA Series'
+  `showInMenu` workaround isn't copied (TON 618's own menu is unaffected).
 
 ## 6. Educational mode
 
@@ -132,46 +164,77 @@ apart, told to Adam.
 
 ## 7. For Fable: the film
 
-**Status 2026-11-13: names and folders fixed; no code yet.** Fable: do Part 1 (the previz) now; Part 2 waits until
-the base is built and this section says "ready".
+**Status 2026-11-14: READY for Part 2.** The base is built (0.1.0, `a786dc6`) and the previz v2 is approved.
 
-- **The film's own files (Fable's alone):**
-  - Java package `dev.adamko.ton618addition.client.film` (folder `src/main/java/dev/adamko/ton618addition/client/film/`);
+- **The film's own files (Fable's alone; write only here):**
+  - Java package `dev.adamko.ton618addition.client.film` (folder `src/main/java/dev/adamko/ton618addition/client/film/`).
+    It holds `LastLightFilm.java`, a **placeholder by Opus** (bars, year counter, title, white, labels as text):
+    replace it freely, keeping the four entry points below;
   - shaders `src/main/resources/assets/ton618_addition/shaders/film/`;
   - textures `src/main/resources/assets/ton618_addition/textures/film/`;
-  - film sounds `src/main/resources/assets/ton618_addition/sounds/film/` (their `sounds.json` entries and
-    registration: a proposal for Opus, until §8 gives the film its own list).
-  Anything else: a proposal in `reviews\fable\PROPOSALS.md`.
-- **What the previz should know now:**
-  - It starts in TON 618's **devoured dark**: a void floor, no light, TON618 hanging in the sky about 1000 blocks away
-    in the direction (0.34, 0.2, -1) from 0/0 (look at TON 618's CurseForge gallery for how its dark looks; copy
-    nothing). The caster holds **TON 618's item or the Stellar Remote** (both fire it): film the press neutrally or
-    with both items in mind.
-  - It **ends back in the overworld**: at the burst the server brings everyone back to the overworld spawn. Plan the
-    burst as the hand-over (a white-out that clears onto the world is natural).
-  - Title: **TA-01 · Last Light**. Educational labels off by default (the previz switch shows both).
-- **Planned contract (built with the base, §8; may change, this section will say):**
-  - start/stop: our client packet handler calls `LastLightFilm.start(LastLightCast cast)` in the film package when the
-    cast reaches the client, and `LastLightFilm.stop()` if it is cancelled or the player leaves;
-  - the skill's clock: ticks from the cast (20 a second), with the key ticks (time starts racing, the burst, the world
-    comes back) taken from the approved previz's tick table (`previz\NOTES.md`) into one constants class Opus owns;
-  - what the film can read from `LastLightCast`: the caster, the cast tick, TON618's position and apparent size in the
-    dark, and `Ton618AdditionClientConfig.educational()`.
+  - film sounds `src/main/resources/assets/ton618_addition/sounds/film/`, and the film's own sound list
+    `src/main/resources/assets/ton618_addition/sounds.json` (no other sounds exist yet, so it's the film's; register
+    the `SoundEvent`s from `LastLightFilm.init` with a `DeferredRegister` on the mod bus it gets).
+  Anything else: a proposal in `reviews\fable\PROPOSALS.md` (what, where, why, the patch); Opus applies the ones Adam
+  picks.
+- **The contract (what the rest of the mod calls; propose changes, don't make them):**
+  - `LastLightFilm.init(IEventBus modBus)`: once, from the mod's constructor, on clients only. Register shaders,
+    sounds, renderers, event listeners here.
+  - `LastLightFilm.start(LastLightCast cast)`: a cast reached this client (on the game thread). **Everyone in the dark
+    gets it**, the caster and every watcher; a player who arrives in the dark while it runs (before the burst) gets it
+    mid-way: start from `cast.tick(partial)`, not from 0.
+  - `LastLightFilm.stop()`: cancel, only when the player leaves the server. **Never called for the trip back to the
+    overworld at RESTORE**: the film must run on through that dimension change (whether a RimuLib cutscene survives
+    it is still to test; if not, two cutscenes bridged by the white, as the previz notes say).
+  - `LastLightFilm.active()`: the film is running. (`Ton618AdditionClient` drops the cast 40 ticks after END and calls
+    `stop()` then if `active()` is still true.)
+- **The clock**: `lastlight/LastLightClock` (Opus's): CAST 0, PRESS 78, RACE 118, COSMOS 200, CROSS 270, STARS_OUT
+  377, PAIRS 440, SHRINK 540, GOOGOL 625, HUSH 665, BURST 680, **RESTORE 690** (the server sets the next sunrise and
+  runs `ton618 restore`: everyone in the dark lands at the overworld spawn), CLEAR 720, END 850. `cast.tick(partial)`
+  counts game ticks from the cast: it follows the server's game time (shared by the dark and the overworld) and counts
+  on by itself while there is no level, so it doesn't stop or jump through the dimension change.
+- **What the film can read** (`client/LastLightCast`, Opus's; ask for more by proposal): `tick(partial)`, `tick()`,
+  `caster()` (the caster's `Player` in this client's level, by UUID: after the restore that is at the overworld spawn;
+  null while not in this level), `casterUuid()`, `isCaster()`, `castPosition()`, `castYaw()`, `castPitch()`,
+  `offhand()` (the firing item is in the off hand), `viaStellarRemote()` (else TON 618's item), `inDark()`,
+  `educational()`, and the sky hole as TON 618 1.1.0 draws it: static `holeDirection()` (unit vector from the camera,
+  (0.34, 0.2, -1) normalised), `holeDistance()` (1000 blocks from the camera, moving with it like the sun),
+  `holeShadowRadius()` (≈57.5 blocks at that distance, ≈3.3°; its disk runs from 2.9 to 11 of these). Also
+  `Ton618AdditionClient.current()` returns the running cast anywhere on the client.
+- **Answers to the previz's points for Opus** (`previz/NOTES.md`): 1 done (everyone in the dark, late arrivals too);
+  2 as above; 3 `caster()` after the restore, or the overworld spawn; 5 all in `LastLightCast`; 6 done (the next
+  sunrise, day time 0, set at RESTORE under the white; `morning_on_return`, on by default); 7 the waves stay pictures
+  (open question §3).
+- **Building and testing**: `./gradlew --no-daemon build` (JDK 21; `libs/` already holds RimuLib 1.2.3 and TON 618
+  1.1.0); `./gradlew --no-daemon runClient` opens a dev game with both (`runServer` for a server). Test jar to
+  `C:\Users\User\Desktop\test builds\<date> TON 618 film\` for Adam.
 
-## 8. Building (planned)
+## 8. Building
 
-Model: the SA Series `main` branch (`build.gradle`, `gradle/`; NeoForge 1.21.1, JDK 21 at `C:\Program Files\Eclipse
-Adoptium\jdk-21.0.13.9-hotspot`). Join TON 618 through RimuLib's public API only (`RimulibApi.connect`,
-`SkillApi.whenRegistered`/`extend`/`gate`, `NetApi`, `UiApi`/`MenuApi`, `FilmApi`, `FxApi`). Compile against
-`libs/rimulib-1.2.3-neoforge.jar` (TON 618's and The Shooting Star's jars only at run time). Dependencies: TON 618
-`[1.1.0,)` and RimuLib `[1.2.3,2.0)` required; The Shooting Star and SS-21 Quasar optional. No Node, ffmpeg or JDK 25
-on the VM.
+Set up 2026-11-14 from the SA Series `main` (ModDevGradle 2.0.x, NeoForge 21.1.248, Parchment 2024.11.17, Gradle
+8.14.3 wrapper; JDK 21 at `C:\Program Files\Eclipse Adoptium\jdk-21.0.13.9-hotspot`), without its TSS mapping
+machinery (TON 618 needs none: we never name its classes).
+- `JAVA_HOME=<JDK 21> ./gradlew --no-daemon build` → `build/libs/ton618_addition-<version>.jar` (about 20 s once
+  NeoForge is cached). Versions in `gradle.properties` (`mod_version=0.1.0`); metadata from
+  `src/main/templates/META-INF/neoforge.mods.toml`: TON 618 `[1.1.0,)` and RimuLib `[1.2.3,2.0)` required, The
+  Shooting Star optional.
+- RimuLib is `compileOnly` (its public API, plus `SkillHolder`/`Skill`/`SkillSet` types the API uses); TON 618 is never
+  compiled against. `runClient`/`runServer` copy `libs/rimulib*.jar`, `libs/ton618*.jar` and `libs/extra/*.jar` (other
+  mods to try alongside, e.g. The Shooting Star) into `run/mods`. NeoForge 1.21.1 runs Mojang names in dev and in
+  production, so their real jars load in the dev runs.
+- The dev server needs no `eula.txt` (it started without one, 2026-11-14) and waits for console input: stop it (a
+  `timeout` on the command did).
+- Release jar name (as the SA Series): `TON 618 Addition <version> [NeoForge 1.21.1].jar`.
+- No Node, ffmpeg or JDK 25 on the VM. Other loaders only after Adam approves (§0).
 
 ## 9. Files
 
 - `BRIEF.md`: Adam's brief. `prompts\FABLE-PREVIZ-AND-FILM-PROMPT.md`: Fable's prompt (Adam runs it).
 - `docs/TON618-NOTES.md`: what TON 618 does.
-- `libs/`: jars (git-ignored), `libs/README.txt` says where they came from.
+- `src/main/java/dev/adamko/ton618addition/`: the mod (§5); `client/film/` is Fable's (§7).
+- `libs/`: jars (git-ignored), `libs/README.txt` says where they came from; `libs/extra/` (optional, git-ignored):
+  more mods for the dev runs.
+- `run/`: the dev runs' game folder (git-ignored).
 - Fable's: `previz\` (Part 1), the film files (§7), `reviews\fable\PROPOSALS.md`, `reviews\fable\FINDINGS.md`.
 
 ## 10. Ideas
