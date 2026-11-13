@@ -1,0 +1,51 @@
+# TON 618 Addition: an unofficial addon for rimuru_dev's TON 618 (NeoForge 1.21.1).
+# Values written as dollar-brace placeholders are filled in from gradle.properties when the jar is built.
+modLoader = "javafml"
+loaderVersion = "${loader_version_range}"
+license = "${mod_license}"
+
+[[mods]]
+modId = "${mod_id}"
+version = "${mod_version}"
+displayName = "${mod_name}"
+authors = "${mod_authors}"
+description = '''${mod_description}'''
+
+[[dependencies.${mod_id}]]
+modId = "neoforge"
+type = "required"
+versionRange = "${neo_version_range}"
+ordering = "NONE"
+side = "BOTH"
+
+[[dependencies.${mod_id}]]
+modId = "minecraft"
+type = "required"
+versionRange = "${minecraft_version_range}"
+ordering = "NONE"
+side = "BOTH"
+
+# The mod this addon adds to: TON 618 by rimuru_dev.
+[[dependencies.${mod_id}]]
+modId = "${ton618_mod_id}"
+type = "required"
+versionRange = "${ton618_version_range}"
+ordering = "AFTER"
+side = "BOTH"
+reason = "TON 618 Addition adds Last Light to TON 618's skill menu."
+
+# TON 618 keeps its skills, menu and films in RimuLib, which the addon joins through its public API.
+[[dependencies.${mod_id}]]
+modId = "${rimulib_mod_id}"
+type = "required"
+versionRange = "${rimulib_version_range}"
+ordering = "AFTER"
+side = "BOTH"
+
+# Optional: with The Shooting Star installed, its Stellar Remote gets Last Light too.
+[[dependencies.${mod_id}]]
+modId = "${shooting_star_mod_id}"
+type = "optional"
+versionRange = "*"
+ordering = "AFTER"
+side = "BOTH"

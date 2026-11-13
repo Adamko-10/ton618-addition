@@ -1,0 +1,132 @@
+// TON 618 Addition: an unofficial addon for rimuru_dev's TON 618 (NeoForge 1.21.1), built with ModDevGradle.
+//
+//   1. Put RimuLib's and TON 618's jars in libs/ (see libs/README.txt).
+//   2. ./gradlew build        -> build/libs/ton618_addition-<version>.jar
+//      ./gradlew runServer    -> a dev server with TON 618, RimuLib and this addon loaded
+//      ./gradlew runClient    -> the same as a game
+//
+// Versions live in gradle.properties. Built with the SA Series' setup as the model.
+plugins {
+    id 'java-library'
+    id 'idea'
+    id 'net.neoforged.moddev' version '2.0.+'
+}
+
+tasks.named('wrapper', Wrapper).configure {
+    distributionType = Wrapper.DistributionType.BIN
+}
+
+version = mod_version
+group = mod_group_id
+
+base {
+    archivesName = mod_id
+}
+
+java.toolchain.languageVersion = JavaLanguageVersion.of(21)
+
+repositories {
+    mavenLocal()
+}
+
+var mainMod
+
+neoForge {
+    version = project.neo_version
+
+    parchment {
+        mappingsVersion = project.parchment_mappings_version
+        minecraftVersion = project.parchment_minecraft_version
+    }
+
+    mods {
+        "${mod_id}" {
+            sourceSet(sourceSets.main)
+        }
+    }
+    mainMod = mods.getByName(mod_id)
+
+    runs {
+        client {
+            client()
+            loadedMods.set([mainMod])
+        }
+        server {
+            server()
+            programArgument '--nogui'
+            loadedMods.set([mainMod])
+        }
+        configureEach {
+            systemProperty 'forge.logging.markers', 'REGISTRIES'
+            logLevel = org.slf4j.event.Level.INFO
+        }
+    }
+}
+
+// RimuLib (compiled against: its public API) and TON 618 (only loaded in the dev runs). Both are All Rights Reserved:
+// never shipped inside this jar, never committed. Optional extra mods for the dev runs (The Shooting Star, SS-21
+// Quasar...) go in libs/extra/.
+var rimulib = fileTree(dir: 'libs', include: 'rimulib*.jar')
+var ton618 = fileTree(dir: 'libs', include: 'ton618*.jar')
+var extraMods = fileTree(dir: 'libs/extra', include: '*.jar')
+if (rimulib.files.size() > 1) {
+    throw new GradleException("libs/ has more than one RimuLib: ${rimulib.files*.name} - keep one")
+}
+
+dependencies {
+    compileOnly rimulib
+}
+
+tasks.named('compileJava') {
+    doFirst {
+        if (rimulib.isEmpty()) {
+            throw new GradleException("Put RimuLib's jar (rimulib-<version>-neoforge.jar) in libs/ first - see libs/README.txt")
+        }
+    }
+}
+
+// The dev runs load mods from run/mods: RimuLib, TON 618 and anything in libs/extra.
+var copyRunMods = tasks.register('copyRunMods', Sync) {
+    from rimulib, ton618, extraMods
+    into layout.projectDirectory.dir('run/mods')
+}
+tasks.matching { it.name.startsWith('run') }.configureEach {
+    dependsOn copyRunMods
+}
+
+// neoforge.mods.toml is filled in from gradle.properties.
+var generateModMetadata = tasks.register('generateModMetadata', ProcessResources) {
+    var replaceProperties = [
+        minecraft_version_range: minecraft_version_range,
+        neo_version_range      : neo_version_range,
+        loader_version_range   : loader_version_range,
+        ton618_mod_id          : ton618_mod_id,
+        ton618_version_range   : ton618_version_range,
+        rimulib_mod_id         : rimulib_mod_id,
+        rimulib_version_range  : rimulib_version_range,
+        shooting_star_mod_id   : shooting_star_mod_id,
+        mod_id                 : mod_id,
+        mod_name               : mod_name,
+        mod_license            : mod_license,
+        mod_version            : mod_version,
+        mod_authors            : mod_authors,
+        mod_description        : mod_description,
+    ]
+    inputs.properties replaceProperties
+    expand replaceProperties
+    from 'src/main/templates'
+    into 'build/generated/sources/modMetadata'
+}
+sourceSets.main.resources.srcDir generateModMetadata
+neoForge.ideSyncTask generateModMetadata
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+}
+
+idea {
+    module {
+        downloadSources = true
+        downloadJavadoc = true
+    }
+}

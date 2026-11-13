@@ -1,0 +1,18 @@
+{
+  "skill.ton618.ton_618.last_light.desc": "Only in the dark, after TON 618 has devoured the world. Let time go: the stars burn out, the eras pass, and after a googol of years TON618 has evaporated away by Hawking radiation. Its last light brings the world back, on a new morning, for everyone in the dark.",
+  "skill.shooting_star_demo.stellar_remote.last_light.desc": "From TON 618 Addition. Only in the dark, after TON 618 has devoured the world. Let time go: the stars burn out, the eras pass, and after a googol of years TON618 has evaporated away by Hawking radiation. Its last light brings the world back, on a new morning, for everyone in the dark.",
+  "ton618_addition.configuration.title": "TON 618 Addition",
+  "ton618_addition.configuration.section.ton618.addition.client.toml": "Your settings",
+  "ton618_addition.configuration.section.ton618.addition.client.toml.title": "TON 618 Addition: your settings",
+  "ton618_addition.configuration.section.ton618.addition.common.toml": "Server settings",
+  "ton618_addition.configuration.section.ton618.addition.common.toml.title": "TON 618 Addition: server settings",
+  "ton618_addition.configuration.film": "Film",
+  "ton618_addition.configuration.educational_mode": "Educational mode",
+  "ton618_addition.configuration.educational_mode.tooltip": "Small labels in the Last Light film pointing at the real physics. Off by default.",
+  "ton618_addition.configuration.last_light": "TA-01 · Last Light",
+  "ton618_addition.configuration.enabled": "Enabled",
+  "ton618_addition.configuration.who_can_cast": "Who can cast",
+  "ton618_addition.configuration.who_can_cast.tooltip": "Last Light brings the world back for everyone in the dark: every player, or operators only.",
+  "ton618_addition.configuration.morning_on_return": "Morning when the world returns",
+  "ton618_addition.configuration.morning_on_return.tooltip": "The overworld's time jumps to the next sunrise when the world comes back."
+}
