@@ -4,16 +4,21 @@ Handoff notes for every Claude session in this folder (`C:\Users\User\Desktop\to
 Started 2026-11-13 by an Opus 5.5 session (xhigh) that was started from Adam's SA Series session. **Read `BRIEF.md`
 first** (Adam's brief, his own words at its end), then this file. Fable's part: `prompts\FABLE-PREVIZ-AND-FILM-PROMPT.md`.
 
-### >>> RESUME HERE (2026-11-14 ~18:05, the VM): porting; Forge x2 + Fabric 1.21.1 done; next fabric-1.20.1, then 1.21.11/26.3 <<<
+### >>> RESUME HERE (2026-11-14 ~18:15, the VM): 4 ports done; 1.21.11/26.3 need the film redrawn; asking Adam <<<
 
 - **Port status** (§8a has the how): `main` 1.0.0 (`ce64b00`: version bump + HUD fix without MixinExtras) ·
   **`forge-1.21.1` built + dev server OK** ("Last Light joined TON 618's menu ... skill #2", worktree
   `ports/forge-1.21.1`, commit `85b8dd7`) · **`forge-1.20.1` built** (also NeoForge 1.20.1; `ports/forge-1.20.1`,
   `3b5e2e8`; jar checked: SRG names, refmap, `MixinConfigs`; **no dev run**: RimuLib's 1.20.1 mixins name SRG targets
   directly, which the dev game can't remap, as the SA Series found) · **`fabric-1.21.1` built + dev server OK** (Loom on
-  the VM's JDK 25, "Last Light joined TON 618's menu", `ports/fabric-1.21.1`, `d725beb`) · none pushed · next:
-  `fabric-1.20.1`, then `fabric-1.21.11`, `fabric-26.3` (Minecraft's new render pipeline: the film's `FilmGl` and
-  shader need rewriting there, the biggest job left).
+  the VM's JDK 25, "Last Light joined TON 618's menu", `ports/fabric-1.21.1`, `d725beb`) · **`fabric-1.20.1` built +
+  dev server OK** (`ports/fabric-1.20.1`, `953edeb`) · none pushed · left: `fabric-1.21.11`, `fabric-26.3`.
+- **1.21.11 and 26.3 (assessed 2026-11-14)**: Minecraft's new render pipelines (1.21.5+): no `ShaderInstance`, so the
+  film's `FilmGl` (one shader, blend/depth set by `RenderSystem` per call) must become `RenderPipeline`s (one per blend
+  and depth mode, uniform blocks in the GLSL), as the SA Series did (`client/render/HalleyPipelines` 153 lines,
+  `DynamicMesh` 77, on its `fabric-1.21.11` branch: Fabric API 0.141.6+1.21.11, Loom 1.18.4). 26.3 adds
+  `Identifier`, RimuLib's `UiApi` on `GuiGraphicsExtractor` (the plate, the notice, the film's HUD), more (SA's
+  `fabric-26.3`: Fabric API 0.162.0+26.3, Loom 1.18-SNAPSHOT). Asked Adam how to handle these two (cost).
 - **JDK 25 is already on the VM** as a Gradle-provisioned toolchain (`~/.gradle/jdks/eclipse_adoptium-25-amd64-windows.2`,
   from earlier SA builds; also JDK 8, no JDK 17): the Fabric 1.21.11/26.3 builds may run locally through a Java 25
   toolchain, without CI. 1.20.1 is compiled by JDK 21 with `options.release = 17` (nothing installed).
@@ -497,6 +502,11 @@ machinery (TON 618 needs none: we never name its classes).
   files sit in `shaders/core/` on Fabric**), `WorldRenderEvents.LAST` (`context.camera()`, `positionMatrix()`,
   `projectionMatrix()`, `tickCounter()`), `ScreenEvents.AFTER_INIT` + `afterRender` for the loading screen's white,
   `FilmSound` overrides Fabric API's `getAudioStream(SoundBufferLibrary, ResourceLocation, boolean)`.
+- **fabric-1.20.1** (`953edeb`, built, dev server OK): from `fabric-1.21.1` with `forge-1.20.1`'s Minecraft 1.20.1 files
+  (`HudRescue`, the two HUD mixins, `LastLightFx`; RimuLib imports without a tag), `new ResourceLocation`,
+  `Sound(String...)`, FilmGl's 1.20.1 vertex helpers; Fabric API 0.92.6+1.20.1, compiled for Java 17 (release 17,
+  toolchain 21; Loom on JDK 25); mixin configs JAVA_17; Fabric 1.20.1's `WorldRenderContext.tickDelta()` and
+  `matrixStack().last().pose()`; inner `+mc1.20.1` jars.
 - **Next**: the other Fabric branches (SA's `fabric-*` branches: Loom,
   `ConfigFile` instead of `ModConfigSpec`, Fabric callbacks for ticks/HUD/world render, RimuLib packages without a
   version prefix on Fabric).
