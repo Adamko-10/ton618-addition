@@ -11,6 +11,11 @@ displayName = "${mod_name}"
 authors = "${mod_authors}"
 description = '''${mod_description}'''
 
+# Client only, optional: puts back RimuLib's H menu and the film's layer where TON 618 hides the HUD (client/HudRescue).
+# If their targets change, they switch themselves off.
+[[mixins]]
+config = "ton618_addition.mixins.json"
+
 [[dependencies.${mod_id}]]
 modId = "neoforge"
 type = "required"
