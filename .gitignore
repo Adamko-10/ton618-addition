@@ -18,3 +18,6 @@ out/
 # Decompiled code of other mods never belongs here (decompile into a scratch folder outside the repo)
 decompiled/
 scratch/
+
+# Other loaders' worktrees (one per branch, see CLAUDE.md)
+ports/
