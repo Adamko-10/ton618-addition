@@ -6,6 +6,7 @@ import dev.adamko.ton618addition.client.film.LastLightFilm;
 import dev.adamko.ton618addition.lastlight.LastLightClock;
 import dev.adamko.ton618addition.lastlight.LastLightInfo;
 import dev.adamko.ton618addition.link.Ton618Link;
+import dev.adamko.ton618addition.net.LastLightEnd;
 import dev.adamko.ton618addition.net.LastLightFx;
 import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
@@ -42,6 +43,12 @@ public final class Ton618AdditionClient {
     /** After every mod is constructed (with {@link Ton618Link#install}). */
     public static void afterConstruction() {
         NetClientApi.receive(LastLightFx.PACKET, (fx, context) -> Minecraft.getInstance().execute(() -> begin(fx)));
+        // the server dropped the cast before its end (the world came back early, or the restore failed)
+        NetClientApi.receive(LastLightEnd.PACKET, (end, context) -> Minecraft.getInstance().execute(() -> {
+            if (current != null && current.fx().castGameTime() == end.castGameTime()) {
+                stop();
+            }
+        }));
         // the menu's warning when Last Light is picked anywhere but in TON 618's dark
         LastLightInfo.selectWarning = () -> {
             Minecraft mc = Minecraft.getInstance();
@@ -81,7 +88,10 @@ public final class Ton618AdditionClient {
         }
     }
 
-    /** Leaving the server (a dimension change is not this: the film runs on through the trip back). */
+    /**
+     * Leaving the server, or the server dropped the cast early ({@link LastLightEnd}). A dimension change is not this:
+     * the film runs on through the trip back.
+     */
     private static void stop() {
         if (current != null) {
             current = null;

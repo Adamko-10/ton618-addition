@@ -9,6 +9,7 @@ import dev.adamko.ton618addition.Ton618Addition;
 import dev.adamko.ton618addition.lastlight.LastLight;
 import dev.adamko.ton618addition.lastlight.LastLightInfo;
 import dev.adamko.ton618addition.lastlight.LastLightSkill;
+import dev.adamko.ton618addition.net.LastLightEnd;
 import dev.adamko.ton618addition.net.LastLightFx;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.core.registries.Registries;
@@ -66,6 +67,7 @@ public final class Ton618Link {
         installed = true;
         RimulibApi.connect(Ton618Addition.MOD_ID, Ton618Addition.class, "1.2.3");
         NetApi.toClient(LastLightFx.PACKET);
+        NetApi.toClient(LastLightEnd.PACKET);
         SkillApi.whenRegistered(TON618, set -> {
             // TON 618's one set, ton618:ton_618, held by its item
             if (set.hidden || !"ton_618".equals(set.id.getPath()) || SkillApi.setOf(ON_TON618) != null) {
