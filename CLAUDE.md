@@ -4,11 +4,34 @@ Handoff notes for every Claude session in this folder (`C:\Users\User\Desktop\to
 Started 2026-11-13 by an Opus 5.5 session (xhigh) that was started from Adam's SA Series session. **Read `BRIEF.md`
 first** (Adam's brief, his own words at its end), then this file. Fable's part: `prompts\FABLE-PREVIZ-AND-FILM-PROMPT.md`.
 
-### >>> RESUME HERE (2026-11-14 ~11:40, the VM): film + P1 built (`0f0e737`); Adam tests that jar <<<
+### >>> RESUME HERE (2026-11-14 ~12:00, the VM): menu fix built (`f6ef1bd`), untested; Adam tests that jar <<<
 
-- **Test this jar** (newest; replaces both below): `C:\Users\User\Desktop\test builds\2026-11-14 TON 618 film P1\TON
-  618 Addition 0.1.0 film P1 [NeoForge 1.21.1].jar` (not copied to Downloads: Opus's copy there was blocked by the
-  permission check earlier, §0, so it wasn't tried again).
+- **Adam's bug (2026-11-14, via the SA Series session)**: "when ton 618 eats your world you cant open the ui you just
+  dont see it". **Cause** (read from the jars): TON 618 1.1.0's `GuiMixin` cancels `Gui.render` at its HEAD whenever
+  the client is in `ton618:devoured` **or** a RimuLib film hides the HUD (`CutsceneDirector.hideHud()`: a film with
+  weight > 0.35), drawing only its own overlay. RimuLib draws its H menu at the **TAIL** of `Gui.render`
+  (`WhiteSpace.render`, its `GuiMixin`, priority 1500), and NeoForge fires `RenderGuiEvent.Pre/Post` inside it, so
+  both are skipped: the menu is invisible in the dark, and Fable's film screen layer (space scene, words, white; it
+  draws on `RenderGuiEvent`) would be invisible in the dark and during the whole film.
+- **Fix (ours, `f6ef1bd`)**: `client/HudRescue` + two optional client mixins (`ton618_addition.mixins.json`,
+  `defaultRequire 0`): `client/mixin/GuiMixin` (TAIL of `Gui.render`: "reached the end") and
+  `client/mixin/GameRendererMixin` (MixinExtras `@WrapOperation` round `GameRenderer.render`'s `Gui.render` call). When
+  `Gui.render` was cut short: post a **cancelled** `RenderGuiEvent.Pre` (only listeners asking for cancelled events
+  hear it: Fable's film does, so it draws; other mods' HUDs stay hidden), then `WhiteSpace.beforeHud()` +
+  `WhiteSpace.render(g, partial(true))` (RimuLib internals, guarded: a warning if they change). The vanilla HUD stays
+  hidden in the dark, as TON 618 wants. Builds; a dev server starts clean; **never seen in a game** (no OpenGL on the
+  VM).
+- **Workaround with the older jars** (no fix): hold TON 618 in the dark, **shift + right-click** once (switches to the
+  next skill: Last Light), then **right-click** to cast (TON 618's own item does both; its action-bar messages are
+  hidden in the dark too).
+- **Test this jar** (newest; replaces all below): `C:\Users\User\Desktop\test builds\2026-11-14 TON 618 menu fix\TON
+  618 Addition 0.1.0 menu fix [NeoForge 1.21.1].jar` (not in Downloads: Opus's copy there was blocked earlier, §0).
+- Worth telling rimuru_dev one day (TON 618's bug, not ours): its dark hides RimuLib's own menu.
+
+### Before that (2026-11-14 ~11:40): film + P1 built (`0f0e737`)
+
+- Its jar: `C:\Users\User\Desktop\test builds\2026-11-14 TON 618 film P1\TON 618 Addition 0.1.0 film P1 [NeoForge
+  1.21.1].jar`.
 - **P1 applied** (Adam: "Add it now", 2026-11-14): `net/LastLightEnd` (cast game time), declared in
   `Ton618Link.install`; `LastLight` keeps the cast's watchers and, when the world comes back before RESTORE (an op's
   `/ton618 restore`) or the restore fails, drops the cast and sends `LastLightEnd` to them; `Ton618AdditionClient`
@@ -225,6 +248,11 @@ apart, told to Adam.
     it is still to test; if not, two cutscenes bridged by the white, as the previz notes say).
   - `LastLightFilm.active()`: the film is running. (`Ton618AdditionClient` drops the cast 40 ticks after END and calls
     `stop()` then if `active()` is still true.)
+- **Drawing over the HUD under TON 618 (2026-11-14, important)**: TON 618 cancels `Gui.render` in its dark and during
+  every RimuLib film, so `RenderGuiEvent.Post` never fires then. `client/HudRescue` (Opus's) posts a **cancelled
+  `RenderGuiEvent.Pre`** right after the HUD call in exactly those frames. The film's `RenderGuiEvent.Pre` listener
+  (LOWEST, `receiveCanceled = true`) is therefore what draws the film's screen layer for nearly the whole film:
+  **keep it** (and keep `screen(...)` safe to call from either listener; only one of them fires in a frame).
 - **The clock**: `lastlight/LastLightClock` (Opus's): CAST 0, PRESS 78, RACE 118, COSMOS 200, CROSS 270, STARS_OUT
   377, PAIRS 440, SHRINK 540, GOOGOL 625, HUSH 665, BURST 680, **RESTORE 690** (the server sets the next sunrise and
   runs `ton618 restore`: everyone in the dark lands at the overworld spawn), CLEAR 720, END 850. `cast.tick(partial)`
