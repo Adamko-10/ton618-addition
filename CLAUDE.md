@@ -4,7 +4,30 @@ Handoff notes for every Claude session in this folder (`C:\Users\User\Desktop\to
 Started 2026-11-13 by an Opus 5.5 session (xhigh) that was started from Adam's SA Series session. **Read `BRIEF.md`
 first** (Adam's brief, his own words at its end), then this file. Fable's part: `prompts\FABLE-PREVIZ-AND-FILM-PROMPT.md`.
 
-### >>> RESUME HERE (2026-11-14 ~12:00, the VM): menu fix built (`f6ef1bd`), untested; Adam tests that jar <<<
+### >>> RESUME HERE (2026-11-14 ~13:00, the VM): educational-mode switch built (`5e623cd`); then port, then CurseForge <<<
+
+- **Adam tested the menu fix: "it works"** (2026-11-14, via the SA Series session). He then noticed "theres no
+  education mode" (only NeoForge's Config screen had it) and picked (clickable, in the SA Series session):
+  **"Switch in the H menu"**; and "write down real music quasar jets for another update, for now just educational
+  mode then we port and post it on curseforge". "Waves affect the world" was offered and **not** picked: leave it.
+- **The plan now**: (1) educational-mode switch → test jar (done, below); (2) **port** to the other loaders; (3)
+  **post on CurseForge**. Before porting and before anything goes on CurseForge, ask Adam (clickable): which loaders
+  and versions, a GitHub repo for CI (no JDK 25 on the VM), the project's name, summary, description; publishing waits
+  for his yes. **Later update**: real film music (§3 Q1) and TA-02 · Quasar Jets (§10).
+- **Built (`5e623cd`)**: `client/EducationPlate`: a small plate in the H menu's **bottom left** (the SA Series' plates
+  take the top corners), shown while the menu is open for TON 618's item or the Stellar Remote; key **"]"** flips
+  educational mode (saved to the client toml; off by default), with a click and a sliding switch like the SA plate.
+  Drawn and keyed with `UiApi.onMenuDraw` + `MenuApi.onKey`; never takes a key the menu, the films or a shown
+  skill uses, or while a key is being rebound. In the dark it shows too (HudRescue draws the menu).
+- **Keys moved**: Last Light's default keys were B (TON 618's item) and V (Stellar Remote), but RimuLib's skill keys
+  pick skills inside the H menu, and the SA Series uses **B** (Stellar Convergence) and **V** (its Convergence plate's
+  hide key; plus T, R, X there and M, G, L, F, E, C, -, =, [ on its other plate): V on the remote would have taken
+  that plate's key. Now **";"** (TON 618's item) and **"'"** (the remote). Every letter is taken in that menu by
+  someone. Players who already ran an older jar keep their saved B/V until they reset them in Controls.
+- **Test jar**: `C:\Users\User\Desktop\test builds\2026-11-14 TON 618 educational mode\TON 618 Addition 0.1.0
+  educational mode [NeoForge 1.21.1].jar` (the SA Series session copies test jars to Downloads for Adam).
+
+### Before that (2026-11-14 ~12:00): menu fix built (`f6ef1bd`); Adam: "it works"
 
 - **Adam's bug (2026-11-14, via the SA Series session)**: "when ton 618 eats your world you cant open the ui you just
   dont see it". **Cause** (read from the jars): TON 618 1.1.0's `GuiMixin` cancels `Gui.render` at its HEAD whenever
@@ -140,22 +163,25 @@ Skills carry a code like the SA Series: **TA-xx · Name** (TA = TON 618 Addition
   everyone in the dark sees the whole film, **the return is always a morning**.
 - 2026-11-14 (Adam, before the build): **who may cast = a server setting, default everyone**
   (`who_can_cast = EVERYONE|OPERATORS`); **who watches = everyone in the dark**.
-- 2026-11-14 (Opus's defaults, tell Adam if he wants others): cooldown 60 s; default keys **B** on TON 618's item and
-  **V** on the Stellar Remote (two copies of the skill, so two keys that never clash); outside the dark the menu shows
+- 2026-11-14 (Adam): educational mode gets a **switch in the H menu** (still off by default); real music and TA-02 ·
+  Quasar Jets go to a **later update**; next: port, then CurseForge; the waves stay pictures only.
+- 2026-11-14 (Opus's defaults, tell Adam if he wants others): cooldown 60 s; default keys **";"** on TON 618's item and
+  **"'"** on the Stellar Remote (first B and V, moved off the SA Series' keys the same day); outside the dark the menu shows
   the warning "Only in the dark, after TON 618 has devoured the world" when Last Light is picked, and a cast there says
   why in the action bar; the burst's restore is TON 618's own command; the overworld jumps to the next sunrise
   (`morning_on_return`, on by default).
 
 ## 3. Open questions (ask when they matter, as clickable choices)
 
-1. Music for the film (the SA Series has its own tracks). Now: Fable's code-made soundtrack, with M1 (a minor pad,
-   tick 137 to the hush) and M2 (a major pad from 720) as placeholders in `FilmSynth`. Real music = an `.ogg` played
-   beside it (needs `sounds.json` + a registered `SoundEvent`).
+1. **Later update** (Adam, 2026-11-14): real music for the film. Now: Fable's code-made soundtrack, with M1 (a minor
+   pad, tick 137 to the hush) and M2 (a major pad from 720) as placeholders in `FilmSynth`. Real music = an `.ogg`
+   played beside it (needs `sounds.json` + a registered `SoundEvent`).
 1a. ~~Fable's proposal P1~~: applied 2026-11-14 (`0f0e737`).
-2. Should the waves do anything in the world (push entities, sway grass)? Now pictures only (previz point 7).
-3. An in-game switch for educational mode in TON 618's H menu (a plate, as the SA Series draws with `UiApi.onMenuDraw`)?
-   Now: Mods, TON 618 Addition, Config (NeoForge's screen), or the client toml.
-4. Other extras later (§10).
+2. ~~Should the waves do anything in the world?~~ Offered 2026-11-14, not picked: they stay pictures only.
+3. ~~An in-game switch for educational mode~~: built 2026-11-14 (`5e623cd`, `client/EducationPlate`).
+4. **Before the port and CurseForge** (ask clickable): loaders and versions; a GitHub repo for CI (Fabric 1.21.11/26.3
+   need JDK 25, not on the VM); CurseForge name, summary, description, version number and release type.
+5. Other extras later (§10).
 
 ## 4. TON 618 facts
 
@@ -304,7 +330,7 @@ machinery (TON 618 needs none: we never name its classes).
 
 ## 10. Ideas
 
-- **TA-02 · Quasar Jets** (picked 2026-11-13, after Last Light): TON 618 is really a quasar, one of the brightest
+- **TA-02 · Quasar Jets** (picked 2026-11-13; **a later update**, Adam 2026-11-14, with the real film music): TON 618 is really a quasar, one of the brightest
   known; a skill firing its relativistic jets as a beam across the land. Our own film and art; **only shown when SS-21
   Quasar is installed** (Aether21, CurseForge 1739264, "The Shooting Star Addition [SS-21 Quasar]", 1.8.0 has NeoForge
   1.21.1 since 2026-11-12, file 9575770; a TSS addon with its own black-hole jet strike). Detect it by mod id (check
