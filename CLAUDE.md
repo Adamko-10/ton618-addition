@@ -4,7 +4,19 @@ Handoff notes for every Claude session in this folder (`C:\Users\User\Desktop\to
 Started 2026-11-13 by an Opus 5.5 session (xhigh) that was started from Adam's SA Series session. **Read `BRIEF.md`
 first** (Adam's brief, his own words at its end), then this file. Fable's part: `prompts\FABLE-PREVIZ-AND-FILM-PROMPT.md`.
 
-### >>> RESUME HERE (2026-11-14 ~11:20, the VM): Fable's film is in (`2551dda`); Adam tests the film jar <<<
+### >>> RESUME HERE (2026-11-14 ~11:40, the VM): film + P1 built (`0f0e737`); Adam tests that jar <<<
+
+- **Test this jar** (newest; replaces both below): `C:\Users\User\Desktop\test builds\2026-11-14 TON 618 film P1\TON
+  618 Addition 0.1.0 film P1 [NeoForge 1.21.1].jar` (not in Downloads: copying there was blocked again by the
+  permission check... not tried again, see §0).
+- **P1 applied** (Adam: "Add it now", 2026-11-14): `net/LastLightEnd` (cast game time), declared in
+  `Ton618Link.install`; `LastLight` keeps the cast's watchers and, when the world comes back before RESTORE (an op's
+  `/ton618 restore`) or the restore fails, drops the cast and sends `LastLightEnd` to them; `Ton618AdditionClient`
+  then calls `stop()`. Dev server starts clean with it.
+- `AGENTS.md`: Adam's own Codex import ("its from me importing into codex, honestly just delete it"): moved to the
+  Recycle Bin, never committed.
+
+### Before that (2026-11-14 ~11:20): Fable's film is in (`2551dda`)
 
 - **Fable's Part 2 is done and committed** (`2551dda`, committed by Opus for Fable): the in-game Last Light film in
   `client/film/` (LastLightFilm rewritten + FilmScript, FilmCamera, FilmWorld, FilmSpace, FilmHud, FilmSound,
@@ -14,13 +26,10 @@ first** (Adam's brief, his own words at its end), then this file. Fable's part: 
   in a game** (the VM has no OpenGL: `runClient` fails at GLFW).
 - **Film test jar** (Fable's): `C:\Users\User\Desktop\test builds\2026-11-14 TON 618 film\TON 618 Addition 0.1.0 film
   [NeoForge 1.21.1].jar` (copy in Downloads). It replaces the base jar below.
-- **Waiting for Adam**: proposal **P1** (a small "cast ended" packet so the film stops if the server drops a cast
-  early, e.g. an op's `/ton618 restore` mid-film; optional, Fable says only if it's seen); music (§3 Q1).
+- Waiting for Adam: music (§3 Q1). (P1: applied, above.)
 - Fable's known limits for the test: with a shader pack (Iris) the in-world parts (waves, the hand's glow) may not
   show; TON 618's own dark effects can still play over the first 200 ticks; players with RimuLib films off, or who
   skip, see only the white of the burst.
-- `AGENTS.md` (untracked, 03:14, not Fable's or Opus's): a Codex copy of this file (Claude → Codex wording). Not
-  committed; ask Adam.
 
 ### Earlier (2026-11-14 ~00:20): the base was built (0.1.0)
 
@@ -119,8 +128,7 @@ Skills carry a code like the SA Series: **TA-xx · Name** (TA = TON 618 Addition
 1. Music for the film (the SA Series has its own tracks). Now: Fable's code-made soundtrack, with M1 (a minor pad,
    tick 137 to the hush) and M2 (a major pad from 720) as placeholders in `FilmSynth`. Real music = an `.ogg` played
    beside it (needs `sounds.json` + a registered `SoundEvent`).
-1a. Fable's proposal **P1** (`reviews/fable/PROPOSALS.md`): a `LastLightEnd` packet when the server drops a cast before
-   END, so the client calls `stop()`. Optional; Adam picks.
+1a. ~~Fable's proposal P1~~: applied 2026-11-14 (`0f0e737`).
 2. Should the waves do anything in the world (push entities, sway grass)? Now pictures only (previz point 7).
 3. An in-game switch for educational mode in TON 618's H menu (a plate, as the SA Series draws with `UiApi.onMenuDraw`)?
    Now: Mods, TON 618 Addition, Config (NeoForge's screen), or the client toml.
@@ -211,7 +219,8 @@ apart, told to Adam.
   - `LastLightFilm.start(LastLightCast cast)`: a cast reached this client (on the game thread). **Everyone in the dark
     gets it**, the caster and every watcher; a player who arrives in the dark while it runs (before the burst) gets it
     mid-way: start from `cast.tick(partial)`, not from 0.
-  - `LastLightFilm.stop()`: cancel, only when the player leaves the server. **Never called for the trip back to the
+  - `LastLightFilm.stop()`: cancel, when the player leaves the server or the server drops the cast early
+    (`LastLightEnd`, since P1: the world came back before the burst, or the restore failed). **Never called for the trip back to the
     overworld at RESTORE**: the film must run on through that dimension change (whether a RimuLib cutscene survives
     it is still to test; if not, two cutscenes bridged by the white, as the previz notes say).
   - `LastLightFilm.active()`: the film is running. (`Ton618AdditionClient` drops the cast 40 ticks after END and calls
