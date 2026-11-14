@@ -4,7 +4,21 @@ Handoff notes for every Claude session in this folder (`C:\Users\User\Desktop\to
 Started 2026-11-13 by an Opus 5.5 session (xhigh) that was started from Adam's SA Series session. **Read `BRIEF.md`
 first** (Adam's brief, his own words at its end), then this file. Fable's part: `prompts\FABLE-PREVIZ-AND-FILM-PROMPT.md`.
 
-### >>> RESUME HERE (2026-11-14 evening, the VM): NeoForge 1.21.1 approved; GitHub repo; then the 7 ports; then release <<<
+### >>> RESUME HERE (2026-11-14 ~17:40, the VM): porting; forge-1.21.1 done (`85b8dd7`); next forge-1.20.1 <<<
+
+- **Port status** (§8a has the how): `main` 1.0.0 (`ce64b00`: version bump + HUD fix without MixinExtras) ·
+  **`forge-1.21.1` built + dev server OK** ("Last Light joined TON 618's menu ... skill #2", worktree
+  `ports/forge-1.21.1`, commit `85b8dd7`, not pushed) · next: `forge-1.20.1` (also NeoForge 1.20.1), `fabric-1.21.1`,
+  `fabric-1.20.1`, `fabric-1.21.11`, `fabric-26.3` (the last two on CI: JDK 25).
+- Adam (2026-11-14): **"Yes, accept it"** for Minecraft's EULA on the VM's dev test servers (`run/eula.txt`,
+  git-ignored, per port folder): Forge's dev server won't load mods without it.
+- Jars for the ports (Adam's OK, 2026-11-14, ~26 MB): `libs/ports/` holds TON 618 1.1.0 Forge (9562567) + Fabric
+  (9562551) and RimuLib 1.2.3 Forge (9562444) + Fabric (9562450); each worktree copies its loader's two into its own
+  `libs/`. `.gitignore` now ignores `libs/**/*.jar` and `ports/`.
+- Not re-shown to Adam yet: the cross-referenced CurseForge drafts (he said "just cross reference with shooting star
+  addition SA series", done).
+
+### Before that (2026-11-14 evening): release picks; repo public
 
 - **Adam tested the cast fix: "it works, i say we post it"** (via the SA Series session). NeoForge 1.21.1 (0.1.0 cast
   fix, `0e8c7e1`) is approved.
@@ -419,6 +433,33 @@ machinery (TON 618 needs none: we never name its classes).
   `timeout` on the command did).
 - Release jar name (as the SA Series): `TON 618 Addition <version> [NeoForge 1.21.1].jar`.
 - No Node, ffmpeg or JDK 25 on the VM. Other loaders only after Adam approves (§0).
+
+## 8a. The ports (one branch per loader, like the SA Series; Adam 2026-11-14)
+
+- **Layout**: `main` = NeoForge 1.21.1. Each other branch has a worktree in `ports/<branch>/` (git-ignored inside the
+  project folder): `git worktree add -b <branch> ports/<branch> main`. **Never `git stash`** (shared between
+  worktrees). Changes are made on `main` first and cherry-picked; the branches keep their own build files and the
+  loader-specific code below. Commits stay local until pushed: `wip/<branch>` pushes for CI are fine (Adam's standing
+  OK); the real branches only with his yes.
+- **Shared on every branch**: RimuLib's public API (`SkillApi`, `NetApi`/`NetClientApi`, `FilmApi`, `UiApi`, `MenuApi`)
+  and a few guarded internals (`WhiteSpace`, `ClientSkills`, `SkillHolder`); networking is RimuLib's, so no loader
+  packets. The HUD fix's `GameRendererMixin` uses plain `@Inject`s (no MixinExtras) for that reason.
+- **forge-1.21.1** (`85b8dd7`, built, dev server OK): from the SA Series' `forge-1.21.1` (ForgeGradle `[7.0.23,8.0)`,
+  Forge 52.1.16, Gradle 9.7.1 wrapper, `official` mappings, `net.minecraftforge.gradle.merge-source-sets=true`,
+  configuration cache off). `mods.toml` (`mandatory = true/false`); mixin config in the jar **manifest**
+  (`MixinConfigs`; Forge 1.21.1 doesn't read `[[mixins]]`) and `--mixin.config` for dev runs; **no Mixin annotation
+  processor** (it failed for want of obfuscation mappings; runtime names are official). Code: `@Mod` constructor takes
+  `FMLJavaModLoadingContext` (`getModEventBus()`, `registerConfig`), `FMLEnvironment.dist`; `MinecraftForge.EVENT_BUS`
+  with typed lambdas (`(TickEvent.ServerTickEvent.Post e) -> ...`) or `addListener(EventPriority, boolean, Class,
+  Consumer)`; `ForgeConfigSpec`; no generic config screen (NeoForge's `ConfigurationScreen` doesn't exist).
+  **Forge 1.21.1 has no `RenderGuiEvent`** (its HUD is layers, `AddGuiOverlayLayersEvent`): `HudRescue.afterGui` calls
+  `LastLightFilm.screen(graphics, partial)` itself every frame (made public), so the film's screen layer draws with
+  or without TON 618's HUD cancel. `RenderLevelStageEvent`: `getPartialTick()` is a float, the view matrix is
+  `getPoseStack()` (a `Matrix4f`, deprecated). Built with JDK 21 locally in ~20 s (first setup ~5 min).
+- **Next**: forge-1.20.1 (SA's `forge-1.20.1`: RimuLib package `mc1201`, Minecraft 1.20.1 API: no `DeltaTracker`,
+  `ResourceLocation` constructors, older `GuiGraphics`), then the Fabric branches (SA's `fabric-*` branches: Loom,
+  `ConfigFile` instead of `ModConfigSpec`, Fabric callbacks for ticks/HUD/world render, RimuLib packages without a
+  version prefix on Fabric).
 
 ## 9. Files
 
