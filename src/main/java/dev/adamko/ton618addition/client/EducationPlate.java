@@ -3,6 +3,7 @@ package dev.adamko.ton618addition.client;
 import com.mojang.blaze3d.platform.InputConstants;
 import cyou.rimuru.rimulib.mc1211.api.SkillApi;
 import cyou.rimuru.rimulib.mc1211.client.api.MenuApi;
+import cyou.rimuru.rimulib.mc1211.client.magic.ClientSkills;
 import cyou.rimuru.rimulib.mc1211.skill.Skill;
 import cyou.rimuru.rimulib.mc1211.skill.SkillSet;
 import dev.adamko.ton618addition.link.Ton618Link;
@@ -21,10 +22,10 @@ import net.minecraft.util.Mth;
 
 /**
  * The addon's plate in the H menu (Adam, 2026-11-14: "Switch in the H menu"): the educational-mode switch, flipped
- * with its key ({@link #KEY}, "]") because the menu holds the mouse. Shown while the menu is open for an item that has
- * Last Light (TON 618's, or the Stellar Remote), in its bottom left corner (the SA Series' plates sit in the top
- * corners). Drawn and keyed through RimuLib's public API ({@code UiApi.onMenuDraw}, {@code MenuApi.onKey}), in the
- * same style as the SA Series' plate.
+ * with its key ({@link #KEY}, "\") because the menu holds the mouse. Shown in the menu's top right corner (Adam,
+ * 2026-11-14) while it is open for TON 618's item, or for the Stellar Remote with Last Light picked. Drawn and keyed
+ * through RimuLib's public API ({@code UiApi.onMenuDraw}, {@code MenuApi.onKey}), in the same style as the SA Series'
+ * plates.
  */
 public final class EducationPlate {
     private static final int PLATE = 0xFBFAFC;
@@ -33,8 +34,11 @@ public final class EducationPlate {
     private static final int RULE = 0xE4E6EB;
     /** The blue-white of Last Light's burst, a little deeper so it reads on white. */
     private static final int ACCENT = 0x5E9BD6;
-    /** "]": no letter is free in the menu (the SA Series' plates use "[", "-" and "="). GLFW key code. */
-    public static final int KEY = 93;
+    /**
+     * "\": no letter is free in the menu (the SA Series' plates use "[", "-" and "="). It was "]" at first, but in
+     * Minecraft's font that key cap read as "J", the films' key (Adam, 2026-11-14). GLFW key code.
+     */
+    public static final int KEY = 92;
     private static final int WIDTH = 214;
     private static final int HEIGHT = 58;
     private static final float SLIDE_MILLIS = 160.0F;
@@ -44,7 +48,10 @@ public final class EducationPlate {
     private EducationPlate() {
     }
 
-    /** The menu is open for an item that has Last Light. */
+    /**
+     * The menu is open for TON 618's item, or for the Stellar Remote with Last Light picked (the SA Series' Stellar
+     * Convergence plate takes the same top right corner when its skill is picked there).
+     */
     static boolean shown() {
         if (!MenuApi.capturesInput()) {
             return false;
@@ -54,8 +61,20 @@ public final class EducationPlate {
             return false;
         }
         SkillSet ton618 = SkillApi.setOf(Ton618Link.ON_TON618);
+        if (ton618 != null && SkillApi.holds(player, ton618)) {
+            return true;
+        }
         SkillSet remote = SkillApi.setOf(Ton618Link.ON_REMOTE);
-        return ton618 != null && SkillApi.holds(player, ton618) || remote != null && SkillApi.holds(player, remote);
+        return remote != null && SkillApi.holds(player, remote) && lastLightPicked(remote);
+    }
+
+    /** Last Light is the picked skill in that menu (RimuLib internals: if they change, the plate just shows). */
+    private static boolean lastLightPicked(SkillSet remote) {
+        try {
+            return ClientSkills.selected(remote) == Ton618Link.ON_REMOTE;
+        } catch (RuntimeException | LinkageError unsure) {
+            return true;
+        }
     }
 
     /** A key pressed while the menu is open: true if it was ours (never one the menu itself uses). */
@@ -109,11 +128,12 @@ public final class EducationPlate {
         // never below one screen pixel per font pixel; a little smaller on small screens (as the SA Series' plates)
         float scale = Math.max(Mth.clamp(g.guiWidth() / 860.0F, 0.5F, 0.75F) * 0.82F, 1.0F / (float) minecraft.getWindow().getGuiScale());
         g.pose().pushPose();
-        g.pose().translate(8.0F, g.guiHeight() - 8.0F - HEIGHT * scale, 400.0F);
+        // over the menu, in its top right corner (Adam, 2026-11-14; the SA Series' first plate is top left)
+        g.pose().translate(g.guiWidth() - 8.0F - w * scale, 8.0F, 400.0F);
         g.pose().scale(scale, scale, 1.0F);
         plate(g, 2, 3, w + 2, HEIGHT + 3, 0x26000000);
         plate(g, 0, 0, w, HEIGHT, 0xF4000000 | PLATE);
-        g.fill(0, 2, 3, HEIGHT - 2, 0xFF000000 | ACCENT);
+        g.fill(w - 3, 2, w, HEIGHT - 2, 0xFF000000 | ACCENT);
         g.drawString(font, title, 11, 7, 0xFF000000 | INK, false);
         g.fill(11, 19, w - 10, 20, 0xFF000000 | RULE);
         // the row: label, key cap, state, switch
