@@ -4,14 +4,16 @@ Handoff notes for every Claude session in this folder (`C:\Users\User\Desktop\to
 Started 2026-11-13 by an Opus 5.5 session (xhigh) that was started from Adam's SA Series session. **Read `BRIEF.md`
 first** (Adam's brief, his own words at its end), then this file. Fable's part: `prompts\FABLE-PREVIZ-AND-FILM-PROMPT.md`.
 
-### >>> RESUME HERE (2026-11-14 ~17:55, the VM): porting; both Forge branches done; next the four Fabric ones <<<
+### >>> RESUME HERE (2026-11-14 ~18:05, the VM): porting; Forge x2 + Fabric 1.21.1 done; next fabric-1.20.1, then 1.21.11/26.3 <<<
 
 - **Port status** (§8a has the how): `main` 1.0.0 (`ce64b00`: version bump + HUD fix without MixinExtras) ·
   **`forge-1.21.1` built + dev server OK** ("Last Light joined TON 618's menu ... skill #2", worktree
   `ports/forge-1.21.1`, commit `85b8dd7`) · **`forge-1.20.1` built** (also NeoForge 1.20.1; `ports/forge-1.20.1`,
   `3b5e2e8`; jar checked: SRG names, refmap, `MixinConfigs`; **no dev run**: RimuLib's 1.20.1 mixins name SRG targets
-  directly, which the dev game can't remap, as the SA Series found) · none pushed · next: `fabric-1.21.1`,
-  `fabric-1.20.1`, `fabric-1.21.11`, `fabric-26.3`.
+  directly, which the dev game can't remap, as the SA Series found) · **`fabric-1.21.1` built + dev server OK** (Loom on
+  the VM's JDK 25, "Last Light joined TON 618's menu", `ports/fabric-1.21.1`, `d725beb`) · none pushed · next:
+  `fabric-1.20.1`, then `fabric-1.21.11`, `fabric-26.3` (Minecraft's new render pipeline: the film's `FilmGl` and
+  shader need rewriting there, the biggest job left).
 - **JDK 25 is already on the VM** as a Gradle-provisioned toolchain (`~/.gradle/jdks/eclipse_adoptium-25-amd64-windows.2`,
   from earlier SA builds; also JDK 8, no JDK 17): the Fabric 1.21.11/26.3 builds may run locally through a Java 25
   toolchain, without CI. 1.20.1 is compiled by JDK 21 with `options.release = 17` (nothing installed).
@@ -476,7 +478,26 @@ machinery (TON 618 needs none: we never name its classes).
   builders of the film's own; `FilmSound`'s `Sound(String, ...)`. **Dev runs fail** in RimuLib's own
   `ServerTickRelayMixin` (target `m_5705_` named directly; the SA refmap-remap trick doesn't cover configs without a
   refmap): not run; Adam tests the jar.
-- **Next**: the Fabric branches (SA's `fabric-*` branches: Loom,
+- **fabric-1.21.1** (`d725beb`, built, dev server OK; from `forge-1.21.1`): Fabric Loom **1.18.4 needs a Java 25 JVM
+  to run** (`JAVA_HOME=~/.gradle/jdks/eclipse_adoptium-25-amd64-windows.2`, already on the VM; the code still compiles
+  for 21), loader 0.19.5, Fabric API 0.116.7+1.21.1, Gradle 9.7.1 (SA's wrapper), `loom.officialMojangMappings()`.
+  **Loom remaps mixin targets in the bytecode** (no refmap; checked: `method_3192`/`method_1753`). RimuLib and TON 618:
+  the inner `+mc1.21.1` jars of their Fabric bundles (`META-INF/jars/...`), extracted into the worktree's `libs/`,
+  `modCompileOnly`/`modLocalRuntime`; inner mod ids `rimulib`, `ton618`; RimuLib's Fabric package has **no version
+  tag** (`cyou.rimuru.rimulib.api...`). `fabric.mod.json` (main `Ton618Addition`, client `Ton618AdditionClient`,
+  server `Ton618AdditionServer`; mixins `ton618_addition.mixins.json` + `ton618_addition.fabric.mixins.json`, both
+  client). Joining: like the SA Series, `client/mixin/RimulibClientMixin` (`@Pseudo`, HEAD of
+  `cyou.rimuru.rimulib.client.RimulibFabricClient.onInitializeClient`) calls `Ton618Link.install()` +
+  `Ton618AdditionClient.afterConstruction()`; dedicated servers in the `server` entrypoint; `SERVER_STARTING` too
+  (`install` runs once). Config: the SA Series' `config/ConfigFile` (same file names, sections and keys).
+  Events: `ServerTickEvents.END_SERVER_TICK`, `ServerLifecycleEvents.SERVER_STOPPED`,
+  `ServerEntityWorldChangeEvents.AFTER_PLAYER_CHANGE_WORLD` (package `api.entity.event.v1`),
+  `ServerPlayConnectionEvents.JOIN`, `ClientTickEvents.END_CLIENT_TICK`, `ClientPlayConnectionEvents.DISCONNECT`. Film:
+  `LastLightFilm.init()` (no bus), `CoreShaderRegistrationCallback` with id `ton618_addition:last_light` (**the shader
+  files sit in `shaders/core/` on Fabric**), `WorldRenderEvents.LAST` (`context.camera()`, `positionMatrix()`,
+  `projectionMatrix()`, `tickCounter()`), `ScreenEvents.AFTER_INIT` + `afterRender` for the loading screen's white,
+  `FilmSound` overrides Fabric API's `getAudioStream(SoundBufferLibrary, ResourceLocation, boolean)`.
+- **Next**: the other Fabric branches (SA's `fabric-*` branches: Loom,
   `ConfigFile` instead of `ModConfigSpec`, Fabric callbacks for ticks/HUD/world render, RimuLib packages without a
   version prefix on Fabric).
 
