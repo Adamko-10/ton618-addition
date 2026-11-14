@@ -2,7 +2,7 @@
   "required": false,
   "minVersion": "0.8",
   "package": "dev.adamko.ton618addition.client.mixin",
-  "compatibilityLevel": "JAVA_21",
+  "compatibilityLevel": "JAVA_17",
   "client": [
     "RimulibClientMixin"
   ],

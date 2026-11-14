@@ -177,7 +177,7 @@ public final class LastLightFilm {
         if (now == null) {
             return;
         }
-        float partial = context.tickCounter().getGameTimeDeltaPartialTick(true);
+        float partial = context.tickDelta();
         if (!showing(partial)) {
             return;
         }

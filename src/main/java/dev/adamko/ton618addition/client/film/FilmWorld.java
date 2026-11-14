@@ -78,13 +78,13 @@ final class FilmWorld {
         if (mc.level == null) {
             return;
         }
-        float partial = context.tickCounter().getGameTimeDeltaPartialTick(true);
+        float partial = context.tickDelta();
         Camera camera = context.camera();
         Vec3 eye = camera.getPosition();
         Vector3f left = camera.getLeftVector();
         Vector3f up = new Vector3f(camera.getUpVector());
         Vector3f right = new Vector3f(-left.x, -left.y, -left.z);
-        Matrix4f view = new Matrix4f(context.positionMatrix());
+        Matrix4f view = new Matrix4f(context.matrixStack().last().pose());
         Matrix4f proj = new Matrix4f(context.projectionMatrix());
         if (cast.inDark()) {
             if (t < FilmScript.S_COSMOS + 4F) {

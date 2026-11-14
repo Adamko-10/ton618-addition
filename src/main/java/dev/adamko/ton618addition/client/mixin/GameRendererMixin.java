@@ -1,7 +1,6 @@
 package dev.adamko.ton618addition.client.mixin;
 
 import dev.adamko.ton618addition.client.HudRescue;
-import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.GameRenderer;
@@ -12,22 +11,22 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 /**
  * Around the game's HUD call: draws what TON 618's hidden HUD skipped (see {@link HudRescue}). Plain injections, no
- * MixinExtras, so every loader's branch shares it; the frame's projection is still the HUD's right after the call, so
- * a fresh {@link GuiGraphics} on the game's buffers draws in the same place.
+ * MixinExtras; the frame's projection is still the HUD's right after the call, so a fresh {@link GuiGraphics} on the
+ * game's buffers draws in the same place. (Minecraft 1.20.1: {@code render(float, long, boolean)}, and the HUD takes
+ * the partial tick.)
  */
 @Mixin(GameRenderer.class)
 abstract class GameRendererMixin {
-    private static final String GUI_RENDER =
-        "Lnet/minecraft/client/gui/Gui;render(Lnet/minecraft/client/gui/GuiGraphics;Lnet/minecraft/client/DeltaTracker;)V";
+    private static final String GUI_RENDER = "Lnet/minecraft/client/gui/Gui;render(Lnet/minecraft/client/gui/GuiGraphics;F)V";
 
     @Inject(method = "render", at = @At(value = "INVOKE", target = GUI_RENDER))
-    private void ton618Addition$beforeHud(DeltaTracker delta, boolean renderLevel, CallbackInfo ci) {
+    private void ton618Addition$beforeHud(float partial, long nanos, boolean renderLevel, CallbackInfo ci) {
         HudRescue.beforeGui();
     }
 
     @Inject(method = "render", at = @At(value = "INVOKE", target = GUI_RENDER, shift = At.Shift.AFTER))
-    private void ton618Addition$afterHud(DeltaTracker delta, boolean renderLevel, CallbackInfo ci) {
+    private void ton618Addition$afterHud(float partial, long nanos, boolean renderLevel, CallbackInfo ci) {
         Minecraft minecraft = Minecraft.getInstance();
-        HudRescue.afterGui(new GuiGraphics(minecraft, minecraft.renderBuffers().bufferSource()), delta);
+        HudRescue.afterGui(new GuiGraphics(minecraft, minecraft.renderBuffers().bufferSource()), partial);
     }
 }

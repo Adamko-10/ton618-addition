@@ -2,7 +2,6 @@ package dev.adamko.ton618addition.client;
 
 import cyou.rimuru.rimulib.client.magic.WhiteSpace;
 import dev.adamko.ton618addition.Ton618Addition;
-import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.gui.GuiGraphics;
 import dev.adamko.ton618addition.client.film.LastLightFilm;
 
@@ -45,31 +44,31 @@ public final class HudRescue {
      * Just after the game's HUD call: if it was cut short, draw what it skipped; then, every frame, Last Light's
      * fallback notice ({@link LastLightNotice}: only while it runs without its film).
      */
-    public static void afterGui(GuiGraphics graphics, DeltaTracker delta) {
+    public static void afterGui(GuiGraphics graphics, float partial) {
         if (!reached) {
-            rescue(graphics, delta);
+            rescue(graphics, partial);
         }
         // Forge 1.21.1 has no RenderGuiEvent (its HUD is layers): the film's screen layer is drawn from here, every
         // frame, whether or not TON 618 hid the HUD
         try {
-            LastLightFilm.screen(graphics, delta.getGameTimeDeltaPartialTick(false));
+            LastLightFilm.screen(graphics, partial);
             graphics.flush();
         } catch (RuntimeException failed) {
             warnOnce("the film's layer", failed);
         }
         try {
-            LastLightNotice.draw(graphics, delta.getGameTimeDeltaPartialTick(false));
+            LastLightNotice.draw(graphics, partial);
             graphics.flush();
         } catch (RuntimeException failed) {
             warnOnce("Last Light's notice", failed);
         }
     }
 
-    private static void rescue(GuiGraphics graphics, DeltaTracker delta) {
+    private static void rescue(GuiGraphics graphics, float partial) {
         reached = true;
         try {
             WhiteSpace.beforeHud();
-            WhiteSpace.render(graphics, delta.getGameTimeDeltaPartialTick(true));
+            WhiteSpace.render(graphics, partial);
         } catch (RuntimeException | LinkageError failed) {
             warnOnce("RimuLib's menu", failed);
         }

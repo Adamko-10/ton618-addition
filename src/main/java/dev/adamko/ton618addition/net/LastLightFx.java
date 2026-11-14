@@ -30,7 +30,9 @@ public record LastLightFx(UUID caster, int casterId, long castGameTime, Vec3 pos
         buf.writeUUID(this.caster);
         buf.writeVarInt(this.casterId);
         buf.writeLong(this.castGameTime);
-        buf.writeVec3(this.position);
+        buf.writeDouble(this.position.x);
+        buf.writeDouble(this.position.y);
+        buf.writeDouble(this.position.z);
         buf.writeFloat(this.yaw);
         buf.writeFloat(this.pitch);
         buf.writeBoolean(this.offhand);
@@ -38,7 +40,7 @@ public record LastLightFx(UUID caster, int casterId, long castGameTime, Vec3 pos
     }
 
     private static LastLightFx read(FriendlyByteBuf buf) {
-        return new LastLightFx(buf.readUUID(), buf.readVarInt(), buf.readLong(), buf.readVec3(), buf.readFloat(),
+        return new LastLightFx(buf.readUUID(), buf.readVarInt(), buf.readLong(), new Vec3(buf.readDouble(), buf.readDouble(), buf.readDouble()), buf.readFloat(),
             buf.readFloat(), buf.readBoolean(), buf.readBoolean());
     }
 }
