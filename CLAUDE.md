@@ -11,11 +11,11 @@ first** (Adam's brief, his own words at its end), then this file. Fable's part: 
   `tools/icons/ModIcon.java` (Java port of the SA Series' `art/make_icon.js` style: 64×64 pixel art at 4×, 256×256
   like SA's icon) → `dev/publish/project-icon.png`: TON618 (shadow, photon ring, its disk bent over the top), gold
   Hawking sparks escaping, blue partners falling in, a sunrise on Earth's limb, the SA icon's "Addon" tag and a
-  **gold "TA" badge** (SA's is blue). Shown to Adam; waiting for his word.
+  **gold "TA" badge** (SA's is blue). Shown to Adam (no changes asked).
 - **For later** (Adam: "for later lets change the icon in game aswell like the one that last light uses"): redo Last
   Light's in-game skill icon (the two `last_light.png` sprites, 256×128, now from `tools/icons/LastLightIcon.java`) in
-  the same pixel style; it ships in all 7 jars, so it goes with the next update (or a rebuild before release if Adam
-  wants it in 1.0.0: ask). Also possible: a mod-list logo (we ship none; SA has `shooting_star_addition_icon.png`).
+  the same pixel style: **in the next update** (Adam, 2026-11-14, clickable: "Next update"; 1.0.0 keeps the current
+  one). Also possible: a mod-list logo (we ship none; SA has `shooting_star_addition_icon.png`).
 
 - **`fabric-26.3` done** (`ce7f85f`, built + dev server OK, film on 26.3's renderpearl pipelines; §8a). All 7 branches
   are built; none pushed. **Test jars** (all 7 rebuilt from each branch's commit, 2026-11-14 ~21:20):
