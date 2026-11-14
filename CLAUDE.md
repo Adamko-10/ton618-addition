@@ -4,12 +4,17 @@ Handoff notes for every Claude session in this folder (`C:\Users\User\Desktop\to
 Started 2026-11-13 by an Opus 5.5 session (xhigh) that was started from Adam's SA Series session. **Read `BRIEF.md`
 first** (Adam's brief, his own words at its end), then this file. Fable's part: `prompts\FABLE-PREVIZ-AND-FILM-PROMPT.md`.
 
-### >>> RESUME HERE (2026-11-14 ~17:40, the VM): porting; forge-1.21.1 done (`85b8dd7`); next forge-1.20.1 <<<
+### >>> RESUME HERE (2026-11-14 ~17:55, the VM): porting; both Forge branches done; next the four Fabric ones <<<
 
 - **Port status** (§8a has the how): `main` 1.0.0 (`ce64b00`: version bump + HUD fix without MixinExtras) ·
   **`forge-1.21.1` built + dev server OK** ("Last Light joined TON 618's menu ... skill #2", worktree
-  `ports/forge-1.21.1`, commit `85b8dd7`, not pushed) · next: `forge-1.20.1` (also NeoForge 1.20.1), `fabric-1.21.1`,
-  `fabric-1.20.1`, `fabric-1.21.11`, `fabric-26.3` (the last two on CI: JDK 25).
+  `ports/forge-1.21.1`, commit `85b8dd7`) · **`forge-1.20.1` built** (also NeoForge 1.20.1; `ports/forge-1.20.1`,
+  `3b5e2e8`; jar checked: SRG names, refmap, `MixinConfigs`; **no dev run**: RimuLib's 1.20.1 mixins name SRG targets
+  directly, which the dev game can't remap, as the SA Series found) · none pushed · next: `fabric-1.21.1`,
+  `fabric-1.20.1`, `fabric-1.21.11`, `fabric-26.3`.
+- **JDK 25 is already on the VM** as a Gradle-provisioned toolchain (`~/.gradle/jdks/eclipse_adoptium-25-amd64-windows.2`,
+  from earlier SA builds; also JDK 8, no JDK 17): the Fabric 1.21.11/26.3 builds may run locally through a Java 25
+  toolchain, without CI. 1.20.1 is compiled by JDK 21 with `options.release = 17` (nothing installed).
 - Adam (2026-11-14): **"Yes, accept it"** for Minecraft's EULA on the VM's dev test servers (`run/eula.txt`,
   git-ignored, per port folder): Forge's dev server won't load mods without it.
 - Jars for the ports (Adam's OK, 2026-11-14, ~26 MB): `libs/ports/` holds TON 618 1.1.0 Forge (9562567) + Fabric
@@ -456,8 +461,22 @@ machinery (TON 618 needs none: we never name its classes).
   `LastLightFilm.screen(graphics, partial)` itself every frame (made public), so the film's screen layer draws with
   or without TON 618's HUD cancel. `RenderLevelStageEvent`: `getPartialTick()` is a float, the view matrix is
   `getPoseStack()` (a `Matrix4f`, deprecated). Built with JDK 21 locally in ~20 s (first setup ~5 min).
-- **Next**: forge-1.20.1 (SA's `forge-1.20.1`: RimuLib package `mc1201`, Minecraft 1.20.1 API: no `DeltaTracker`,
-  `ResourceLocation` constructors, older `GuiGraphics`), then the Fabric branches (SA's `fabric-*` branches: Loom,
+- **forge-1.20.1** (`3b5e2e8`, built from `forge-1.21.1`; jar also for NeoForge 1.20.1): ModDevGradle
+  `net.neoforged.moddev.legacyforge` 2.0.+ (Forge 1.20.1-47.4.10; `-Pneoforge` builds on NeoForge 1.20.1-47.1.106),
+  Parchment 1.20.1/2023.09.03, Gradle 8.14.3 (SA's wrapper), toolchain 21 + `options.release = 17`; RimuLib and TON 618
+  as `modCompileOnly`/`modRuntimeOnly` `local:` modules from a `flatDir libs` (they ship SRG names); Mixin annotation
+  processor 0.8.5 + `mixin { add sourceSets.main, "ton618_addition.refmap.json"; config ... }`; the branch's
+  `ton618_addition.mixins.json` has `"compatibilityLevel": "JAVA_17"` and `"refmap"`. Code: RimuLib imports
+  `mc1201`; `new ResourceLocation(ns, path)` (deprecated on 47.4, fine); HUD mixins on `Gui.render(GuiGraphics, float)`
+  and `GameRenderer.render(float, long, boolean)`, `HudRescue.afterGui(graphics, float partial)`; `LastLightFx` writes
+  the position as three doubles (no `writeVec3`); Forge 47: no-arg `@Mod` constructor + `FMLJavaModLoadingContext.get()`,
+  `ModLoadingContext.get().registerConfig`, `TickEvent.ServerTickEvent`/`ClientTickEvent` with `phase == END`,
+  `RenderLevelStageEvent.getPoseStack().last().pose()`. Film: `FilmGl.begin/vertex/draw` on 1.20.1's
+  `BufferBuilder` API (`vertex().uv().color().endVertex()`, `end()` → `RenderedBuffer`, release when empty) with four
+  builders of the film's own; `FilmSound`'s `Sound(String, ...)`. **Dev runs fail** in RimuLib's own
+  `ServerTickRelayMixin` (target `m_5705_` named directly; the SA refmap-remap trick doesn't cover configs without a
+  refmap): not run; Adam tests the jar.
+- **Next**: the Fabric branches (SA's `fabric-*` branches: Loom,
   `ConfigFile` instead of `ModConfigSpec`, Fabric callbacks for ticks/HUD/world render, RimuLib packages without a
   version prefix on Fabric).
 
