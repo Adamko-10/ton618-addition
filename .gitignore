@@ -1,5 +1,5 @@
 # Other people's jars (TON 618, RimuLib, The Shooting Star): never commit them
-libs/*.jar
+libs/**/*.jar
 libs/extra/
 libs/mappings/
 
