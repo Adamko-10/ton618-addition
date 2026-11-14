@@ -78,3 +78,90 @@ Kept by the Fable 5.2 session (started 2026-11-13 from Adam's SA Series session)
   white? (No proposal written yet: nothing is built.)
 - The cast must reach every client in the dark (whole film for everyone).
 - Whether the return is always a morning; music (CLAUDE.md §3 Q4).
+
+---
+
+# PART 2 (the in-game film): BUILT, waiting for Adam's first test in a game (2026-11-14)
+
+Started 2026-11-14 on the Opus session's message (Adam: "yes send it"; CLAUDE.md §7 READY, base 0.1.0 `a786dc6`).
+Adam, same day: "alright finish it up".
+
+## Where it stands
+
+- **Built**: `./gradlew --no-daemon build` passes (JDK 21). Test jar for Adam:
+  `C:\Users\User\Desktop\test builds\2026-11-14 TON 618 film\TON 618 Addition 0.1.0 film [NeoForge 1.21.1].jar`.
+- A copy of the jar is in `C:/Users/User/Downloads/` (Adam wants test jars there on the VM).
+- **Never run in a game.** The VM has no OpenGL (`runClient` fails at "Failed to find any valid GLFW profile"), so
+  the first real look is Adam's test. **Nothing committed** (Fable runs no git; the Opus session commits).
+- Checked on the VM:
+  - the shader: `last_light.vsh/.fsh` compile and link as GLSL ES 3.00 in the browser's WebGL2 (stricter about types
+    than the game's GLSL 150), and the hole material draws as in the previz;
+  - the soundtrack: `FilmSynth.render()` run on its own (0.75 s to make; peak about 24000 of 32767; the hush silent);
+  - not checked: the game's own shader loader with the `shaders/film/` remap, every draw call, the camera, the HUD's
+    layout, the sound through the game's engine, the dimension change.
+- Files (all in the film's own places, CLAUDE.md §7):
+  - `src/main/java/dev/adamko/ton618addition/client/film/`: `LastLightFilm` (the four entry points + the controller),
+    `FilmScript` (timeline, numbers, captions, labels; storyboard clock + retime table as in the previz), `FilmCamera`
+    (one RimuLib cutscene on the cast's clock: dark shots 1-3, parked under space, overworld shots 9-10),
+    `FilmWorld` (in-world: hand glow, press ring, the time wave + wall + floor dashes + dust in the dark; the
+    returning wave as a growing white shell + wall + settling motes in the overworld), `FilmSpace` (the opaque space
+    scene, storyboard 150-504 = game 200-684), `FilmHud` (bars, captions, year counter, "1 SECOND = ... YEARS",
+    readouts, title, educational labels, flicker/flash/white), `FilmSound` (plays the track through the game's sound
+    engine, Players slider, restarts after the dimension change), `FilmSynth` (makes the 42.5 s stereo track in code;
+    no sound files), `FilmGl` (the one shader + draw helpers).
+  - `src/main/resources/assets/ton618_addition/shaders/film/last_light.{json,vsh,fsh}` (loaded from `shaders/film/`
+    by remapping the game's `shaders/core/` lookup in `FilmGl.register`).
+  - No textures, no `sounds.json`, no sound files were needed.
+  - `reviews/fable/PROPOSALS.md`: the hand-over to Opus (nothing to wire; one optional proposal).
+
+## Next
+
+1. Adam tests the jar (what to test: below). Fix what he reports, in the film's files only.
+2. If the pictures don't draw at all: look in his `logs/latest.log` for "The Last Light film's shader didn't load"
+   (the JSON/loader path is the untested part) or "The Last Light film stopped drawing".
+3. After the film works: music (CLAUDE.md §3 Q1), then the "After the film" review in the prompt
+   (`reviews\fable\FINDINGS.md`).
+
+## What to test (told to Adam)
+
+Cast Last Light in TON 618's dark with films on. Watch for: the camera behind the caster, the glow in the hand, the
+big wave at tick 118, the title, the cut into space, stars streaking and going out, the pairs, the shrinking, the
+hush and the burst, no "loading terrain" screen showing through the white, the world coming back inside a growing
+wave, the morning. Sound all the way through (Players slider). Educational labels with the setting on. A second
+player watching. The film key to skip.
+
+## How to check things without a game (the VM can't run one)
+
+- GLSL: generate a page that inlines the two shader files with `#version 150` replaced by `#version 300 es` +
+  `precision highp float;`, compile them in a WebGL2 context, open it in the browser pane and read the logs (a page in
+  `previz\` works; delete it after).
+- Soundtrack: compile a small `main` in package `dev.adamko.ton618addition.client.film` against
+  `build/classes/java/main` that calls `FilmSynth.render()` and prints per-second levels or writes a WAV.
+
+## Design decisions (Part 2)
+
+- Camera: RimuLib `FilmApi.film(...)` with `.clock(cast::tick).hardCut().fullFrame().priority(2)`, one shot 0-836;
+  RimuLib blends back to the player by 850. RimuLib's director is not cleared on a dimension change (read in its
+  1.2.3 jar), so one cutscene should survive RESTORE; if the director drops it, `LastLightFilm.tick` hands it back.
+- Films off in RimuLib, or skipped with its film key: only the white of the burst is drawn (677-735).
+- The "loading terrain" screen during the trip back is covered white (`ScreenEvent.Render.Post`).
+- The space scene and the HUD draw in `RenderGuiEvent.Post` (and in `Pre` if another mod cancels the HUD), so they
+  sit above TON 618's own post effects. In-world effects draw at `RenderLevelStageEvent.AFTER_WEATHER`.
+- Dark shots are placed along the way to TON618 (not the caster's facing); overworld shots face east (the sunrise).
+- The returning wave is a white shell round the caster that grows (drawn with the world's depth: what is nearer
+  than the shell is the world, back), not fog.
+- Soundtrack = code-made PCM through a custom `SoundInstance` (`resolve` + `getStream` overridden),
+  `SoundSource.PLAYERS`. The game stops all sounds on the dimension change; the controller restarts the track at the
+  clock's position.
+- At PRESS the caster's arm swings on the client only (`swing(hand, false)`, nothing sent). The arm is not raised as
+  in the previz (no pose control from the film): the glow sits at the caster's side.
+- Stars are drawn a little larger than the previz's points (quads under about three pixels flicker); 3200 stars
+  instead of 5200.
+- Input is not held during the film (as in the SA Series' films).
+
+## Known risks to watch in the first test
+
+- Shader packs (Iris) may hide the in-world parts; "Fabulous" graphics untested.
+- TON 618's own time effects can still play over the first 200 ticks in the dark.
+- The HUD's sizes and positions were laid out from the previz's numbers but never seen in the game's lettering.
+- The soundtrack's balance was only measured, never heard.
