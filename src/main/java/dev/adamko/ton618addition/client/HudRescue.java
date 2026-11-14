@@ -1,6 +1,6 @@
 package dev.adamko.ton618addition.client;
 
-import cyou.rimuru.rimulib.mc1211.client.magic.WhiteSpace;
+import cyou.rimuru.rimulib.client.magic.WhiteSpace;
 import dev.adamko.ton618addition.Ton618Addition;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.gui.GuiGraphics;

@@ -1,10 +1,10 @@
 package dev.adamko.ton618addition.link;
 
-import cyou.rimuru.rimulib.mc1211.api.NetApi;
-import cyou.rimuru.rimulib.mc1211.api.RimulibApi;
-import cyou.rimuru.rimulib.mc1211.api.SkillApi;
-import cyou.rimuru.rimulib.mc1211.skill.Skill;
-import cyou.rimuru.rimulib.mc1211.skill.SkillSet;
+import cyou.rimuru.rimulib.api.NetApi;
+import cyou.rimuru.rimulib.api.RimulibApi;
+import cyou.rimuru.rimulib.api.SkillApi;
+import cyou.rimuru.rimulib.skill.Skill;
+import cyou.rimuru.rimulib.skill.SkillSet;
 import dev.adamko.ton618addition.Ton618Addition;
 import dev.adamko.ton618addition.lastlight.LastLight;
 import dev.adamko.ton618addition.lastlight.LastLightInfo;

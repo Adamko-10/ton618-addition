@@ -4,7 +4,7 @@ import static dev.adamko.ton618addition.client.film.FilmScript.lin;
 import static dev.adamko.ton618addition.client.film.FilmScript.ss;
 
 import com.mojang.math.Axis;
-import cyou.rimuru.rimulib.mc1211.client.api.UiApi;
+import cyou.rimuru.rimulib.client.api.UiApi;
 import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.client.gui.GuiGraphics;

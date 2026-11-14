@@ -1,136 +1,81 @@
-// TON 618 Addition: an unofficial addon for rimuru_dev's TON 618 (Forge 1.21.1), built with ForgeGradle 7 like the
-// SA Series' forge-1.21.1 branch.
+// TON 618 Addition: an unofficial addon for rimuru_dev's TON 618 (Fabric 1.21.1), built with Fabric Loom like the SA
+// Series' fabric-1.21.1 branch.
 //
-//   1. Put RimuLib's and TON 618's Forge jars in libs/ (see libs/README.txt).
+//   1. Put the 1.21.1 jars from inside RimuLib's and TON 618's Fabric bundles in libs/ (see libs/README.txt).
 //   2. ./gradlew build        -> build/libs/ton618_addition-<version>.jar
-//      ./gradlew runServer    -> a dev server with TON 618, RimuLib and this addon loaded
+//      ./gradlew runServer    -> a dev server with TON 618, RimuLib, Fabric API and this addon
 //
 // Versions live in gradle.properties.
 plugins {
-    id 'java-library'
-    id 'idea'
-    id 'net.minecraftforge.gradle' version '[7.0.23,8.0)'
+    id 'fabric-loom' version "${loom_version}"
 }
 
-tasks.named('wrapper', Wrapper).configure {
-    distributionType = Wrapper.DistributionType.BIN
-}
-
-version = mod_version
-group = mod_group_id
+version = project.mod_version
+group = project.maven_group
 
 base {
-    archivesName = mod_id
+    archivesName = project.archives_base_name
 }
 
-java.toolchain.languageVersion = JavaLanguageVersion.of(21)
-
-minecraft {
-    mappings channel: 'official', version: project.minecraft_version
-
-    runs {
-        configureEach {
-            systemProperty 'forge.logging.markers', 'REGISTRIES'
-            args "--mixin.config=${mod_id}.mixins.json"
-        }
-        register('client') {
-            workingDir = layout.projectDirectory.dir('run')
-            mods {
-                "${mod_id}" { source sourceSets.main }
-            }
-        }
-        register('server') {
-            workingDir = layout.projectDirectory.dir('run')
-            args '--nogui'
-            mods {
-                "${mod_id}" { source sourceSets.main }
-            }
+loom {
+    mods {
+        "${mod_id}" {
+            sourceSet sourceSets.main
         }
     }
 }
 
-repositories {
-    minecraft.mavenizer(it)
-    maven fg.forgeMaven
-    maven fg.minecraftLibsMaven
-    mavenCentral()
-    mavenLocal()
-}
-
-// RimuLib (compiled against: its public API) and TON 618 (only loaded in the dev runs). Both are All Rights Reserved:
-// never shipped inside this jar, never committed. Optional extra mods for the dev runs go in libs/extra/.
+// RimuLib (compiled against: its public API) and TON 618 (only loaded in the dev runs): the 1.21.1 jars from inside
+// their Fabric bundles. Both are All Rights Reserved: never shipped inside this jar, never committed.
 var rimulib = fileTree(dir: 'libs', include: 'rimulib*.jar')
 var ton618 = fileTree(dir: 'libs', include: 'ton618*.jar')
-var extraMods = fileTree(dir: 'libs/extra', include: '*.jar')
 if (rimulib.files.size() > 1) {
     throw new GradleException("libs/ has more than one RimuLib: ${rimulib.files*.name} - keep one")
 }
 
-var forgeDependency = minecraft.dependency("net.minecraftforge:forge:${project.minecraft_version}-${project.forge_version}")
-
 dependencies {
-    implementation forgeDependency
-    compileOnly rimulib
+    minecraft "com.mojang:minecraft:${project.minecraft_version}"
+    mappings loom.officialMojangMappings()
+    modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
+    modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
+    compileOnly 'com.google.code.findbugs:jsr305:3.0.2'
+
+    modCompileOnly rimulib
+    modLocalRuntime rimulib
+    modLocalRuntime ton618
 }
 
 tasks.named('compileJava') {
-    outputs.cacheIf { false }
+    def found = rimulib
     doFirst {
-        if (rimulib.isEmpty()) {
-            throw new GradleException("Put RimuLib's Forge jar (rimulib-<version>-forge.jar) in libs/ first - see libs/README.txt")
+        if (found.isEmpty()) {
+            throw new GradleException("Put RimuLib's Fabric 1.21.1 jar (from inside its bundle) in libs/ first - see libs/README.txt")
         }
     }
 }
 
-// The dev runs load mods from run/mods: RimuLib, TON 618 and anything in libs/extra.
-var copyRunMods = tasks.register('copyRunMods', Sync) {
-    from rimulib, ton618, extraMods
-    into layout.projectDirectory.dir('run/mods')
-}
-tasks.matching { it.name.startsWith('run') }.configureEach {
-    dependsOn copyRunMods
-}
-
-// mods.toml is filled in from gradle.properties.
-var generateModMetadata = tasks.register('generateModMetadata', ProcessResources) {
+processResources {
     var replaceProperties = [
-        minecraft_version_range: minecraft_version_range,
-        forge_version_range    : forge_version_range,
-        loader_version_range   : loader_version_range,
-        ton618_mod_id          : ton618_mod_id,
-        ton618_version_range   : ton618_version_range,
-        rimulib_mod_id         : rimulib_mod_id,
-        rimulib_version_range  : rimulib_version_range,
-        shooting_star_mod_id   : shooting_star_mod_id,
-        mod_id                 : mod_id,
-        mod_name               : mod_name,
-        mod_license            : mod_license,
-        mod_version            : mod_version,
-        mod_authors            : mod_authors,
-        mod_description        : mod_description,
+        version             : project.mod_version,
+        ton618_mod_id       : project.ton618_mod_id,
+        rimulib_mod_id      : project.rimulib_mod_id,
+        shooting_star_mod_id: project.shooting_star_mod_id,
     ]
     inputs.properties replaceProperties
-    expand replaceProperties
-    from 'src/main/templates'
-    into 'build/generated/sources/modMetadata'
-}
-sourceSets.main.resources.srcDir generateModMetadata
-
-// Mixins: Forge 1.21.1 runs Mojang (official) names at runtime, no refmap needed; the config is declared in the jar
-// manifest (Forge 1.21.1 doesn't read [[mixins]] from mods.toml) and passed to the dev runs above.
-tasks.named('jar', Jar) {
-    manifest {
-        attributes(['MixinConfigs': "${mod_id}.mixins.json"])
+    filesMatching('fabric.mod.json') {
+        expand replaceProperties
     }
 }
 
 tasks.withType(JavaCompile).configureEach {
-    options.encoding = 'UTF-8'
+    it.options.release = 21
+    it.options.encoding = 'UTF-8'
 }
 
-idea {
-    module {
-        downloadSources = true
-        downloadJavadoc = true
+java {
+    sourceCompatibility = JavaVersion.VERSION_21
+    targetCompatibility = JavaVersion.VERSION_21
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
     }
 }

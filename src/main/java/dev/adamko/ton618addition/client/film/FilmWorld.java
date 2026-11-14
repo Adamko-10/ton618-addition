@@ -16,7 +16,7 @@ import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.client.event.RenderLevelStageEvent;
+import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 
@@ -70,22 +70,22 @@ final class FilmWorld {
         groundKnown = false;
     }
 
-    static void render(RenderLevelStageEvent event, LastLightCast cast, float t) {
-        if (event.getStage() != RenderLevelStageEvent.Stage.AFTER_WEATHER || !FilmGl.ready()) {
+    static void render(WorldRenderContext context, LastLightCast cast, float t) {
+        if (!FilmGl.ready()) {
             return;
         }
         Minecraft mc = Minecraft.getInstance();
         if (mc.level == null) {
             return;
         }
-        float partial = event.getPartialTick();
-        Camera camera = event.getCamera();
+        float partial = context.tickCounter().getGameTimeDeltaPartialTick(true);
+        Camera camera = context.camera();
         Vec3 eye = camera.getPosition();
         Vector3f left = camera.getLeftVector();
         Vector3f up = new Vector3f(camera.getUpVector());
         Vector3f right = new Vector3f(-left.x, -left.y, -left.z);
-        Matrix4f view = new Matrix4f(event.getPoseStack());
-        Matrix4f proj = new Matrix4f(event.getProjectionMatrix());
+        Matrix4f view = new Matrix4f(context.positionMatrix());
+        Matrix4f proj = new Matrix4f(context.projectionMatrix());
         if (cast.inDark()) {
             if (t < FilmScript.S_COSMOS + 4F) {
                 dark(cast, t, partial, eye, right, up, view, proj);

@@ -13,8 +13,7 @@ import java.io.IOException;
 import javax.annotation.Nullable;
 import net.minecraft.client.renderer.ShaderInstance;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.packs.resources.ResourceProvider;
-import net.minecraftforge.client.event.RegisterShadersEvent;
+import net.fabricmc.fabric.api.client.rendering.v1.CoreShaderRegistrationCallback;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 
@@ -43,18 +42,12 @@ final class FilmGl {
     }
 
     /**
-     * Loads the film's program. The game looks for shader programs under {@code shaders/core/}; the film's files live
-     * in its own folder, {@code shaders/film/}, so the lookup is pointed there.
+     * Loads the film's program through Fabric API (on Fabric the files live in {@code shaders/core/}, where its
+     * shader registration looks; the NeoForge and Forge branches keep them in {@code shaders/film/}).
      */
-    static void register(RegisterShadersEvent event) {
-        ResourceProvider base = event.getResourceProvider();
-        ResourceProvider film = location -> {
-            String path = location.getPath();
-            return base.getResource(path.startsWith("shaders/core/") ? location.withPath("shaders/film/" + path.substring(13)) : location);
-        };
+    static void register(CoreShaderRegistrationCallback.RegistrationContext context) {
         try {
-            event.registerShader(new ShaderInstance(film, ResourceLocation.fromNamespaceAndPath(Ton618Addition.MOD_ID, "last_light"),
-                DefaultVertexFormat.POSITION_TEX_COLOR), loaded -> shader = loaded);
+            context.register(Ton618Addition.id("last_light"), DefaultVertexFormat.POSITION_TEX_COLOR, loaded -> shader = loaded);
         } catch (IOException | RuntimeException failed) {
             // the skill still works; the film then shows its words and the white only
             Ton618Addition.LOG.error("The Last Light film's shader didn't load, so its pictures won't be drawn", failed);

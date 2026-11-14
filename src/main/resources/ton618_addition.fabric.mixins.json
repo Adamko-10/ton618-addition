@@ -1,0 +1,12 @@
+{
+  "required": false,
+  "minVersion": "0.8",
+  "package": "dev.adamko.ton618addition.client.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "client": [
+    "RimulibClientMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 0
+  }
+}

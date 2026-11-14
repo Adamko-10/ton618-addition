@@ -4,10 +4,10 @@ import static dev.adamko.ton618addition.client.film.FilmScript.lerp;
 import static dev.adamko.ton618addition.client.film.FilmScript.lin;
 import static dev.adamko.ton618addition.client.film.FilmScript.ss;
 
-import cyou.rimuru.rimulib.mc1211.client.api.FilmApi;
-import cyou.rimuru.rimulib.mc1211.client.cinematic.CameraPose;
-import cyou.rimuru.rimulib.mc1211.client.cinematic.Cutscene;
-import cyou.rimuru.rimulib.mc1211.client.cinematic.Subject;
+import cyou.rimuru.rimulib.client.api.FilmApi;
+import cyou.rimuru.rimulib.client.cinematic.CameraPose;
+import cyou.rimuru.rimulib.client.cinematic.Cutscene;
+import cyou.rimuru.rimulib.client.cinematic.Subject;
 import dev.adamko.ton618addition.client.LastLightCast;
 import java.util.List;
 import net.minecraft.client.Minecraft;

@@ -1,24 +1,20 @@
 package dev.adamko.ton618addition.client;
 
-import net.minecraftforge.common.ForgeConfigSpec;
+import dev.adamko.ton618addition.config.ConfigFile;
 
 /**
- * Each player's own settings ({@code config/ton618_addition-client.toml}, also in game: Mods, TON 618 Addition,
- * Config).
+ * Each player's own settings ({@code config/ton618_addition-client.toml}, the same file as on NeoForge), switched in the
+ * H menu's plate ({@link EducationPlate}).
  */
 public final class Ton618AdditionClientConfig {
-    public static final ForgeConfigSpec SPEC;
-    private static final ForgeConfigSpec.BooleanValue EDUCATIONAL;
+    public static final ConfigFile SPEC = new ConfigFile("ton618_addition-client.toml");
+    private static final ConfigFile.BoolValue EDUCATIONAL;
 
     static {
-        ForgeConfigSpec.Builder b = new ForgeConfigSpec.Builder();
-        b.push("film");
-        EDUCATIONAL = b.comment(
-                "Educational mode: small labels in the Last Light film pointing at the real physics (Hawking radiation,",
-                "the eras of the universe, the information paradox). Off by default.")
-            .define("educational_mode", false);
-        b.pop();
-        SPEC = b.build();
+        SPEC.section("film");
+        EDUCATIONAL = SPEC.define("educational_mode", false,
+            "Educational mode: small labels in the Last Light film pointing at the real physics (Hawking radiation,",
+            "the eras of the universe, the information paradox). Off by default.");
     }
 
     private Ton618AdditionClientConfig() {
@@ -26,14 +22,7 @@ public final class Ton618AdditionClientConfig {
 
     /** Educational mode is on: the film shows its physics labels. */
     public static boolean educational() {
-        if (!SPEC.isLoaded()) {
-            return false;
-        }
-        try {
-            return EDUCATIONAL.get();
-        } catch (IllegalStateException notLoadedYet) {
-            return false;
-        }
+        return SPEC.isLoaded() && EDUCATIONAL.get();
     }
 
     /** Sets and saves educational mode (from the H-menu plate, {@link EducationPlate}). */
@@ -41,11 +30,7 @@ public final class Ton618AdditionClientConfig {
         if (!SPEC.isLoaded()) {
             return;
         }
-        try {
-            EDUCATIONAL.set(on);
-            EDUCATIONAL.save();
-        } catch (IllegalStateException notLoadedYet) {
-            // stays at its default
-        }
+        EDUCATIONAL.set(on);
+        SPEC.save();
     }
 }

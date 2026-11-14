@@ -1,25 +1,18 @@
 package dev.adamko.ton618addition;
 
 import com.mojang.logging.LogUtils;
-import dev.adamko.ton618addition.client.Ton618AdditionClient;
 import dev.adamko.ton618addition.lastlight.LastLight;
 import dev.adamko.ton618addition.link.Ton618Link;
+import net.fabricmc.api.ModInitializer;
+import net.fabricmc.fabric.api.entity.event.v1.ServerEntityWorldChangeEvents;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.level.ServerPlayer;
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.event.entity.player.PlayerEvent;
-import net.minecraftforge.event.server.ServerStoppedEvent;
-import net.minecraftforge.eventbus.api.IEventBus;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.config.ModConfig;
-import net.minecraftforge.fml.event.lifecycle.FMLConstructModEvent;
-import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
-import net.minecraftforge.fml.loading.FMLEnvironment;
 import org.slf4j.Logger;
 
 /**
- * TON 618 Addition: an unofficial addon for rimuru_dev's TON 618 (this branch: Forge 1.21.1).
+ * TON 618 Addition: an unofficial addon for rimuru_dev's TON 618 (this branch: Fabric 1.21.1).
  *
  * <ul>
  *   <li>{@link Ton618Link}: the one place that joins TON 618 (and, when installed, The Shooting Star's Stellar Remote),
@@ -28,41 +21,26 @@ import org.slf4j.Logger;
  *   <li>{@link Ton618AdditionConfig}: the server settings; the client's are in {@code client/}.</li>
  *   <li>{@code client/film/}: the film, made by Fable (see CLAUDE.md, "For Fable: the film").</li>
  * </ul>
+ *
+ * <p>Fabric runs main entrypoints in no fixed order, so joining TON 618 waits until every mod's main entrypoint has run:
+ * just before RimuLib's client starts ({@code client/mixin/RimulibClientMixin}, before it makes the skills' keys) or,
+ * on a dedicated server, in {@link Ton618AdditionServer} (as the SA Series does). {@link Ton618Link#install} runs once.
  */
-@Mod(Ton618Addition.MOD_ID)
-public final class Ton618Addition {
+public final class Ton618Addition implements ModInitializer {
     public static final String MOD_ID = "ton618_addition";
     public static final Logger LOG = LogUtils.getLogger();
 
-    public Ton618Addition(FMLJavaModLoadingContext context) {
-        IEventBus modBus = context.getModEventBus();
-        boolean client = FMLEnvironment.dist.isClient();
-        context.registerConfig(ModConfig.Type.COMMON, Ton618AdditionConfig.SPEC);
-        // Mods are constructed in parallel: join TON 618 once every mod has been constructed (the queue runs on the main
-        // thread), still before RimuLib registers its packets and makes the skills' keys (as the SA Series does).
-        modBus.addListener((FMLConstructModEvent event) -> event.enqueueWork(() -> {
+    @Override
+    public void onInitialize() {
+        Ton618AdditionConfig.SPEC.load();
+        ServerLifecycleEvents.SERVER_STARTING.register(server -> {
+            Ton618AdditionConfig.SPEC.load();
             Ton618Link.install();
-            if (client) {
-                Ton618AdditionClient.afterConstruction();
-            }
-        }));
-
-        if (client) {
-            Ton618AdditionClient.init(modBus, context);
-        }
-
-        MinecraftForge.EVENT_BUS.addListener((TickEvent.ServerTickEvent.Post event) -> LastLight.tick(event.getServer()));
-        MinecraftForge.EVENT_BUS.addListener((ServerStoppedEvent event) -> LastLight.clear());
-        MinecraftForge.EVENT_BUS.addListener((PlayerEvent.PlayerChangedDimensionEvent event) -> {
-            if (event.getEntity() instanceof ServerPlayer player) {
-                LastLight.arrived(player);
-            }
         });
-        MinecraftForge.EVENT_BUS.addListener((PlayerEvent.PlayerLoggedInEvent event) -> {
-            if (event.getEntity() instanceof ServerPlayer player) {
-                LastLight.arrived(player);
-            }
-        });
+        ServerTickEvents.END_SERVER_TICK.register(LastLight::tick);
+        ServerLifecycleEvents.SERVER_STOPPED.register(server -> LastLight.clear());
+        ServerEntityWorldChangeEvents.AFTER_PLAYER_CHANGE_WORLD.register((player, origin, destination) -> LastLight.arrived(player));
+        ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> LastLight.arrived(handler.player));
     }
 
     public static ResourceLocation id(String path) {

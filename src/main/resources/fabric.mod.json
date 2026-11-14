@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "id": "ton618_addition",
+  "version": "${version}",
+  "name": "TON 618 Addition",
+  "description": "An unofficial addon for TON 618 by rimuru_dev. TA-01 Last Light: after TON 618 has devoured the world, fast-forward time until TON618 evaporates by Hawking radiation, and its last light brings the world back. Needs TON 618 and RimuLib.",
+  "authors": [
+    "adamko_10"
+  ],
+  "contact": {
+    "sources": "https://github.com/Adamko-10/ton618-addition"
+  },
+  "license": "All-Rights-Reserved",
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "dev.adamko.ton618addition.Ton618Addition"
+    ],
+    "client": [
+      "dev.adamko.ton618addition.client.Ton618AdditionClient"
+    ],
+    "server": [
+      "dev.adamko.ton618addition.Ton618AdditionServer"
+    ]
+  },
+  "mixins": [
+    {
+      "config": "ton618_addition.mixins.json",
+      "environment": "client"
+    },
+    {
+      "config": "ton618_addition.fabric.mixins.json",
+      "environment": "client"
+    }
+  ],
+  "depends": {
+    "fabricloader": ">=0.15.0",
+    "minecraft": "1.21.1",
+    "java": ">=21",
+    "fabric-api": "*",
+    "${ton618_mod_id}": ">=1.1.0",
+    "${rimulib_mod_id}": ">=1.2.3"
+  },
+  "suggests": {
+    "${shooting_star_mod_id}": "*"
+  }
+}

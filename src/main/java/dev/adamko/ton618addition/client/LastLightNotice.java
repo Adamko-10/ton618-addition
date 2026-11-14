@@ -1,6 +1,6 @@
 package dev.adamko.ton618addition.client;
 
-import cyou.rimuru.rimulib.mc1211.client.api.FilmApi;
+import cyou.rimuru.rimulib.client.api.FilmApi;
 import dev.adamko.ton618addition.lastlight.LastLightClock;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;

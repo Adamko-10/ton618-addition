@@ -1,7 +1,7 @@
 package dev.adamko.ton618addition.client.film;
 
-import cyou.rimuru.rimulib.mc1211.client.api.FilmApi;
-import cyou.rimuru.rimulib.mc1211.client.cinematic.Cutscene;
+import cyou.rimuru.rimulib.client.api.FilmApi;
+import cyou.rimuru.rimulib.client.cinematic.Cutscene;
 import dev.adamko.ton618addition.Ton618Addition;
 import dev.adamko.ton618addition.client.LastLightCast;
 import dev.adamko.ton618addition.lastlight.LastLightClock;
@@ -11,13 +11,12 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.ReceivingLevelScreen;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
-import net.minecraftforge.eventbus.api.EventPriority;
-import net.minecraftforge.eventbus.api.IEventBus;
-import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.client.event.RegisterShadersEvent;
-import net.minecraftforge.client.event.RenderLevelStageEvent;
-import net.minecraftforge.client.event.ScreenEvent;
-import net.minecraftforge.common.MinecraftForge;
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
+import net.fabricmc.fabric.api.client.rendering.v1.CoreShaderRegistrationCallback;
+import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;
+import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
+import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents;
+import net.minecraft.client.gui.screens.Screen;
 
 /**
  * <b>FABLE'S FILE.</b> The Last Light film, built from the previz Adam approved on 2026-11-13 ({@code previz/NOTES.md},
@@ -61,14 +60,18 @@ public final class LastLightFilm {
     private LastLightFilm() {
     }
 
-    public static void init(IEventBus modBus) {
-        modBus.addListener(EventPriority.NORMAL, false, RegisterShadersEvent.class, FilmGl::register);
-        MinecraftForge.EVENT_BUS.addListener((TickEvent.ClientTickEvent.Post event) -> tick());
-        MinecraftForge.EVENT_BUS.addListener(EventPriority.NORMAL, false, RenderLevelStageEvent.class, LastLightFilm::world);
+    public static void init() {
+        CoreShaderRegistrationCallback.EVENT.register(FilmGl::register);
+        ClientTickEvents.END_CLIENT_TICK.register(client -> tick());
+        WorldRenderEvents.LAST.register(LastLightFilm::world);
         // over the game's own HUD: Forge 1.21.1 has no RenderGuiEvent, so client/HudRescue calls screen(...) right
         // after the HUD every frame (also when TON 618 hides the HUD)
         // the game's "loading terrain" screen during the trip back: kept white
-        MinecraftForge.EVENT_BUS.addListener(EventPriority.NORMAL, false, ScreenEvent.Render.Post.class, LastLightFilm::loading);
+        ScreenEvents.AFTER_INIT.register((client, screen, width, height) -> {
+            if (screen instanceof ReceivingLevelScreen) {
+                ScreenEvents.afterRender(screen).register((shown, graphics, mouseX, mouseY, delta) -> loading(graphics));
+            }
+        });
     }
 
     public static void start(LastLightCast newCast) {
@@ -169,17 +172,17 @@ public final class LastLightFilm {
     }
 
     /** In the world: the waves, the hand's glow, the motes. */
-    private static void world(RenderLevelStageEvent event) {
+    private static void world(WorldRenderContext context) {
         LastLightCast now = cast;
-        if (now == null || event.getStage() != RenderLevelStageEvent.Stage.AFTER_WEATHER) {
+        if (now == null) {
             return;
         }
-        float partial = event.getPartialTick();
+        float partial = context.tickCounter().getGameTimeDeltaPartialTick(true);
         if (!showing(partial)) {
             return;
         }
         try {
-            FilmWorld.render(event, now, FilmScript.toSb(now.tick(partial)));
+            FilmWorld.render(context, now, FilmScript.toSb(now.tick(partial)));
         } catch (RuntimeException failed) {
             fail(failed);
         }
@@ -213,14 +216,13 @@ public final class LastLightFilm {
     }
 
     /** The "loading terrain" screen of the trip back, under the film's white. */
-    private static void loading(ScreenEvent.Render.Post event) {
+    private static void loading(GuiGraphics graphics) {
         LastLightCast now = cast;
-        if (now == null || !(event.getScreen() instanceof ReceivingLevelScreen)) {
+        if (now == null) {
             return;
         }
         float g = now.tick(0F);
         if (g >= 677F && g < 735F) {
-            GuiGraphics graphics = event.getGuiGraphics();
             graphics.fill(0, 0, graphics.guiWidth(), graphics.guiHeight(), 0xFFFFFFFF);
         }
     }

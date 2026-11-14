@@ -1,9 +1,9 @@
 package dev.adamko.ton618addition.client;
 
-import cyou.rimuru.rimulib.mc1211.client.api.FilmApi;
-import cyou.rimuru.rimulib.mc1211.client.api.MenuApi;
-import cyou.rimuru.rimulib.mc1211.client.api.NetClientApi;
-import cyou.rimuru.rimulib.mc1211.client.api.UiApi;
+import cyou.rimuru.rimulib.client.api.FilmApi;
+import cyou.rimuru.rimulib.client.api.MenuApi;
+import cyou.rimuru.rimulib.client.api.NetClientApi;
+import cyou.rimuru.rimulib.client.api.UiApi;
 import dev.adamko.ton618addition.Ton618Addition;
 import dev.adamko.ton618addition.client.film.LastLightFilm;
 import dev.adamko.ton618addition.lastlight.LastLightClock;
@@ -13,18 +13,15 @@ import dev.adamko.ton618addition.net.LastLightEnd;
 import dev.adamko.ton618addition.net.LastLightFx;
 import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
-import net.minecraftforge.eventbus.api.IEventBus;
-import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
-import net.minecraftforge.fml.config.ModConfig;
-import net.minecraftforge.client.event.ClientPlayerNetworkEvent;
-import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.common.MinecraftForge;
+import net.fabricmc.api.ClientModInitializer;
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 
 /**
  * The client side: the player's settings, the Last Light packet, and handing each cast to the film
  * ({@link LastLightFilm}, Fable's). Holds the running cast so the film can ask for it at any time.
  */
-public final class Ton618AdditionClient {
+public final class Ton618AdditionClient implements ClientModInitializer {
     @Nullable
     private static LastLightCast current;
     /** RimuLib's films were on last tick (to notice them being switched on mid-cast). */
@@ -38,19 +35,16 @@ public final class Ton618AdditionClient {
         }
     }
 
-    private Ton618AdditionClient() {
+    /** Fabric's client entrypoint (joining TON 618 itself waits for RimuLib's client: client/mixin/RimulibClientMixin). */
+    @Override
+    public void onInitializeClient() {
+        Ton618AdditionClientConfig.SPEC.load();
+        LastLightFilm.init();
+        ClientTickEvents.END_CLIENT_TICK.register(client -> tick());
+        ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> stop());
     }
 
-    /** From the mod's constructor, on clients only. */
-    public static void init(IEventBus modBus, FMLJavaModLoadingContext context) {
-        context.registerConfig(ModConfig.Type.CLIENT, Ton618AdditionClientConfig.SPEC);
-        // (Forge has no generic config screen like NeoForge's: the H-menu plate and the toml hold the settings)
-        LastLightFilm.init(modBus);
-        MinecraftForge.EVENT_BUS.addListener((TickEvent.ClientTickEvent.Post event) -> tick());
-        MinecraftForge.EVENT_BUS.addListener((ClientPlayerNetworkEvent.LoggingOut event) -> stop());
-    }
-
-    /** After every mod is constructed (with {@link Ton618Link#install}). */
+    /** Just before RimuLib's client starts (with {@link Ton618Link#install}; client/mixin/RimulibClientMixin). */
     public static void afterConstruction() {
         NetClientApi.receive(LastLightFx.PACKET, (fx, context) -> Minecraft.getInstance().execute(() -> begin(fx)));
         // the server dropped the cast before its end (the world came back early, or the restore failed)

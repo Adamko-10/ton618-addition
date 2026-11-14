@@ -99,7 +99,7 @@ final class FilmSound {
         }
 
         @Override
-        public CompletableFuture<AudioStream> getStream(SoundBufferLibrary buffers, Sound sound, boolean looping) {
+        public CompletableFuture<AudioStream> getAudioStream(SoundBufferLibrary buffers, ResourceLocation id, boolean looping) {
             return prepare().thenApply(pcm -> {
                 this.startedAt = this.clock.getAsDouble() / 20.0;
                 this.played = 0.0;
