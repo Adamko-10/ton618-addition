@@ -26,6 +26,15 @@ first** (Adam's brief, his own words at its end), then this file. Fable's part: 
   someone. Players who already ran an older jar keep their saved B/V until they reset them in Controls.
 - **Test jar**: `C:\Users\User\Desktop\test builds\2026-11-14 TON 618 educational mode\TON 618 Addition 0.1.0
   educational mode [NeoForge 1.21.1].jar` (the SA Series session copies test jars to Downloads for Adam).
+- **Adam's port and CurseForge picks (2026-11-14, clickable)**:
+  - **Port to all of TON 618's targets**: Forge 1.21.1; NeoForge + Forge 1.20.1; Fabric 1.20.1 + 1.21.1; Fabric
+    1.21.11 + 26.3 (eight jars with NeoForge 1.21.1; told: very roughly 1-2 h of session time each).
+  - **A public GitHub repo + CI**, like the SA Series (`Adamko-10/ton618-addition` suggested); nothing pushed until he
+    says so. CI builds the JDK 25 targets.
+  - **First CurseForge version: 1.0.0, Release** (Client + Server, as the SA Series).
+  - **Page text: Opus drafts** the summary and description (crediting rimuru_dev's TON 618 and RimuLib) as a file for
+    Adam to review; nothing posted without his yes.
+  - Porting starts after Adam's test of the educational-mode jar (features are ported once approved, §0).
 
 ### Before that (2026-11-14 ~12:00): menu fix built (`f6ef1bd`); Adam: "it works"
 
@@ -179,8 +188,9 @@ Skills carry a code like the SA Series: **TA-xx · Name** (TA = TON 618 Addition
 1a. ~~Fable's proposal P1~~: applied 2026-11-14 (`0f0e737`).
 2. ~~Should the waves do anything in the world?~~ Offered 2026-11-14, not picked: they stay pictures only.
 3. ~~An in-game switch for educational mode~~: built 2026-11-14 (`5e623cd`, `client/EducationPlate`).
-4. **Before the port and CurseForge** (ask clickable): loaders and versions; a GitHub repo for CI (Fabric 1.21.11/26.3
-   need JDK 25, not on the VM); CurseForge name, summary, description, version number and release type.
+4. ~~Before the port and CurseForge~~: answered 2026-11-14 (all targets, public repo + CI, 1.0.0 Release, Opus
+   drafts the page text; see RESUME HERE). Still to ask when it comes: pushing to the new repo, creating the
+   CurseForge project and uploading (each needs his yes).
 5. Other extras later (§10).
 
 ## 4. TON 618 facts
