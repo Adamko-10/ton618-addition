@@ -4,7 +4,24 @@ Handoff notes for every Claude session in this folder (`C:\Users\User\Desktop\to
 Started 2026-11-13 by an Opus 5.5 session (xhigh) that was started from Adam's SA Series session. **Read `BRIEF.md`
 first** (Adam's brief, his own words at its end), then this file. Fable's part: `prompts\FABLE-PREVIZ-AND-FILM-PROMPT.md`.
 
-### >>> RESUME HERE (2026-11-14 ~16:15, the VM): "can't trigger it" fix built (`0e8c7e1`), untested; then port, then CurseForge <<<
+### >>> RESUME HERE (2026-11-14 evening, the VM): NeoForge 1.21.1 approved; GitHub repo; then the 7 ports; then release <<<
+
+- **Adam tested the cast fix: "it works, i say we post it"** (via the SA Series session). NeoForge 1.21.1 (0.1.0 cast
+  fix, `0e8c7e1`) is approved.
+- **His release picks (2026-11-14, clickable)**:
+  - **Port all eight first, post them together** (not NeoForge now). Told the cost: very roughly 8-14 h of session
+    time over several sessions and a large share of usage; the film's drawing code is hardest on 1.21.11/26.3.
+  - **A branch per loader**, like the SA Series: `main` = NeoForge 1.21.1, plus `forge-1.21.1`, `forge-1.20.1`,
+    `neoforge-1.20.1`, `fabric-1.21.1`, `fabric-1.20.1`, `fabric-1.21.11`, `fabric-26.3`; changes cherry-picked across.
+  - **Opus ports everything, Fable's film files included** (as they are, changing only what each loader needs).
+  - **Public GitHub repo now**: "Yes, create and push" `Adamko-10/ton618-addition` with everything in the folder
+    except `libs/` jars (he was told BRIEF.md, CLAUDE.md, prompts, previz, docs and Fable's notes go public). The
+    **v1.0.0 GitHub release** comes later with CurseForge.
+  - **CurseForge: Opus in his browser** (he signs in himself; Opus fills the project form and uploads, asking his yes
+    before each submit). **Page header like the SA Series'** (Discord, YouTube, other mods). Version **1.0.0,
+    Release**; Opus drafts the page text for his review.
+
+### Before that (2026-11-14 ~16:15): "can't trigger it" fix built (`0e8c7e1`)
 
 - **Adam's bug (via the SA Series session, logs in `C:\Users\User\Downloads\logs\`)**: "idk why it isnt working i
   cant trigger it". His answers (clickable): "i wasnt able to cast it" (nothing showed), pressed J: "Not sure",
