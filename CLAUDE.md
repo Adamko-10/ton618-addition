@@ -12,6 +12,12 @@ first** (Adam's brief, his own words at its end), then this file. Fable's part: 
   like SA's icon) → `dev/publish/project-icon.png`: TON618 (shadow, photon ring, its disk bent over the top), gold
   Hawking sparks escaping, blue partners falling in, a sunrise on Earth's limb, the SA icon's "Addon" tag and a
   **gold "TA" badge** (SA's is blue). Shown to Adam (no changes asked).
+- **All of Adam's info in one place** (Adam, 2026-11-14: "take all info i told other sub conversations to write down
+  ... put it all into one path or just file"; clickable: "Everything", "Summary + your words", "Desktop, outside
+  repos"): `C:\Users\User\Desktop\Adam's notes\ALL YOUR INFO (2026-11-14).md` (Part 1 a summary by topic, Part 2 every
+  message he typed to the 3 VM sessions word for word with his clicks, Part 3 his words as the SA Series notes quote
+  them) + `full notes\` (copies of his global rules, both CLAUDE.md files, BRIEF, Fable's previz notes, SA's
+  NEXT-SKILLS and SA-05/06 plan). Outside every repo on purpose (names Hamza, his folders): never commit or upload it.
 - **Codex tests the jars on Adam's PC** (Adam, 2026-11-14: "make a prompt for codex to test for me"; clickable: "My own PC",
   "Real game, own folder"): `prompts/CODEX-TEST-PROMPT.md` (Codex sets up its own test games in
   `C:\Users\adam_\Documents\TON 618 Addition\codex tests\`, never his Modrinth profiles; asks before installs,
