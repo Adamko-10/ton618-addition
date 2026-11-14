@@ -4,7 +4,25 @@ Handoff notes for every Claude session in this folder (`C:\Users\User\Desktop\to
 Started 2026-11-13 by an Opus 5.5 session (xhigh) that was started from Adam's SA Series session. **Read `BRIEF.md`
 first** (Adam's brief, his own words at its end), then this file. Fable's part: `prompts\FABLE-PREVIZ-AND-FILM-PROMPT.md`.
 
-### >>> RESUME HERE (2026-11-14 ~00:20, the VM): the base is built (0.1.0); Adam tests it; Fable's Part 2 can start <<<
+### >>> RESUME HERE (2026-11-14 ~11:20, the VM): Fable's film is in (`2551dda`); Adam tests the film jar <<<
+
+- **Fable's Part 2 is done and committed** (`2551dda`, committed by Opus for Fable): the in-game Last Light film in
+  `client/film/` (LastLightFilm rewritten + FilmScript, FilmCamera, FilmWorld, FilmSpace, FilmHud, FilmSound,
+  FilmSynth, FilmGl) and `shaders/film/last_light.*`. It uses RimuLib's public `FilmApi`/`UiApi`, **no sounds.json, no
+  sound files, no textures** (the soundtrack is made by code, played through its own `SoundInstance`); render paths
+  catch their errors. Fable's notes: `previz/HANDOVER.md` "PART 2", `reviews/fable/PROPOSALS.md`. Builds; **never run
+  in a game** (the VM has no OpenGL: `runClient` fails at GLFW).
+- **Film test jar** (Fable's): `C:\Users\User\Desktop\test builds\2026-11-14 TON 618 film\TON 618 Addition 0.1.0 film
+  [NeoForge 1.21.1].jar` (copy in Downloads). It replaces the base jar below.
+- **Waiting for Adam**: proposal **P1** (a small "cast ended" packet so the film stops if the server drops a cast
+  early, e.g. an op's `/ton618 restore` mid-film; optional, Fable says only if it's seen); music (§3 Q1).
+- Fable's known limits for the test: with a shader pack (Iris) the in-world parts (waves, the hand's glow) may not
+  show; TON 618's own dark effects can still play over the first 200 ticks; players with RimuLib films off, or who
+  skip, see only the white of the burst.
+- `AGENTS.md` (untracked, 03:14, not Fable's or Opus's): a Codex copy of this file (Claude → Codex wording). Not
+  committed; ask Adam.
+
+### Earlier (2026-11-14 ~00:20): the base was built (0.1.0)
 
 - **Built (2026-11-14, `a786dc6`)**: TA-01 · Last Light on NeoForge 1.21.1 (§8): joins TON 618's menu and the Stellar
   Remote, castable only in TON 618's dark, film to everyone in the dark, sunrise + `ton618 restore` at tick 690, server
@@ -98,8 +116,11 @@ Skills carry a code like the SA Series: **TA-xx · Name** (TA = TON 618 Addition
 
 ## 3. Open questions (ask when they matter, as clickable choices)
 
-1. Music for the film (the SA Series has its own tracks; the previz has M1/M2 placeholders). Who makes the sounds:
-   Fable's film work (its `sounds/film/`) or ours?
+1. Music for the film (the SA Series has its own tracks). Now: Fable's code-made soundtrack, with M1 (a minor pad,
+   tick 137 to the hush) and M2 (a major pad from 720) as placeholders in `FilmSynth`. Real music = an `.ogg` played
+   beside it (needs `sounds.json` + a registered `SoundEvent`).
+1a. Fable's proposal **P1** (`reviews/fable/PROPOSALS.md`): a `LastLightEnd` packet when the server drops a cast before
+   END, so the client calls `stop()`. Optional; Adam picks.
 2. Should the waves do anything in the world (push entities, sway grass)? Now pictures only (previz point 7).
 3. An in-game switch for educational mode in TON 618's H menu (a plate, as the SA Series draws with `UiApi.onMenuDraw`)?
    Now: Mods, TON 618 Addition, Config (NeoForge's screen), or the client toml.
@@ -180,8 +201,8 @@ apart, told to Adam.
   - shaders `src/main/resources/assets/ton618_addition/shaders/film/`;
   - textures `src/main/resources/assets/ton618_addition/textures/film/`;
   - film sounds `src/main/resources/assets/ton618_addition/sounds/film/`, and the film's own sound list
-    `src/main/resources/assets/ton618_addition/sounds.json` (no other sounds exist yet, so it's the film's; register
-    the `SoundEvent`s from `LastLightFilm.init` with a `DeferredRegister` on the mod bus it gets).
+    `src/main/resources/assets/ton618_addition/sounds.json` (not used: Fable's film makes its soundtrack in code,
+    `FilmSynth`/`FilmSound`; real music would need these, §3 Q1).
   Anything else: a proposal in `reviews\fable\PROPOSALS.md` (what, where, why, the patch); Opus applies the ones Adam
   picks.
 - **The contract (what the rest of the mod calls; propose changes, don't make them):**
