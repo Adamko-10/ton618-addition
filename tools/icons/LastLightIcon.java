@@ -8,8 +8,8 @@ import javax.imageio.ImageIO;
  * space: a blue-white point, its glow, the burst's ring, a few Hawking pairs (blue falls in, gold escapes) and stars.
  * 2:1 like the menu's other icons.
  *
- * <p>Run (JDK 21): {@code java tools/icons/LastLightIcon.java [--size=WxH] <out.png> [more out.png ...]} (default 256x128;
- * the CurseForge project icon: {@code --size=400x400 dev/publish/project-icon.png}). The mod's copies:
+ * <p>Run (JDK 21): {@code java tools/icons/LastLightIcon.java [--size=WxH] <out.png> [more out.png ...]} (default 256x128).
+ * The CurseForge project icon is pixel art of its own now: {@code tools/icons/ModIcon.java}. The mod's copies:
  * {@code assets/ton618/textures/gui/sprites/skill/ton_618/last_light.png} (TON 618's menu) and
  * {@code assets/shooting_star_demo/textures/gui/sprites/skill/stellar_remote/last_light.png} (the Stellar Remote's).
  */
