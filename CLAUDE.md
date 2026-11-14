@@ -507,6 +507,18 @@ machinery (TON 618 needs none: we never name its classes).
   `Sound(String...)`, FilmGl's 1.20.1 vertex helpers; Fabric API 0.92.6+1.20.1, compiled for Java 17 (release 17,
   toolchain 21; Loom on JDK 25); mixin configs JAVA_17; Fabric 1.20.1's `WorldRenderContext.tickDelta()` and
   `matrixStack().last().pose()`; inner `+mc1.20.1` jars.
+- **fabric-1.21.11 plan (2026-11-14, from the SA Series' `fabric-1.21.11`)**: Fabric API 0.141.6+1.21.11, Loom 1.18.4
+  (JDK 25), Java 21; inner `+mc1.21.11` jars. Minecraft 1.21.11: `Identifier` for `ResourceLocation`; GUI recorded
+  then drawn later (`GuiGraphics.pose()` is a 2D `Matrix3x2fStack`: `pushMatrix/translate(x,y)/scale(x,y)/popMatrix`,
+  no `flush()`, `nextStratum()` for layering); the HUD fix needs the frame's own `GuiGraphics` (MixinExtras
+  `@WrapOperation`, bundled by Fabric Loader). The film's drawing moves to render pipelines like SA's
+  `HalleyPipelines` + `DynamicMesh` + `ProximaRender`: one `RenderPipeline` per blend/depth mode (vertex format
+  POSITION_TEX_COLOR, QUADS), uniforms in std140 blocks (`Projection` via `PerspectiveProjectionMatrixBuffer`, and a
+  film block with the view matrix, Mode, Param, Param2 written with `Std140Builder`), meshes uploaded to a GPU buffer
+  (`DynamicMesh`) before a `RenderPass` opens; the space scene (`FilmSpace`) renders into an offscreen texture of its
+  own (colour + depth) and is blitted in the HUD between `nextStratum()` calls (as `ProximaRender.present`); the world
+  effects (`FilmWorld`) draw in passes on the main target's colour and depth. Fable's GLSL is rewritten for the
+  uniform blocks.
 - **Next**: the other Fabric branches (SA's `fabric-*` branches: Loom,
   `ConfigFile` instead of `ModConfigSpec`, Fabric callbacks for ticks/HUD/world render, RimuLib packages without a
   version prefix on Fabric).
