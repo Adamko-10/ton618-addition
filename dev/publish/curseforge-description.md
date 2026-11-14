@@ -63,12 +63,12 @@ A small **TON 618 Addition** panel in the top right corner of the H menu holds y
 ## More
 
 *   **Shader packs** (Iris): the film's space scene and words show; the two waves of light on the ground may not.
-*   **TON 618's dark** hides the game's HUD; this addon puts back RimuLib's H menu there, so Last Light can be picked.
+*   **TON 618's dark** hides the game's HUD on most versions; this addon puts back RimuLib's H menu there, so Last Light can be picked.
 
 ## Settings
 
 *   `config/ton618_addition-common.toml` (the server's): Last Light on or off, **who can cast it** (everyone, or operators only: it brings the world back for everyone, which TON 618 leaves to operators with `/ton618 restore`), and whether the world comes back on a morning.
-*   `config/ton618_addition-client.toml` (each player's own): educational mode. Also under Mods → TON 618 Addition → Config.
+*   `config/ton618_addition-client.toml` (each player's own): educational mode (or use the H menu's switch). On NeoForge 1.21.1 both files are also under Mods → TON 618 Addition → Config.
 
 ## Will it work with future versions of TON 618?
 
