@@ -1,4 +1,4 @@
-**For Minecraft {MC}, {LOADER}.** Install on the server and every client. Needs **TON 618 1.1.0** and **RimuLib 1.2.3** or newer{FABRIC_API}.
+**For Minecraft {MC}, {LOADER}{ALSO}.** Install on the server and every client. Needs **TON 618 1.1.0** and **RimuLib 1.2.3** or newer{FABRIC_API}.
 
 ## 1.0.0: the first release
 

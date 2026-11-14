@@ -14,22 +14,23 @@ An **unofficial**, fan-made addon for **[TON 618](https://www.curseforge.com/min
 
 ## ⚠️ Compatibility — please read
 
-Version **1.0.0** works with **TON 618 1.1.0** and needs **RimuLib 1.2.3** or newer (TON 618 needs it too). Install it on the **server and every client**.
+Version **1.0.0** works with **TON 618 1.1.0** and needs **RimuLib 1.2.3** or newer (TON 618 needs it too).
 
 ### Available builds
 
 Download the build that matches your Minecraft version and mod loader:
 
 *   **NeoForge 1.21.1**
-*   **NeoForge 1.20.1**
 *   **Forge 1.21.1**
-*   **Forge 1.20.1**
+*   **Forge 1.20.1** (also runs on NeoForge 1.20.1)
 *   **Fabric 26.3**
 *   **Fabric 1.21.11**
 *   **Fabric 1.21.1**
 *   **Fabric 1.20.1**
 
-The Fabric builds also need **Fabric API**. With **The Shooting Star \[Demo\]** installed (optional), Last Light is on the Stellar Remote too.
+The Fabric builds also need **Fabric API**. Install it on the **server and every client**.
+
+With **[The Shooting Star \[Demo\]](https://www.curseforge.com/minecraft/mc-mods/the-shooting-star-demo)** installed (optional), Last Light is on the Stellar Remote too.
 
 **Photosensitivity warning:** Last Light ends in a full-screen white flash.
 
@@ -48,12 +49,21 @@ Then time lets go. A wave of light rolls out from you, and a film carries you th
 *   **The black-hole era**: pairs of particles appear at the horizon; one falls in, the other escapes, and TON618 slowly shrinks. That is **Hawking radiation**.
 *   **Smaller, hotter, faster**: the smaller it gets, the hotter it burns and the faster it goes, until after a googol of years it ends in a **burst of light**.
 *   **The world returns**: a second wave clears the white, and you are home again, on a new morning.
-
-Everyone in the dark sees the whole film and comes back with you. If your films are switched off (RimuLib's film key, **J**), a small card shows the countdown instead.
+*   **Its own film** (skippable with RimuLib's film key, **J**), with its title card, **TA-01 · LAST LIGHT**, and its own soundtrack. Everyone in the dark sees the whole film and comes back with you. With films switched off, a small card shows the countdown instead.
+*   Its own key (**;** on TON 618, **'** on the Stellar Remote), menu card and cooldown.
 
 ## Educational mode
 
-Switch it on in the H menu (the **TON 618 Addition** panel, top right, key **\\**): small labels in the film point at the real physics behind each moment (Hawking radiation, the eras of the universe, why smaller means hotter, the information paradox). Off by default.
+Off by default. Switch it on in the H menu (**\\**): small labels in the film point at the real physics behind each moment (Hawking radiation, the eras of the universe, why smaller means hotter, the information paradox).
+
+## The H menu
+
+A small **TON 618 Addition** panel in the top right corner of the H menu holds your switch: **\\** educational mode. Until Last Light is ready, it also shows how to unlock it. On the Stellar Remote it shows while Last Light is picked.
+
+## More
+
+*   **Shader packs** (Iris): the film's space scene and words show; the two waves of light on the ground may not.
+*   **TON 618's dark** hides the game's HUD; this addon puts back RimuLib's H menu there, so Last Light can be picked.
 
 ## Settings
 
@@ -63,6 +73,9 @@ Switch it on in the H menu (the **TON 618 Addition** panel, top right, key **\\*
 ## Will it work with future versions of TON 618?
 
 It joins TON 618 through RimuLib's official addon API and TON 618's own `/ton618` commands, so small updates should keep working. If TON 618 changes how its devoured world works, wait for an update of this addon.
+
+*   **It won't crash your game** if something changed: Last Light just won't be able to bring the world back, and says so.
+*   **Other mod loaders and Minecraft versions not listed above** are not supported yet.
 
 ## Plans
 
