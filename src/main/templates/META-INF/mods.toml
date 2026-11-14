@@ -1,5 +1,6 @@
-# TON 618 Addition: an unofficial addon for rimuru_dev's TON 618 (NeoForge 1.21.1).
+# TON 618 Addition: an unofficial addon for rimuru_dev's TON 618 (Forge 1.21.1).
 # Values written as dollar-brace placeholders are filled in from gradle.properties when the jar is built.
+# The mixin config is declared in the jar's manifest (Forge 1.21.1 doesn't read [[mixins]] here).
 modLoader = "javafml"
 loaderVersion = "${loader_version_range}"
 license = "${mod_license}"
@@ -11,21 +12,16 @@ displayName = "${mod_name}"
 authors = "${mod_authors}"
 description = '''${mod_description}'''
 
-# Client only, optional: puts back RimuLib's H menu and the film's layer where TON 618 hides the HUD (client/HudRescue).
-# If their targets change, they switch themselves off.
-[[mixins]]
-config = "ton618_addition.mixins.json"
-
 [[dependencies.${mod_id}]]
-modId = "neoforge"
-type = "required"
-versionRange = "${neo_version_range}"
+modId = "forge"
+mandatory = true
+versionRange = "${forge_version_range}"
 ordering = "NONE"
 side = "BOTH"
 
 [[dependencies.${mod_id}]]
 modId = "minecraft"
-type = "required"
+mandatory = true
 versionRange = "${minecraft_version_range}"
 ordering = "NONE"
 side = "BOTH"
@@ -33,7 +29,7 @@ side = "BOTH"
 # The mod this addon adds to: TON 618 by rimuru_dev.
 [[dependencies.${mod_id}]]
 modId = "${ton618_mod_id}"
-type = "required"
+mandatory = true
 versionRange = "${ton618_version_range}"
 ordering = "AFTER"
 side = "BOTH"
@@ -42,7 +38,7 @@ reason = "TON 618 Addition adds Last Light to TON 618's skill menu."
 # TON 618 keeps its skills, menu and films in RimuLib, which the addon joins through its public API.
 [[dependencies.${mod_id}]]
 modId = "${rimulib_mod_id}"
-type = "required"
+mandatory = true
 versionRange = "${rimulib_version_range}"
 ordering = "AFTER"
 side = "BOTH"
@@ -50,7 +46,7 @@ side = "BOTH"
 # Optional: with The Shooting Star installed, its Stellar Remote gets Last Light too.
 [[dependencies.${mod_id}]]
 modId = "${shooting_star_mod_id}"
-type = "optional"
+mandatory = false
 versionRange = "*"
 ordering = "AFTER"
 side = "BOTH"

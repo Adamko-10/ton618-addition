@@ -16,7 +16,7 @@ import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
+import net.minecraftforge.client.event.RenderLevelStageEvent;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 
@@ -78,13 +78,13 @@ final class FilmWorld {
         if (mc.level == null) {
             return;
         }
-        float partial = event.getPartialTick().getGameTimeDeltaPartialTick(true);
+        float partial = event.getPartialTick();
         Camera camera = event.getCamera();
         Vec3 eye = camera.getPosition();
         Vector3f left = camera.getLeftVector();
         Vector3f up = new Vector3f(camera.getUpVector());
         Vector3f right = new Vector3f(-left.x, -left.y, -left.z);
-        Matrix4f view = new Matrix4f(event.getModelViewMatrix());
+        Matrix4f view = new Matrix4f(event.getPoseStack());
         Matrix4f proj = new Matrix4f(event.getProjectionMatrix());
         if (cast.inDark()) {
             if (t < FilmScript.S_COSMOS + 4F) {

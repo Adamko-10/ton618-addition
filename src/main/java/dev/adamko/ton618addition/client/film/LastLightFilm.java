@@ -11,14 +11,13 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.ReceivingLevelScreen;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
-import net.neoforged.bus.api.EventPriority;
-import net.neoforged.bus.api.IEventBus;
-import net.neoforged.neoforge.client.event.ClientTickEvent;
-import net.neoforged.neoforge.client.event.RegisterShadersEvent;
-import net.neoforged.neoforge.client.event.RenderGuiEvent;
-import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
-import net.neoforged.neoforge.client.event.ScreenEvent;
-import net.neoforged.neoforge.common.NeoForge;
+import net.minecraftforge.eventbus.api.EventPriority;
+import net.minecraftforge.eventbus.api.IEventBus;
+import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.client.event.RegisterShadersEvent;
+import net.minecraftforge.client.event.RenderLevelStageEvent;
+import net.minecraftforge.client.event.ScreenEvent;
+import net.minecraftforge.common.MinecraftForge;
 
 /**
  * <b>FABLE'S FILE.</b> The Last Light film, built from the previz Adam approved on 2026-11-13 ({@code previz/NOTES.md},
@@ -63,19 +62,13 @@ public final class LastLightFilm {
     }
 
     public static void init(IEventBus modBus) {
-        modBus.addListener(RegisterShadersEvent.class, FilmGl::register);
-        NeoForge.EVENT_BUS.addListener(ClientTickEvent.Post.class, event -> tick());
-        NeoForge.EVENT_BUS.addListener(RenderLevelStageEvent.class, LastLightFilm::world);
-        // over the game's own HUD; and if another mod called the HUD off this frame, still drawn
-        NeoForge.EVENT_BUS.addListener(RenderGuiEvent.Post.class,
-            event -> screen(event.getGuiGraphics(), event.getPartialTick().getGameTimeDeltaPartialTick(false)));
-        NeoForge.EVENT_BUS.addListener(EventPriority.LOWEST, true, RenderGuiEvent.Pre.class, event -> {
-            if (event.isCanceled()) {
-                screen(event.getGuiGraphics(), event.getPartialTick().getGameTimeDeltaPartialTick(false));
-            }
-        });
+        modBus.addListener(EventPriority.NORMAL, false, RegisterShadersEvent.class, FilmGl::register);
+        MinecraftForge.EVENT_BUS.addListener((TickEvent.ClientTickEvent.Post event) -> tick());
+        MinecraftForge.EVENT_BUS.addListener(EventPriority.NORMAL, false, RenderLevelStageEvent.class, LastLightFilm::world);
+        // over the game's own HUD: Forge 1.21.1 has no RenderGuiEvent, so client/HudRescue calls screen(...) right
+        // after the HUD every frame (also when TON 618 hides the HUD)
         // the game's "loading terrain" screen during the trip back: kept white
-        NeoForge.EVENT_BUS.addListener(ScreenEvent.Render.Post.class, LastLightFilm::loading);
+        MinecraftForge.EVENT_BUS.addListener(EventPriority.NORMAL, false, ScreenEvent.Render.Post.class, LastLightFilm::loading);
     }
 
     public static void start(LastLightCast newCast) {
@@ -181,7 +174,7 @@ public final class LastLightFilm {
         if (now == null || event.getStage() != RenderLevelStageEvent.Stage.AFTER_WEATHER) {
             return;
         }
-        float partial = event.getPartialTick().getGameTimeDeltaPartialTick(true);
+        float partial = event.getPartialTick();
         if (!showing(partial)) {
             return;
         }
@@ -192,8 +185,8 @@ public final class LastLightFilm {
         }
     }
 
-    /** Over the screen: the space scene, then the words and veils. */
-    private static void screen(GuiGraphics graphics, float partial) {
+    /** Over the screen: the space scene, then the words and veils (from client/HudRescue, after the HUD). */
+    public static void screen(GuiGraphics graphics, float partial) {
         LastLightCast now = cast;
         if (now == null) {
             return;

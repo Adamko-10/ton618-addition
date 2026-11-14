@@ -6,20 +6,20 @@ import dev.adamko.ton618addition.lastlight.LastLight;
 import dev.adamko.ton618addition.link.Ton618Link;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.bus.api.IEventBus;
-import net.neoforged.fml.ModContainer;
-import net.neoforged.fml.common.Mod;
-import net.neoforged.fml.config.ModConfig;
-import net.neoforged.fml.event.lifecycle.FMLConstructModEvent;
-import net.neoforged.neoforge.common.NeoForge;
-import net.neoforged.neoforge.event.entity.player.PlayerEvent;
-import net.neoforged.neoforge.event.server.ServerStoppedEvent;
-import net.neoforged.neoforge.event.tick.ServerTickEvent;
+import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.event.entity.player.PlayerEvent;
+import net.minecraftforge.event.server.ServerStoppedEvent;
+import net.minecraftforge.eventbus.api.IEventBus;
+import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.config.ModConfig;
+import net.minecraftforge.fml.event.lifecycle.FMLConstructModEvent;
+import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
+import net.minecraftforge.fml.loading.FMLEnvironment;
 import org.slf4j.Logger;
 
 /**
- * TON 618 Addition: an unofficial addon for rimuru_dev's TON 618.
+ * TON 618 Addition: an unofficial addon for rimuru_dev's TON 618 (this branch: Forge 1.21.1).
  *
  * <ul>
  *   <li>{@link Ton618Link}: the one place that joins TON 618 (and, when installed, The Shooting Star's Stellar Remote),
@@ -34,29 +34,31 @@ public final class Ton618Addition {
     public static final String MOD_ID = "ton618_addition";
     public static final Logger LOG = LogUtils.getLogger();
 
-    public Ton618Addition(IEventBus modBus, ModContainer container, Dist dist) {
-        container.registerConfig(ModConfig.Type.COMMON, Ton618AdditionConfig.SPEC);
+    public Ton618Addition(FMLJavaModLoadingContext context) {
+        IEventBus modBus = context.getModEventBus();
+        boolean client = FMLEnvironment.dist.isClient();
+        context.registerConfig(ModConfig.Type.COMMON, Ton618AdditionConfig.SPEC);
         // Mods are constructed in parallel: join TON 618 once every mod has been constructed (the queue runs on the main
         // thread), still before RimuLib registers its packets and makes the skills' keys (as the SA Series does).
-        modBus.addListener(FMLConstructModEvent.class, event -> event.enqueueWork(() -> {
+        modBus.addListener((FMLConstructModEvent event) -> event.enqueueWork(() -> {
             Ton618Link.install();
-            if (dist.isClient()) {
+            if (client) {
                 Ton618AdditionClient.afterConstruction();
             }
         }));
 
-        if (dist.isClient()) {
-            Ton618AdditionClient.init(modBus, container);
+        if (client) {
+            Ton618AdditionClient.init(modBus, context);
         }
 
-        NeoForge.EVENT_BUS.addListener(ServerTickEvent.Post.class, event -> LastLight.tick(event.getServer()));
-        NeoForge.EVENT_BUS.addListener(ServerStoppedEvent.class, event -> LastLight.clear());
-        NeoForge.EVENT_BUS.addListener(PlayerEvent.PlayerChangedDimensionEvent.class, event -> {
+        MinecraftForge.EVENT_BUS.addListener((TickEvent.ServerTickEvent.Post event) -> LastLight.tick(event.getServer()));
+        MinecraftForge.EVENT_BUS.addListener((ServerStoppedEvent event) -> LastLight.clear());
+        MinecraftForge.EVENT_BUS.addListener((PlayerEvent.PlayerChangedDimensionEvent event) -> {
             if (event.getEntity() instanceof ServerPlayer player) {
                 LastLight.arrived(player);
             }
         });
-        NeoForge.EVENT_BUS.addListener(PlayerEvent.PlayerLoggedInEvent.class, event -> {
+        MinecraftForge.EVENT_BUS.addListener((PlayerEvent.PlayerLoggedInEvent event) -> {
             if (event.getEntity() instanceof ServerPlayer player) {
                 LastLight.arrived(player);
             }

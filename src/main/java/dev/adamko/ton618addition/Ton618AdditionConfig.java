@@ -1,6 +1,6 @@
 package dev.adamko.ton618addition;
 
-import net.neoforged.neoforge.common.ModConfigSpec;
+import net.minecraftforge.common.ForgeConfigSpec;
 
 /**
  * The server's settings ({@code config/ton618_addition-common.toml}). Read on the server when a cast comes in, so a
@@ -10,13 +10,13 @@ public final class Ton618AdditionConfig {
     /** Who may cast Last Light (Adam, 2026-11-13: a setting, everyone by default). */
     public enum Who { EVERYONE, OPERATORS }
 
-    public static final ModConfigSpec SPEC;
-    private static final ModConfigSpec.BooleanValue ENABLED;
-    private static final ModConfigSpec.EnumValue<Who> WHO_CAN_CAST;
-    private static final ModConfigSpec.BooleanValue MORNING;
+    public static final ForgeConfigSpec SPEC;
+    private static final ForgeConfigSpec.BooleanValue ENABLED;
+    private static final ForgeConfigSpec.EnumValue<Who> WHO_CAN_CAST;
+    private static final ForgeConfigSpec.BooleanValue MORNING;
 
     static {
-        ModConfigSpec.Builder b = new ModConfigSpec.Builder();
+        ForgeConfigSpec.Builder b = new ForgeConfigSpec.Builder();
         b.push("last_light");
         ENABLED = b.comment("TA-01 Last Light can be cast on this server.")
             .define("enabled", true);

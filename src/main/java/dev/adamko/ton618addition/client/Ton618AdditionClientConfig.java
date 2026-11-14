@@ -1,17 +1,17 @@
 package dev.adamko.ton618addition.client;
 
-import net.neoforged.neoforge.common.ModConfigSpec;
+import net.minecraftforge.common.ForgeConfigSpec;
 
 /**
  * Each player's own settings ({@code config/ton618_addition-client.toml}, also in game: Mods, TON 618 Addition,
  * Config).
  */
 public final class Ton618AdditionClientConfig {
-    public static final ModConfigSpec SPEC;
-    private static final ModConfigSpec.BooleanValue EDUCATIONAL;
+    public static final ForgeConfigSpec SPEC;
+    private static final ForgeConfigSpec.BooleanValue EDUCATIONAL;
 
     static {
-        ModConfigSpec.Builder b = new ModConfigSpec.Builder();
+        ForgeConfigSpec.Builder b = new ForgeConfigSpec.Builder();
         b.push("film");
         EDUCATIONAL = b.comment(
                 "Educational mode: small labels in the Last Light film pointing at the real physics (Hawking radiation,",

@@ -13,14 +13,12 @@ import dev.adamko.ton618addition.net.LastLightEnd;
 import dev.adamko.ton618addition.net.LastLightFx;
 import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
-import net.neoforged.bus.api.IEventBus;
-import net.neoforged.fml.ModContainer;
-import net.neoforged.fml.config.ModConfig;
-import net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent;
-import net.neoforged.neoforge.client.event.ClientTickEvent;
-import net.neoforged.neoforge.client.gui.ConfigurationScreen;
-import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
-import net.neoforged.neoforge.common.NeoForge;
+import net.minecraftforge.eventbus.api.IEventBus;
+import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
+import net.minecraftforge.fml.config.ModConfig;
+import net.minecraftforge.client.event.ClientPlayerNetworkEvent;
+import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.common.MinecraftForge;
 
 /**
  * The client side: the player's settings, the Last Light packet, and handing each cast to the film
@@ -44,13 +42,12 @@ public final class Ton618AdditionClient {
     }
 
     /** From the mod's constructor, on clients only. */
-    public static void init(IEventBus modBus, ModContainer container) {
-        container.registerConfig(ModConfig.Type.CLIENT, Ton618AdditionClientConfig.SPEC);
-        // Mods, TON 618 Addition, Config: NeoForge's own screen for our settings
-        container.registerExtensionPoint(IConfigScreenFactory.class, ConfigurationScreen::new);
+    public static void init(IEventBus modBus, FMLJavaModLoadingContext context) {
+        context.registerConfig(ModConfig.Type.CLIENT, Ton618AdditionClientConfig.SPEC);
+        // (Forge has no generic config screen like NeoForge's: the H-menu plate and the toml hold the settings)
         LastLightFilm.init(modBus);
-        NeoForge.EVENT_BUS.addListener(ClientTickEvent.Post.class, event -> tick());
-        NeoForge.EVENT_BUS.addListener(ClientPlayerNetworkEvent.LoggingOut.class, event -> stop());
+        MinecraftForge.EVENT_BUS.addListener((TickEvent.ClientTickEvent.Post event) -> tick());
+        MinecraftForge.EVENT_BUS.addListener((ClientPlayerNetworkEvent.LoggingOut event) -> stop());
     }
 
     /** After every mod is constructed (with {@link Ton618Link#install}). */
