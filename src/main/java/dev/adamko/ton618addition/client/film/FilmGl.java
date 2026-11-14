@@ -1,54 +1,57 @@
 package dev.adamko.ton618addition.client.film;
 
-import com.mojang.blaze3d.buffers.GpuBuffer;
-import com.mojang.blaze3d.buffers.GpuBufferSlice;
 import com.mojang.blaze3d.buffers.Std140Builder;
-import com.mojang.blaze3d.pipeline.BlendFunction;
-import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.pipeline.RenderTarget;
-import com.mojang.blaze3d.platform.DepthTestFunction;
-import com.mojang.blaze3d.platform.DestFactor;
-import com.mojang.blaze3d.platform.SourceFactor;
-import com.mojang.blaze3d.shaders.UniformType;
-import com.mojang.blaze3d.systems.GpuDevice;
-import com.mojang.blaze3d.systems.RenderPass;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.textures.FilterMode;
-import com.mojang.blaze3d.textures.GpuTexture;
-import com.mojang.blaze3d.textures.GpuTextureView;
-import com.mojang.blaze3d.textures.TextureFormat;
 import com.mojang.blaze3d.vertex.BufferBuilder;
+import com.mojang.blaze3d.vertex.ByteBufferBuilder;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.MeshData;
-import com.mojang.blaze3d.vertex.Tesselator;
-import com.mojang.blaze3d.vertex.VertexFormat;
+import com.mojang.renderpearl.api.GpuFormat;
+import com.mojang.renderpearl.api.buffers.GpuBuffer;
+import com.mojang.renderpearl.api.buffers.GpuBufferSlice;
+import com.mojang.renderpearl.api.commands.RenderPass;
+import com.mojang.renderpearl.api.device.GpuDevice;
+import com.mojang.renderpearl.api.pipeline.BindGroupLayout;
+import com.mojang.renderpearl.api.pipeline.BlendFactor;
+import com.mojang.renderpearl.api.pipeline.BlendFunction;
+import com.mojang.renderpearl.api.pipeline.ColorTargetState;
+import com.mojang.renderpearl.api.pipeline.CompareOp;
+import com.mojang.renderpearl.api.pipeline.DepthStencilState;
+import com.mojang.renderpearl.api.pipeline.PrimitiveTopology;
+import com.mojang.renderpearl.api.pipeline.RenderPipeline;
+import com.mojang.renderpearl.api.pipeline.UniformType;
+import com.mojang.renderpearl.api.textures.FilterMode;
+import com.mojang.renderpearl.api.textures.GpuTexture;
+import com.mojang.renderpearl.api.textures.GpuTextureView;
 import dev.adamko.ton618addition.Ton618Addition;
 import java.nio.ByteBuffer;
+import java.util.Optional;
 import java.util.OptionalDouble;
-import java.util.OptionalInt;
 import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.renderer.PerspectiveProjectionMatrixBuffer;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.renderer.BindGroupLayouts;
+import net.minecraft.client.renderer.ProjectionMatrixBuffer;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.texture.AbstractTexture;
 import net.minecraft.resources.Identifier;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
+import org.joml.Vector4f;
 import org.lwjgl.system.MemoryStack;
 
 /**
- * <b>FABLE'S FILE</b> (ported to Minecraft 1.21.11's renderer by Opus, Adam's OK 2026-11-14). The film's one shader
+ * <b>FABLE'S FILE</b> (ported to Minecraft 26.3's renderer by Opus, Adam's OK 2026-11-14). The film's one shader
  * ({@code shaders/core/last_light}) and the few drawing helpers everything in the film uses: quads built on the CPU
  * each frame, drawn with one material ("mode") per call.
  *
- * <p>On 1.21.11 there is no shader object to bind and no global blend state: each blend ({@link #opaque()},
- * {@link #additive()}, {@link #premultiplied()}, {@link #blended()}) and depth mode ({@link #beginOverlay()},
- * {@link #beginWorld()}) is a {@link RenderPipeline} of its own, the material and the view matrix go in a uniform block
- * ({@code FilmParams}), the projection in Minecraft's {@code Projection} block, and each {@link #draw} uploads its quads
- * ({@link FilmMesh}) and runs one render pass. The space scene ({@code FilmSpace}, between {@link #beginOverlay()} and
- * {@link #end()}) draws into a texture of its own, which {@link #present} puts on screen in the HUD (as the SA Series'
- * {@code ProximaRender} does); the world effects ({@link #beginWorld()}) draw onto the game's own picture and depth.
+ * <p>As on the 1.21.11 branch, each blend ({@link #opaque()}, {@link #additive()}, {@link #premultiplied()},
+ * {@link #blended()}) and depth mode ({@link #beginOverlay()}, {@link #beginWorld()}) is a pipeline of its own, the
+ * material and view matrix go in the {@code FilmParams} block, the projection in Minecraft's {@code Projection} block;
+ * the space scene draws into a texture of its own that {@link #present} puts on screen; the world effects draw onto the
+ * game's picture and depth. 26.3 uses the renderpearl API (bind groups, colour-target and depth-stencil states) and
+ * reversed depth (nearer is greater).
  */
 final class FilmGl {
     /** The shader's materials (see {@code last_light.fsh}). */
@@ -69,29 +72,46 @@ final class FilmGl {
     /** FilmParams: the view matrix, then Mode (x), Param and Param2. */
     private static final int UNIFORM_SIZE = 64 + 3 * 16;
     private static final Identifier SCENE = Ton618Addition.id("film_scene");
+    private static final BindGroupLayout FILM_PARAMS = BindGroupLayout.builder().withUniform("FilmParams", UniformType.UNIFORM_BUFFER).build();
+    private static final ColorTargetState[] TARGETS = {
+        new ColorTargetState(Optional.empty(), GpuFormat.RGBA8_UNORM, ColorTargetState.WRITE_COLOR),
+        new ColorTargetState(Optional.of(new BlendFunction(BlendFactor.ONE, BlendFactor.ONE)), GpuFormat.RGBA8_UNORM,
+            ColorTargetState.WRITE_COLOR),
+        new ColorTargetState(Optional.of(new BlendFunction(BlendFactor.ONE, BlendFactor.ONE_MINUS_SRC_ALPHA)), GpuFormat.RGBA8_UNORM,
+            ColorTargetState.WRITE_COLOR),
+        new ColorTargetState(Optional.of(BlendFunction.TRANSLUCENT), GpuFormat.RGBA8_UNORM, ColorTargetState.WRITE_COLOR)};
+    /** Hidden behind the world, writing no depth (26.x: reversed depth, nearer is greater). */
+    private static final DepthStencilState TEST_ONLY = new DepthStencilState(CompareOp.GREATER_THAN_OR_EQUAL, false);
     private static final RenderPipeline[][] PIPELINES = new RenderPipeline[4][2];
     private static final FilmMesh MESH = new FilmMesh("TA-01 Last Light film");
+    /** A few byte buffers in turn: the film sometimes has two meshes open at once. */
+    private static final ByteBufferBuilder[] BYTES = new ByteBufferBuilder[4];
+    private static int nextBytes;
 
     private static int blend = BLENDED;
-    /** Drawing the world effects (onto the game's picture, depth-tested), else the space scene (its own texture). */
     private static boolean world;
     @Nullable
     private static GpuBuffer uniforms;
     @Nullable
-    private static PerspectiveProjectionMatrixBuffer projection;
+    private static ProjectionMatrixBuffer projection;
     @Nullable
     private static Scene scene;
 
     private FilmGl() {
     }
 
-    /** The pipelines compile their shaders themselves on first use: nothing to load up front on 1.21.11. */
+    /** The pipelines compile their shaders on first use: nothing to load up front. */
     static boolean ready() {
         return true;
     }
 
     static BufferBuilder begin() {
-        return Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX_COLOR);
+        int i = nextBytes;
+        nextBytes = (nextBytes + 1) % BYTES.length;
+        if (BYTES[i] == null) {
+            BYTES[i] = new ByteBufferBuilder(1 << 16);
+        }
+        return new BufferBuilder(BYTES[i], PrimitiveTopology.QUADS, DefaultVertexFormat.POSITION_TEX_COLOR);
     }
 
     static void vertex(BufferBuilder b, float x, float y, float z, float u, float v, float r, float g, float bl, float a) {
@@ -136,14 +156,13 @@ final class FilmGl {
                 .putVec4((float) mode, 0F, 0F, 0F).putVec4(p0, p1, p2, p3).putVec4(q0, q1, q2, q3).get();
             device.createCommandEncoder().writeToBuffer(uniforms.slice(), data);
         }
-        // the world's own projection while drawing in the world; the film's for its space scene
         GpuBufferSlice projectionSlice = world ? RenderSystem.getProjectionMatrixBuffer() : projection(proj);
-        RenderTarget main = Minecraft.getInstance().getMainRenderTarget();
+        RenderTarget main = Minecraft.getInstance().gameRenderer.mainRenderTarget();
         GpuTextureView color = world ? main.getColorTextureView() : scene.getTextureView();
         GpuTextureView depth = world ? main.getDepthTextureView() : scene.depthView;
         try (RenderPass pass = device.createCommandEncoder().createRenderPass(() -> "TA-01 Last Light", color,
-                OptionalInt.empty(), depth, OptionalDouble.empty())) {
-            pass.setPipeline(pipeline(blend, world));
+                Optional.empty(), depth, OptionalDouble.empty())) {
+            pass.setPipeline(RenderSystem.getCompiledPipeline(pipeline(blend, world)));
             pass.setUniform("Projection", projectionSlice);
             pass.setUniform("FilmParams", uniforms);
             MESH.draw(pass);
@@ -160,7 +179,7 @@ final class FilmGl {
 
     private static GpuBufferSlice projection(Matrix4f matrix) {
         if (projection == null) {
-            projection = new PerspectiveProjectionMatrixBuffer("TA-01 Last Light film projection");
+            projection = new ProjectionMatrixBuffer("TA-01 Last Light film projection");
         }
         return projection.getBuffer(matrix);
     }
@@ -168,24 +187,18 @@ final class FilmGl {
     private static RenderPipeline pipeline(int blendMode, boolean depthTested) {
         int d = depthTested ? 1 : 0;
         if (PIPELINES[blendMode][d] == null) {
-            RenderPipeline.Builder b = RenderPipeline.builder()
+            PIPELINES[blendMode][d] = RenderPipeline.builder()
                 .withLocation(Ton618Addition.id("pipeline/last_light_" + blendMode + "_" + d))
                 .withVertexShader(Ton618Addition.id("core/last_light"))
                 .withFragmentShader(Ton618Addition.id("core/last_light"))
-                .withUniform("Projection", UniformType.UNIFORM_BUFFER)
-                .withUniform("FilmParams", UniformType.UNIFORM_BUFFER)
-                .withVertexFormat(DefaultVertexFormat.POSITION_TEX_COLOR, VertexFormat.Mode.QUADS)
-                .withDepthTestFunction(depthTested ? DepthTestFunction.LEQUAL_DEPTH_TEST : DepthTestFunction.NO_DEPTH_TEST)
-                .withDepthWrite(false)
+                .withBindGroupLayout(BindGroupLayouts.PROJECTION)
+                .withBindGroupLayout(FILM_PARAMS)
+                .withVertexBinding(0, DefaultVertexFormat.POSITION_TEX_COLOR)
+                .withPrimitiveTopology(PrimitiveTopology.QUADS)
+                .withColorTargetState(TARGETS[blendMode])
+                .withDepthStencilState(depthTested ? Optional.of(TEST_ONLY) : Optional.empty())
                 .withCull(false)
-                .withColorWrite(true, false);
-            switch (blendMode) {
-                case ADDITIVE -> b.withBlend(new BlendFunction(SourceFactor.ONE, DestFactor.ONE));
-                case PREMULTIPLIED -> b.withBlend(new BlendFunction(SourceFactor.ONE, DestFactor.ONE_MINUS_SRC_ALPHA));
-                case BLENDED -> b.withBlend(BlendFunction.TRANSLUCENT);
-                default -> b.withoutBlend();
-            }
-            PIPELINES[blendMode][d] = b.build();
+                .build();
         }
         return PIPELINES[blendMode][d];
     }
@@ -210,10 +223,7 @@ final class FilmGl {
         blend = OPAQUE;
     }
 
-    /**
-     * A scene of our own over everything: no depth, both faces. On 1.21.11 it is drawn into the film's own texture
-     * (cleared to black here, the size of the window); {@link #present} puts it on screen.
-     */
+    /** A scene of our own over everything: drawn into the film's own texture (cleared to black, the window's size). */
     static void beginOverlay() {
         world = false;
         Minecraft mc = Minecraft.getInstance();
@@ -223,7 +233,8 @@ final class FilmGl {
             scene = new Scene(width, height);
             mc.getTextureManager().register(SCENE, scene);
         }
-        RenderSystem.getDevice().createCommandEncoder().clearColorAndDepthTextures(scene.getTexture(), 0xFF000000, scene.depth, 1.0);
+        RenderSystem.getDevice().createCommandEncoder().clearColorAndDepthTextures(scene.getTexture(), new Vector4f(0F, 0F, 0F, 1F),
+            scene.depth, RenderSystem.DEFAULT_DEPTH_CLEAR_VALUE);
     }
 
     /** Light and veils in the world: hidden by what stands in front, writing no depth, both faces. */
@@ -236,7 +247,7 @@ final class FilmGl {
     }
 
     /** The space scene drawn since {@link #beginOverlay()}, onto the screen (between the HUD under it and the words). */
-    static void present(GuiGraphics graphics) {
+    static void present(GuiGraphicsExtractor graphics) {
         if (scene == null || !scene.ready()) {
             return;
         }
@@ -259,12 +270,14 @@ final class FilmGl {
             this.width = width;
             this.height = height;
             GpuDevice device = RenderSystem.getDevice();
-            this.texture = device.createTexture(SCENE::toString, GpuTexture.USAGE_RENDER_ATTACHMENT | GpuTexture.USAGE_TEXTURE_BINDING,
-                TextureFormat.RGBA8, width, height, 1, 1);
+            // 26.3's explicit clear needs COPY_DST on both attachments (as the SA Series found)
+            this.texture = device.createTexture(SCENE::toString,
+                GpuTexture.USAGE_RENDER_ATTACHMENT | GpuTexture.USAGE_TEXTURE_BINDING | GpuTexture.USAGE_COPY_DST,
+                GpuFormat.RGBA8_UNORM, width, height, 1, 1);
             this.textureView = device.createTextureView(this.texture);
             this.sampler = RenderSystem.getSamplerCache().getClampToEdge(FilterMode.LINEAR);
-            this.depth = device.createTexture(() -> "TA-01 Last Light film depth", GpuTexture.USAGE_RENDER_ATTACHMENT,
-                TextureFormat.DEPTH32, width, height, 1, 1);
+            this.depth = device.createTexture(() -> "TA-01 Last Light film depth", GpuTexture.USAGE_RENDER_ATTACHMENT | GpuTexture.USAGE_COPY_DST,
+                GpuFormat.D32_FLOAT, width, height, 1, 1);
             this.depthView = device.createTextureView(this.depth);
         }
 

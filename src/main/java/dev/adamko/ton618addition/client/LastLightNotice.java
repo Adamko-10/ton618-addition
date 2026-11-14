@@ -5,7 +5,7 @@ import dev.adamko.ton618addition.lastlight.LastLightClock;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
 
@@ -25,7 +25,7 @@ public final class LastLightNotice {
     private LastLightNotice() {
     }
 
-    static void draw(GuiGraphics g, float partial) {
+    static void draw(GuiGraphicsExtractor g, float partial) {
         LastLightCast cast = Ton618AdditionClient.current();
         if (cast == null) {
             return;
@@ -58,9 +58,9 @@ public final class LastLightNotice {
         g.fill(0, 1, 1, h - 1, PLATE);
         g.fill(w - 1, 1, w, h - 1, PLATE);
         g.fill(0, 0, 3, h, TITLE);
-        g.drawString(font, title, (w - font.width(title)) / 2, 6, TITLE, false);
-        g.drawString(font, line, (w - font.width(line)) / 2, 18, TEXT, false);
-        g.drawString(font, why, (w - font.width(why)) / 2, 29, DIM, false);
+        g.text(font, title, (w - font.width(title)) / 2, 6, TITLE, false);
+        g.text(font, line, (w - font.width(line)) / 2, 18, TEXT, false);
+        g.text(font, why, (w - font.width(why)) / 2, 29, DIM, false);
         g.pose().popMatrix();
     }
 }

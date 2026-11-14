@@ -1,13 +1,13 @@
-// TON 618 Addition: an unofficial addon for rimuru_dev's TON 618 (Fabric 1.21.11), built with Fabric Loom like the SA
-// Series' fabric-1.21.11 branch.
+// TON 618 Addition: an unofficial addon for rimuru_dev's TON 618 (Fabric 26.3), built with Fabric Loom like the SA
+// Series' fabric-26.3 branch (Minecraft 26.x is unobfuscated: no mappings, no mod* remapping; Java 25).
 //
-//   1. Put the 1.21.11 jars from inside RimuLib's and TON 618's Fabric bundles in libs/ (see libs/README.txt).
+//   1. Put the 26.3 jars from inside RimuLib's and TON 618's Fabric bundles in libs/ (see libs/README.txt).
 //   2. ./gradlew build        -> build/libs/ton618_addition-<version>.jar
 //      ./gradlew runServer    -> a dev server with TON 618, RimuLib, Fabric API and this addon
 //
 // Versions live in gradle.properties.
 plugins {
-    id 'fabric-loom' version "${loom_version}"
+    id 'net.fabricmc.fabric-loom' version "${loom_version}"
 }
 
 version = project.mod_version
@@ -25,7 +25,7 @@ loom {
     }
 }
 
-// RimuLib (compiled against: its public API) and TON 618 (only loaded in the dev runs): the 1.21.11 jars from inside
+// RimuLib (compiled against: its public API) and TON 618 (only loaded in the dev runs): the 26.3 jars from inside
 // their Fabric bundles. Both are All Rights Reserved: never shipped inside this jar, never committed.
 var rimulib = fileTree(dir: 'libs', include: 'rimulib*.jar')
 var ton618 = fileTree(dir: 'libs', include: 'ton618*.jar')
@@ -35,21 +35,20 @@ if (rimulib.files.size() > 1) {
 
 dependencies {
     minecraft "com.mojang:minecraft:${project.minecraft_version}"
-    mappings loom.officialMojangMappings()
-    modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
-    modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
+    implementation "net.fabricmc:fabric-loader:${project.loader_version}"
+    implementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
     compileOnly 'com.google.code.findbugs:jsr305:3.0.2'
 
-    modCompileOnly rimulib
-    modLocalRuntime rimulib
-    modLocalRuntime ton618
+    compileOnly rimulib
+    localRuntime rimulib
+    localRuntime ton618
 }
 
 tasks.named('compileJava') {
     def found = rimulib
     doFirst {
         if (found.isEmpty()) {
-            throw new GradleException("Put RimuLib's Fabric 1.21.11 jar (from inside its bundle) in libs/ first - see libs/README.txt")
+            throw new GradleException("Put RimuLib's Fabric 26.3 jar (from inside its bundle) in libs/ first - see libs/README.txt")
         }
     }
 }
@@ -68,14 +67,14 @@ processResources {
 }
 
 tasks.withType(JavaCompile).configureEach {
-    it.options.release = 21
+    it.options.release = 25
     it.options.encoding = 'UTF-8'
 }
 
 java {
-    sourceCompatibility = JavaVersion.VERSION_21
-    targetCompatibility = JavaVersion.VERSION_21
+    sourceCompatibility = JavaVersion.VERSION_25
+    targetCompatibility = JavaVersion.VERSION_25
     toolchain {
-        languageVersion = JavaLanguageVersion.of(21)
+        languageVersion = JavaLanguageVersion.of(25)
     }
 }

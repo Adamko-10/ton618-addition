@@ -4,7 +4,7 @@ import com.mojang.logging.LogUtils;
 import dev.adamko.ton618addition.lastlight.LastLight;
 import dev.adamko.ton618addition.link.Ton618Link;
 import net.fabricmc.api.ModInitializer;
-import net.fabricmc.fabric.api.entity.event.v1.ServerEntityWorldChangeEvents;
+import net.fabricmc.fabric.api.entity.event.v1.ServerEntityLevelChangeEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
@@ -39,7 +39,7 @@ public final class Ton618Addition implements ModInitializer {
         });
         ServerTickEvents.END_SERVER_TICK.register(LastLight::tick);
         ServerLifecycleEvents.SERVER_STOPPED.register(server -> LastLight.clear());
-        ServerEntityWorldChangeEvents.AFTER_PLAYER_CHANGE_WORLD.register((player, origin, destination) -> LastLight.arrived(player));
+        ServerEntityLevelChangeEvents.AFTER_PLAYER_CHANGE_LEVEL.register((player, origin, destination) -> LastLight.arrived(player));
         ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> LastLight.arrived(handler.player));
     }
 

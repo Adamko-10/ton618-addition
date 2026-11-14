@@ -1,4 +1,5 @@
 #version 330
+#extension GL_ARB_separate_shader_objects : require
 
 // TA-01 Last Light's film (client/film). One program, a material per Mode (all our own, nothing of TON 618's):
 //  0 plain colour (Color)
@@ -13,7 +14,7 @@
 //  6 a far galaxy's smudge (uv already turned and squashed; Color.a how strong), added
 //  7 a wide glow with a hot core (uv -1..1; Color; Param.x a gain), added
 //  8 a streak (uv.x -1..1 across it; Color, which fades along it), added
-// Minecraft 1.21.11 (Fabric 1.21.11 branch): the parameters come in one uniform block (see client/film/FilmGl).
+// Minecraft 26.3 (Fabric 26.3 branch): the parameters come in one uniform block (see client/film/FilmGl).
 layout(std140) uniform FilmParams {
     mat4 ModelViewMat;
     vec4 ModeVec;
@@ -22,10 +23,10 @@ layout(std140) uniform FilmParams {
 };
 #define Mode (ModeVec.x)
 
-in vec2 uv;
-in vec4 color;
+layout(location = 0) in vec2 uv;
+layout(location = 1) in vec4 color;
 
-out vec4 fragColor;
+layout(location = 0) out vec4 fragColor;
 
 float hash(vec2 p) {
     p = fract(p * vec2(123.34, 456.21));

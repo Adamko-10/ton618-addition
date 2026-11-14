@@ -40,6 +40,7 @@ public final class Ton618AdditionClient implements ClientModInitializer {
     public void onInitializeClient() {
         Ton618AdditionClientConfig.SPEC.load();
         LastLightFilm.init();
+        HudRescue.register();
         ClientTickEvents.END_CLIENT_TICK.register(client -> tick());
         ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> stop());
     }

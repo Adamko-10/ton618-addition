@@ -7,13 +7,14 @@ import dev.adamko.ton618addition.client.LastLightCast;
 import dev.adamko.ton618addition.lastlight.LastLightClock;
 import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.LevelLoadingScreen;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.item.component.SwingAnimation;
 import net.minecraft.world.entity.player.Player;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
-import net.fabricmc.fabric.api.client.rendering.v1.world.WorldRenderContext;
-import net.fabricmc.fabric.api.client.rendering.v1.world.WorldRenderEvents;
+import net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderContext;
+import net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderEvents;
 import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents;
 import net.minecraft.client.gui.screens.Screen;
 
@@ -61,13 +62,13 @@ public final class LastLightFilm {
 
     public static void init() {
         ClientTickEvents.END_CLIENT_TICK.register(client -> tick());
-        WorldRenderEvents.END_MAIN.register(LastLightFilm::world);
+        LevelRenderEvents.END_MAIN.register(LastLightFilm::world);
         // over the game's own HUD: Forge 1.21.1 has no RenderGuiEvent, so client/HudRescue calls screen(...) right
         // after the HUD every frame (also when TON 618 hides the HUD)
         // the game's "loading terrain" screen during the trip back: kept white
         ScreenEvents.AFTER_INIT.register((client, screen, width, height) -> {
             if (screen instanceof LevelLoadingScreen) {
-                ScreenEvents.afterRender(screen).register((shown, graphics, mouseX, mouseY, delta) -> loading(graphics));
+                ScreenEvents.afterExtract(screen).register((shown, graphics, mouseX, mouseY, delta) -> loading(graphics));
             }
         });
     }
@@ -164,13 +165,13 @@ public final class LastLightFilm {
             pressed = true;
             Player caster = now.caster();
             if (caster != null && g < LastLightClock.PRESS + 10) {
-                caster.swing(now.offhand() ? InteractionHand.OFF_HAND : InteractionHand.MAIN_HAND, false);
+                caster.swing(now.offhand() ? InteractionHand.OFF_HAND : InteractionHand.MAIN_HAND, SwingAnimation.DEFAULT, false);
             }
         }
     }
 
     /** In the world: the waves, the hand's glow, the motes. */
-    private static void world(WorldRenderContext context) {
+    private static void world(LevelRenderContext context) {
         LastLightCast now = cast;
         if (now == null) {
             return;
@@ -187,7 +188,7 @@ public final class LastLightFilm {
     }
 
     /** Over the screen: the space scene, then the words and veils (from client/HudRescue, after the HUD). */
-    public static void screen(GuiGraphics graphics, float partial) {
+    public static void screen(GuiGraphicsExtractor graphics, float partial) {
         LastLightCast now = cast;
         if (now == null) {
             return;
@@ -214,7 +215,7 @@ public final class LastLightFilm {
     }
 
     /** The "loading terrain" screen of the trip back, under the film's white. */
-    private static void loading(GuiGraphics graphics) {
+    private static void loading(GuiGraphicsExtractor graphics) {
         LastLightCast now = cast;
         if (now == null) {
             return;

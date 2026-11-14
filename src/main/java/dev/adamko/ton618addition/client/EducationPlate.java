@@ -14,7 +14,7 @@ import net.minecraft.client.KeyMapping;
 import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.network.chat.Component;
@@ -39,7 +39,7 @@ public final class EducationPlate {
      * "\": no letter is free in the menu (the SA Series' plates use "[", "-" and "="). It was "]" at first, but in
      * Minecraft's font that key cap read as "J", the films' key (Adam, 2026-11-14). GLFW key code.
      */
-    public static final int KEY = 92;
+    public static final int KEY = InputConstants.KEY_BACKSLASH;
     private static final int WIDTH = 214;
     private static final int HEIGHT = 58;
     private static final float SLIDE_MILLIS = 160.0F;
@@ -115,7 +115,7 @@ public final class EducationPlate {
         return mapping != null && mapping.matches(new KeyEvent(key, 0, 0));
     }
 
-    static void draw(GuiGraphics g) {
+    static void draw(GuiGraphicsExtractor g) {
         if (!shown()) {
             return;
         }
@@ -151,19 +151,19 @@ public final class EducationPlate {
         g.fill(11, HEIGHT - 5, w - 10, HEIGHT - 4, 0xFF000000 | RULE);
         for (int i = 0; i < unlock.length; i++) {
             int color = ready ? ACCENT : i == 0 ? INK : GREY;
-            g.drawString(font, unlock[i], 11, HEIGHT + 1 + i * 11, 0xFF000000 | color, false);
+            g.text(font, unlock[i], 11, HEIGHT + 1 + i * 11, 0xFF000000 | color, false);
         }
-        g.drawString(font, title, 11, 7, 0xFF000000 | INK, false);
+        g.text(font, title, 11, 7, 0xFF000000 | INK, false);
         g.fill(11, 19, w - 10, 20, 0xFF000000 | RULE);
         // the row: label, key cap, state, switch
         int y = 26;
-        g.drawString(font, label, 11, y + 1, 0xFF000000 | INK, false);
+        g.text(font, label, 11, y + 1, 0xFF000000 | INK, false);
         int sw = 26;
         int sx = w - 12 - sw;
         String keyName = keyName(KEY);
         plate(g, sx - 18, y - 1, sx - 6, y + 11, 0xFF000000 | INK);
         plate(g, sx - 17, y, sx - 7, y + 10, 0xFF000000 | PLATE);
-        g.drawString(font, keyName, sx - 12 - font.width(keyName) / 2, y + 2, 0xFF000000 | INK, false);
+        g.text(font, keyName, sx - 12 - font.width(keyName) / 2, y + 2, 0xFF000000 | INK, false);
         float k = Mth.clamp((Util.getMillis() - flippedAt) / SLIDE_MILLIS, 0.0F, 1.0F);
         k = k * k * (3.0F - 2.0F * k);
         float at = on ? k : 1.0F - k;
@@ -171,19 +171,19 @@ public final class EducationPlate {
         int knob = sx + 1 + Math.round((sw - 10) * at);
         plate(g, knob, y + 1, knob + 8, y + 9, 0xFFFFFFFF);
         Component state = Component.translatable(on ? "gui.ton618_addition.on" : "gui.ton618_addition.off");
-        g.drawString(font, state, sx - 22 - font.width(state), y + 1, 0xFF000000 | (on ? ACCENT : GREY), false);
-        g.drawString(font, hint, 11, y + 14, 0xFF000000 | GREY, false);
+        g.text(font, state, sx - 22 - font.width(state), y + 1, 0xFF000000 | (on ? ACCENT : GREY), false);
+        g.text(font, hint, 11, y + 14, 0xFF000000 | GREY, false);
         g.pose().popMatrix();
     }
 
     /** A symbol key as the keyboard layout prints it. */
     private static String keyName(int key) {
-        String name = InputConstants.Type.KEYSYM.getOrCreate(key).getDisplayName().getString();
+        String name = InputConstants.Type.KEYBOARD.getOrCreate(key).getDisplayName().getString();
         return name.length() == 1 ? name.toUpperCase(Locale.ROOT) : name;
     }
 
     /** A rectangle with its corners cut by a pixel (the menu's own plates are rounded). */
-    private static void plate(GuiGraphics g, int x0, int y0, int x1, int y1, int argb) {
+    private static void plate(GuiGraphicsExtractor g, int x0, int y0, int x1, int y1, int argb) {
         g.fill(x0 + 1, y0, x1 - 1, y1, argb);
         g.fill(x0, y0 + 1, x0 + 1, y1 - 1, argb);
         g.fill(x1 - 1, y0 + 1, x1, y1 - 1, argb);

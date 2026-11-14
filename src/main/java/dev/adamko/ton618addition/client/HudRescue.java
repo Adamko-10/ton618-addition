@@ -1,81 +1,65 @@
 package dev.adamko.ton618addition.client;
 
-import cyou.rimuru.rimulib.client.magic.WhiteSpace;
 import dev.adamko.ton618addition.Ton618Addition;
-import net.minecraft.client.DeltaTracker;
-import net.minecraft.client.gui.GuiGraphics;
 import dev.adamko.ton618addition.client.film.LastLightFilm;
+import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry;
+import net.minecraft.client.DeltaTracker;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 
 /**
- * Puts back what TON 618 hides with the HUD (Adam's test, 2026-11-14: "when ton 618 eats your world you cant open the
- * ui you just dont see it").
+ * The film's screen layer and Last Light's fallback notice, drawn right after the HUD (Fabric 26.3 branch).
  *
- * <p>TON 618 1.1.0 cancels the whole of {@code Gui.render} at its start whenever the player is in its dark
- * ({@code ton618:devoured}) or a RimuLib film hides the HUD, and draws only its own overlay. That also skips what is
- * drawn at the end of {@code Gui.render}: RimuLib's H menu ({@code WhiteSpace.render}). So right after the HUD call
- * (the same layer, before screens):
- * <ol>
- *   <li>when {@code Gui.render} didn't reach its end this frame, RimuLib's menu is drawn as RimuLib would at the end of
- *       the HUD (RimuLib internals, the only way: if they change, a warning in the log and the menu stays hidden);</li>
- *   <li>every frame, the Last Light film's screen layer ({@code LastLightFilm.screen}: words, space scene, white).
- *       Forge 1.21.1 has no {@code RenderGuiEvent} (NeoForge's branch draws the film there), so it's drawn here;</li>
- *   <li>every frame, Last Light's fallback notice.</li>
- * </ol>
- * The vanilla HUD (hotbar, chat) stays hidden in the dark, as TON 618 wants. Driven by {@code client/mixin/GuiMixin}
- * and {@code GameRendererMixin}.
+ * <p>On the other branches this class puts back what TON 618 hides when it cancels the HUD in its dark (RimuLib's H
+ * menu, the film's layer). TON 618's 26.3 build has no such HUD mixin, and RimuLib 26.3 draws its menu as a Fabric HUD
+ * element and never hides the HUD, so here there is nothing to rescue. What is left: drawing the film's words, space
+ * scene and white, and the notice, after the HUD in every frame, also when the player hid the HUD (F1), as the other
+ * branches do. {@code client/mixin/GuiMixin} calls {@link #afterHud} for that; if that optional mixin didn't apply,
+ * a Fabric HUD element of our own draws them instead (then F1 hides them).
  */
 public final class HudRescue {
-    private static boolean reached;
+    private static boolean viaMixin;
     private static boolean warned;
 
     private HudRescue() {
     }
 
-    /** Just before the game draws its HUD. */
-    public static void beforeGui() {
-        reached = false;
+    /** From the client entrypoint. */
+    public static void register() {
+        HudElementRegistry.addLast(Ton618Addition.id("last_light"), (graphics, delta) -> {
+            if (!viaMixin) {
+                draw(graphics, delta);
+            }
+        });
     }
 
-    /** {@code Gui.render} reached its end: nothing was cancelled. */
-    public static void guiReachedEnd() {
-        reached = true;
+    /** {@code GuiMixin} is working: the HUD element stands down. */
+    public static void viaMixin() {
+        viaMixin = true;
     }
 
-    /**
-     * Just after the game's HUD call: if it was cut short, draw what it skipped; then, every frame, Last Light's
-     * fallback notice ({@link LastLightNotice}: only while it runs without its film).
-     */
-    public static void afterGui(GuiGraphics graphics, DeltaTracker delta) {
-        if (!reached) {
-            rescue(graphics, delta);
-        }
-        // Forge 1.21.1 has no RenderGuiEvent (its HUD is layers): the film's screen layer is drawn from here, every
-        // frame, whether or not TON 618 hid the HUD
+    /** From {@code GuiMixin}, right after the HUD. */
+    public static void afterHud(GuiGraphicsExtractor graphics, DeltaTracker delta) {
+        draw(graphics, delta);
+    }
+
+    private static void draw(GuiGraphicsExtractor graphics, DeltaTracker delta) {
+        float partial = delta.getGameTimeDeltaPartialTick(false);
         try {
-            LastLightFilm.screen(graphics, delta.getGameTimeDeltaPartialTick(false));
+            LastLightFilm.screen(graphics, partial);
         } catch (RuntimeException failed) {
             warnOnce("the film's layer", failed);
         }
         try {
-            LastLightNotice.draw(graphics, delta.getGameTimeDeltaPartialTick(false));
+            LastLightNotice.draw(graphics, partial);
         } catch (RuntimeException failed) {
             warnOnce("Last Light's notice", failed);
-        }
-    }
-
-    private static void rescue(GuiGraphics graphics, DeltaTracker delta) {
-        reached = true;
-        try {
-            WhiteSpace.render(graphics, delta.getGameTimeDeltaPartialTick(true));
-        } catch (RuntimeException | LinkageError failed) {
-            warnOnce("RimuLib's menu", failed);
         }
     }
 
     private static void warnOnce(String what, Throwable failed) {
         if (!warned) {
             warned = true;
-            Ton618Addition.LOG.warn("Couldn't draw {} over TON 618's hidden HUD: {}", what, failed.toString());
+            Ton618Addition.LOG.warn("Couldn't draw {}: {}", what, failed.toString());
         }
     }
 }

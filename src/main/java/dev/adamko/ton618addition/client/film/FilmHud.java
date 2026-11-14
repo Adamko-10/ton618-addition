@@ -7,7 +7,7 @@ import com.mojang.math.Axis;
 import cyou.rimuru.rimulib.client.api.UiApi;
 import java.util.ArrayList;
 import java.util.List;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 
 /**
  * <b>FABLE'S FILE.</b> The film's words and veils over the picture, as the previz lays them out: the letterbox bars,
@@ -27,7 +27,7 @@ final class FilmHud {
     }
 
     /** Only the white of the burst (for a player who has films off, or skipped this one): the trip back stays hidden. */
-    static void white(GuiGraphics g, float gameTick) {
+    static void white(GuiGraphicsExtractor g, float gameTick) {
         // up over 677-681, solid until CLEAR, gone by 735
         float white = Math.min(lin(677F, 681F, gameTick), 1F - lin(720F, 735F, gameTick));
         if (white > 0.004F) {
@@ -36,7 +36,7 @@ final class FilmHud {
     }
 
     /** Everything, at game tick {@code gameTick} (storyboard time {@code t}); {@code educational}: the labels too. */
-    static void draw(GuiGraphics g, float gameTick, float t, boolean educational) {
+    static void draw(GuiGraphicsExtractor g, float gameTick, float t, boolean educational) {
         UiApi.overlay(g, () -> {
             float w = UiApi.width(g);
             float h = UiApi.height(g);
@@ -68,7 +68,7 @@ final class FilmHud {
 
     // ---- the year counter and how fast time runs ---------------------------------------------------------------------------
 
-    private static void counters(GuiGraphics g, float gameTick, float t, float w, float h, float cq) {
+    private static void counters(GuiGraphicsExtractor g, float gameTick, float t, float w, float h, float cq) {
         float shown = lin(90F, 96F, t) * (1F - lin(536F, 548F, t));
         if (shown > 0.01F) {
             float em = 1.55F * cq;
@@ -97,7 +97,7 @@ final class FilmHud {
 
     // ---- the readouts on the right -----------------------------------------------------------------------------------------
 
-    private static void readouts(GuiGraphics g, float t, float w, float h, float cq) {
+    private static void readouts(GuiGraphicsExtractor g, float t, float w, float h, float cq) {
         float em = 1.05F * cq;
         float right = w * 0.97F;
         float top = h * 0.15F + em * 0.85F;
@@ -125,7 +125,7 @@ final class FilmHud {
     }
 
     /** A small dim label and its value, the value ending at {@code right}. */
-    private static void readout(GuiGraphics g, String label, String value, float right, float base, float em, int rgb, float alpha) {
+    private static void readout(GuiGraphicsExtractor g, String label, String value, float right, float base, float em, int rgb, float alpha) {
         float valueWidth = rich(g, UiApi.Font.MONO, value, 0F, 0F, em, rgb, 0F);
         rich(g, UiApi.Font.MONO, value, right - valueWidth, base, em, rgb, alpha);
         float labelEm = em * 0.78F;
@@ -136,7 +136,7 @@ final class FilmHud {
 
     // ---- the title card, inside the hole's shadow ---------------------------------------------------------------------------
 
-    private static void title(GuiGraphics g, float t, float w, float h, float cq) {
+    private static void title(GuiGraphicsExtractor g, float t, float w, float h, float cq) {
         if (t < 100F || t > 148F) {
             return;
         }
@@ -151,7 +151,7 @@ final class FilmHud {
 
     // ---- the caption over the lower bar --------------------------------------------------------------------------------------
 
-    private static void caption(GuiGraphics g, float t, float w, float h, float cq, float bars) {
+    private static void caption(GuiGraphicsExtractor g, float t, float w, float h, float cq, float bars) {
         for (FilmScript.Caption caption : FilmScript.CAPTIONS) {
             if (t >= caption.from() && t <= caption.to()) {
                 float shown = Math.min(lin(caption.from(), caption.from() + 4F, t), 1F - lin(caption.to() - 4F, caption.to(), t)) * bars;
@@ -167,7 +167,7 @@ final class FilmHud {
 
     // ---- the educational labels ----------------------------------------------------------------------------------------------
 
-    private static void labels(GuiGraphics g, float t, float w, float h, float cq) {
+    private static void labels(GuiGraphicsExtractor g, float t, float w, float h, float cq) {
         for (FilmScript.Label label : FilmScript.LABELS) {
             if (t < label.from() || t > label.to()) {
                 continue;
@@ -211,7 +211,7 @@ final class FilmHud {
         }
     }
 
-    private static List<String> wrap(GuiGraphics g, String text, float em, float max) {
+    private static List<String> wrap(GuiGraphicsExtractor g, String text, float em, float max) {
         List<String> lines = new ArrayList<>();
         StringBuilder line = new StringBuilder();
         for (String word : text.split(" ")) {
@@ -235,13 +235,13 @@ final class FilmHud {
         return Math.round(FilmScript.sat(alpha) * 255F) << 24 | rgb & 0xFFFFFF;
     }
 
-    private static void box(GuiGraphics g, float x, float y, float w, float h, int rgb, float alpha) {
+    private static void box(GuiGraphicsExtractor g, float x, float y, float w, float h, int rgb, float alpha) {
         if (alpha > 0.004F) {
             UiApi.box(g, x, y, w, h, argb(rgb, alpha));
         }
     }
 
-    private static void line(GuiGraphics g, float x0, float y0, float x1, float y1, int rgb, float alpha) {
+    private static void line(GuiGraphicsExtractor g, float x0, float y0, float x1, float y1, int rgb, float alpha) {
         float dx = x1 - x0;
         float dy = y1 - y0;
         float length = (float) Math.sqrt(dx * dx + dy * dy);
@@ -264,7 +264,7 @@ final class FilmHud {
      * Text with the film's raised powers ({@code 10^{14}}), its left end at {@code x}, on the baseline {@code y},
      * {@code em} high. Returns its width; with {@code alpha} 0 it only measures.
      */
-    private static float rich(GuiGraphics g, UiApi.Font font, String text, float x, float y, float em, int rgb, float alpha) {
+    private static float rich(GuiGraphicsExtractor g, UiApi.Font font, String text, float x, float y, float em, int rgb, float alpha) {
         float scale = em / base(font);
         boolean draw = alpha > 0.02F;
         int colour = argb(rgb, alpha);
@@ -296,7 +296,7 @@ final class FilmHud {
         return width;
     }
 
-    private static float trackedWidth(GuiGraphics g, UiApi.Font font, String text, float em, float tracking) {
+    private static float trackedWidth(GuiGraphicsExtractor g, UiApi.Font font, String text, float em, float tracking) {
         float scale = em / base(font);
         float width = 0F;
         for (int i = 0; i < text.length(); i++) {
@@ -309,7 +309,7 @@ final class FilmHud {
      * Letters set wide apart, centred on {@code cx}, on the baseline {@code y}. With {@code per} above 0 they come in
      * one after another: letter i is fully in {@code per} x i + 5 ticks after {@code clock} passes 0.
      */
-    private static void tracked(GuiGraphics g, UiApi.Font font, String text, float cx, float y, float em, float tracking, int rgb,
+    private static void tracked(GuiGraphicsExtractor g, UiApi.Font font, String text, float cx, float y, float em, float tracking, int rgb,
             float alpha, float clock, float per) {
         if (alpha <= 0.02F) {
             return;

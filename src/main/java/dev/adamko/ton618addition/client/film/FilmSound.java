@@ -93,7 +93,7 @@ final class FilmSound {
 
         /** The track is no sound file: it stands for itself. */
         @Override
-        public WeighedSoundEvents resolve(SoundManager manager) {
+        public WeighedSoundEvents getOrResolve(SoundManager manager) {
             this.sound = SOUND;
             return EVENTS;
         }

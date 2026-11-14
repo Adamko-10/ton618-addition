@@ -1,16 +1,16 @@
 package dev.adamko.ton618addition.client.film;
 
-import com.mojang.blaze3d.buffers.GpuBuffer;
-import com.mojang.blaze3d.systems.GpuDevice;
-import com.mojang.blaze3d.systems.RenderPass;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.MeshData;
-import com.mojang.blaze3d.vertex.VertexFormat;
+import com.mojang.renderpearl.api.buffers.GpuBuffer;
+import com.mojang.renderpearl.api.commands.RenderPass;
+import com.mojang.renderpearl.api.device.GpuDevice;
+import com.mojang.renderpearl.api.pipeline.PrimitiveTopology;
 import java.nio.ByteBuffer;
 import javax.annotation.Nullable;
 
 /**
- * <b>FABLE'S FILE</b> (ported to Minecraft 1.21.11's renderer by Opus, Adam's OK 2026-11-14). The film's quads, built
+ * <b>FABLE'S FILE</b> (ported to Minecraft 26.3's renderer by Opus, Adam's OK 2026-11-14). The film's quads, built
  * on the CPU each frame and drawn from a GPU buffer of their own: the upload happens outside a render pass, the draw
  * inside one (the SA Series' {@code DynamicMesh}).
  */
@@ -18,7 +18,7 @@ final class FilmMesh implements AutoCloseable {
     private final String label;
     @Nullable
     private GpuBuffer buffer;
-    private VertexFormat.Mode topology = VertexFormat.Mode.QUADS;
+    private PrimitiveTopology topology = PrimitiveTopology.QUADS;
     private int indexCount;
 
     FilmMesh(String label) {
@@ -46,7 +46,7 @@ final class FilmMesh implements AutoCloseable {
                 this.buffer = device.createBuffer(() -> this.label, GpuBuffer.USAGE_COPY_DST | GpuBuffer.USAGE_VERTEX, capacity);
             }
             device.createCommandEncoder().writeToBuffer(this.buffer.slice(0, size), vertices);
-            this.topology = mesh.drawState().mode();
+            this.topology = mesh.drawState().primitiveTopology();
             this.indexCount = mesh.drawState().indexCount();
             // Minecraft's shared index buffer for quads, grown now if it has to be (never mid-pass)
             RenderSystem.getSequentialBuffer(this.topology).getBuffer(this.indexCount);
@@ -60,9 +60,9 @@ final class FilmMesh implements AutoCloseable {
         if (this.buffer == null || this.indexCount <= 0 || !indices.hasStorage(this.indexCount)) {
             return;
         }
-        pass.setVertexBuffer(0, this.buffer);
-        pass.setIndexBuffer(indices.getBuffer(this.indexCount), indices.type());
-        pass.drawIndexed(0, 0, this.indexCount, 1);
+        pass.setVertexBuffer(0, this.buffer.slice());
+        pass.setIndexBuffer(indices.getBuffer(), indices.type());
+        pass.drawIndexed(this.indexCount, 1, 0, 0, 0);
     }
 
     @Override

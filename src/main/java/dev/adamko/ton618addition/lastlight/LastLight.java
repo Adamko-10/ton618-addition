@@ -146,8 +146,10 @@ public final class LastLight {
         }
         if (Ton618AdditionConfig.morning()) {
             ServerLevel overworld = server.overworld();
-            // the next sunrise (day time 0 of the next day): the film's return is always a morning
-            overworld.setDayTime((Math.floorDiv(overworld.getDayTime(), 24000L) + 1L) * 24000L);
+            // the next sunrise (day time 0 of the next day): the film's return is always a morning; 26.3 keeps the
+            // day on the dimension's default clock (what /time set changes)
+            long sunrise = (Math.floorDiv(overworld.getDefaultClockTime(), 24000L) + 1L) * 24000L;
+            overworld.dimensionType().defaultClock().ifPresent(clock -> server.clockManager().setTotalTicks(clock, sunrise));
         }
         if (Ton618Link.restore(server)) {
             Ton618Addition.LOG.info("{}: TON618 has evaporated; the world is back", LastLightInfo.TITLE);

@@ -174,7 +174,9 @@ final class FilmSpace {
             UP.set(RIGHT).cross(FORWARD);
         }
         VIEW.setLookAt(EYE.x, EYE.y, EYE.z, EYE.x + FORWARD.x, EYE.y + FORWARD.y, EYE.z + FORWARD.z, 0F, 1F, 0F);
-        PROJ.setPerspective((float) Math.toRadians(fov), aspect, 0.5F, 20000F);
+        // Minecraft 26.3: reversed depth (far and near swapped), in the device's own clip-space range
+        PROJ.setPerspective((float) Math.toRadians(fov), aspect, 20000F, 0.5F,
+            com.mojang.blaze3d.systems.RenderSystem.getDevice().getDeviceInfo().isZZeroToOne());
         float hs = FilmScript.holeScale(tt);
         shadowNow = SHADOW * hs;
         drawn = true;
