@@ -1,6 +1,8 @@
 package dev.adamko.ton618addition.client;
 
+import cyou.rimuru.rimulib.mc1211.client.api.MenuApi;
 import cyou.rimuru.rimulib.mc1211.client.api.NetClientApi;
+import cyou.rimuru.rimulib.mc1211.client.api.UiApi;
 import dev.adamko.ton618addition.Ton618Addition;
 import dev.adamko.ton618addition.client.film.LastLightFilm;
 import dev.adamko.ton618addition.lastlight.LastLightClock;
@@ -49,6 +51,13 @@ public final class Ton618AdditionClient {
                 stop();
             }
         }));
+        // the educational-mode plate in the H menu and its key, through RimuLib's public API
+        try {
+            UiApi.onMenuDraw((graphics, partial) -> EducationPlate.draw(graphics));
+            MenuApi.onKey(EducationPlate::key);
+        } catch (RuntimeException | LinkageError failed) {
+            Ton618Addition.LOG.warn("Couldn't add the educational-mode switch to the H menu: {}", failed.toString());
+        }
         // the menu's warning when Last Light is picked anywhere but in TON 618's dark
         LastLightInfo.selectWarning = () -> {
             Minecraft mc = Minecraft.getInstance();

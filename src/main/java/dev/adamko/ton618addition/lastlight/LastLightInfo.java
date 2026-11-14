@@ -15,10 +15,13 @@ public final class LastLightInfo {
     public static final int COLOR = 0xBFE0FF;
     /** Ready again a minute after a cast (there is nothing left to evaporate after one anyway). */
     public static final int COOLDOWN = 1200;
-    /** Its default key on TON 618's own item: B. */
-    public static final int KEY_ON_TON618 = 66;
-    /** Its default key on the Stellar Remote: V (a different key, so the two never clash). */
-    public static final int KEY_ON_REMOTE = 86;
+    /**
+     * Its default key on TON 618's own item: ";" (it picks Last Light in the H menu). Every letter is taken in that
+     * menu by someone (the SA Series: B is Stellar Convergence, V/T/R/X its plate's, M/G/L/F/E/C its other plate's).
+     */
+    public static final int KEY_ON_TON618 = 59;
+    /** Its default key on the Stellar Remote: "'" (a different key, so the two copies never clash). */
+    public static final int KEY_ON_REMOTE = 39;
 
     /**
      * The warning the menu shows when Last Light is picked, or null for none. The client sets it (Last Light only works

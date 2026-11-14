@@ -1,6 +1,11 @@
 {
   "skill.ton618.ton_618.last_light.desc": "Only in the dark, after TON 618 has devoured the world. Let time go: the stars burn out, the eras pass, and after a googol of years TON618 has evaporated away by Hawking radiation. Its last light brings the world back, on a new morning, for everyone in the dark.",
   "skill.shooting_star_demo.stellar_remote.last_light.desc": "From TON 618 Addition. Only in the dark, after TON 618 has devoured the world. Let time go: the stars burn out, the eras pass, and after a googol of years TON618 has evaporated away by Hawking radiation. Its last light brings the world back, on a new morning, for everyone in the dark.",
+  "gui.ton618_addition.panel": "TON 618 Addition",
+  "gui.ton618_addition.educational": "Educational mode",
+  "gui.ton618_addition.educational.hint": "Real physics labels in the Last Light film",
+  "gui.ton618_addition.on": "On",
+  "gui.ton618_addition.off": "Off",
   "ton618_addition.configuration.title": "TON 618 Addition",
   "ton618_addition.configuration.section.ton618.addition.client.toml": "Your settings",
   "ton618_addition.configuration.section.ton618.addition.client.toml.title": "TON 618 Addition: your settings",

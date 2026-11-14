@@ -26,6 +26,26 @@ public final class Ton618AdditionClientConfig {
 
     /** Educational mode is on: the film shows its physics labels. */
     public static boolean educational() {
-        return SPEC.isLoaded() && EDUCATIONAL.get();
+        if (!SPEC.isLoaded()) {
+            return false;
+        }
+        try {
+            return EDUCATIONAL.get();
+        } catch (IllegalStateException notLoadedYet) {
+            return false;
+        }
+    }
+
+    /** Sets and saves educational mode (from the H-menu plate, {@link EducationPlate}). */
+    public static void setEducational(boolean on) {
+        if (!SPEC.isLoaded()) {
+            return;
+        }
+        try {
+            EDUCATIONAL.set(on);
+            EDUCATIONAL.save();
+        } catch (IllegalStateException notLoadedYet) {
+            // stays at its default
+        }
     }
 }
