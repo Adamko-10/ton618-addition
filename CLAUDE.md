@@ -4,7 +4,7 @@ Handoff notes for every Claude session in this folder (`C:\Users\User\Desktop\to
 Started 2026-11-13 by an Opus 5.5 session (xhigh) that was started from Adam's SA Series session. **Read `BRIEF.md`
 first** (Adam's brief, his own words at its end), then this file. Fable's part: `prompts\FABLE-PREVIZ-AND-FILM-PROMPT.md`.
 
-### >>> RESUME HERE (2026-11-14 ~18:20, the VM): 4 ports done; now fabric-1.21.11 (full film port), then 26.3 <<<
+### >>> RESUME HERE (2026-11-14 ~18:40, the VM): 5 ports done (1.21.11 with the film on pipelines); now fabric-26.3 <<<
 
 - **Port status** (§8a has the how): `main` 1.0.0 (`ce64b00`: version bump + HUD fix without MixinExtras) ·
   **`forge-1.21.1` built + dev server OK** ("Last Light joined TON 618's menu ... skill #2", worktree
@@ -12,7 +12,8 @@ first** (Adam's brief, his own words at its end), then this file. Fable's part: 
   `3b5e2e8`; jar checked: SRG names, refmap, `MixinConfigs`; **no dev run**: RimuLib's 1.20.1 mixins name SRG targets
   directly, which the dev game can't remap, as the SA Series found) · **`fabric-1.21.1` built + dev server OK** (Loom on
   the VM's JDK 25, "Last Light joined TON 618's menu", `ports/fabric-1.21.1`, `d725beb`) · **`fabric-1.20.1` built +
-  dev server OK** (`ports/fabric-1.20.1`, `953edeb`) · none pushed · left: `fabric-1.21.11`, `fabric-26.3`.
+  dev server OK** (`ports/fabric-1.20.1`, `953edeb`) · **`fabric-1.21.11` built + dev server OK, film on render pipelines**
+  (`ports/fabric-1.21.11`, `87c6cea`; never drawn on a GPU: no OpenGL on the VM) · none pushed · left: `fabric-26.3`.
 - **1.21.11 and 26.3 (assessed 2026-11-14)**: Minecraft's new render pipelines (1.21.5+): no `ShaderInstance`, so the
   film's `FilmGl` (one shader, blend/depth set by `RenderSystem` per call) must become `RenderPipeline`s (one per blend
   and depth mode, uniform blocks in the GLSL), as the SA Series did (`client/render/HalleyPipelines` 153 lines,
@@ -519,6 +520,20 @@ machinery (TON 618 needs none: we never name its classes).
   own (colour + depth) and is blitted in the HUD between `nextStratum()` calls (as `ProximaRender.present`); the world
   effects (`FilmWorld`) draw in passes on the main target's colour and depth. Fable's GLSL is rewritten for the
   uniform blocks.
+- **fabric-1.21.11** (`87c6cea`): done as planned above. Details: packets `LastLightFx`/`LastLightEnd` are
+  `CustomPacketPayload` records (`TYPE`, `CODEC`; RimuLib 1.21.11's `NetApi.toClient(TYPE, CODEC)`, `canSend(p, TYPE)`,
+  `NetClientApi.receive(TYPE, ...)`); `player.level().getServer()`, `permissions().hasPermission(Permissions.COMMANDS_GAMEMASTER)`,
+  `getGameProfile().name()`, `getBooleanOr`, `createCommandSourceStack()` (already top permission), 2D GUI pose,
+  `net.minecraft.util.Util`, `KeyMapping.matches(new KeyEvent(key, 0, 0))`, `LevelLoadingScreen`. RimuLib 1.21.11
+  draws its menu as a Fabric HUD element (`HudElementRegistry.addLast` → `WhiteSpace.render`), inside `Gui.render`,
+  so the rescue still draws it when TON 618 cuts the HUD (no `beforeHud()` on this version). `GameRendererMixin` =
+  MixinExtras `@WrapOperation` (checked: 1.21.11's `GameRenderer.render(DeltaTracker, boolean)` calls
+  `Gui.render(GuiGraphics, DeltaTracker)`). Film: `FilmGl` rewritten (Fable's helper API kept; pipelines
+  `pipeline/last_light_<blend>_<depth>`, `FilmParams` std140 block = view mat4 + Mode/Param/Param2, `Projection` from
+  `PerspectiveProjectionMatrixBuffer` for the space scene or `RenderSystem.getProjectionMatrixBuffer()` in the world),
+  `FilmMesh` (SA's `DynamicMesh`), the space scene in its own texture (`ton618_addition:film_scene`) blitted by
+  `FilmGl.present` in the HUD; world effects at `WorldRenderEvents.END_MAIN` (camera from the game renderer, view =
+  its rotation, world quads already camera-relative); shader `#version 330` with the blocks, `last_light.json` gone.
 - **Next**: the other Fabric branches (SA's `fabric-*` branches: Loom,
   `ConfigFile` instead of `ModConfigSpec`, Fabric callbacks for ticks/HUD/world render, RimuLib packages without a
   version prefix on Fabric).
