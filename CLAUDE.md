@@ -21,6 +21,22 @@ first** (Adam's brief, his own words at its end), then this file. Fable's part: 
     before each submit). **Page header like the SA Series'** (Discord, YouTube, other mods). Version **1.0.0,
     Release**; Opus drafts the page text for his review.
 
+- **Done (2026-11-14 evening)**: public repo **https://github.com/Adamko-10/ton618-addition** created and `main`
+  pushed (Adam: "Yes, create and push"; files checked: no secrets, commits by the noreply address). **Standing OK for
+  CI**: "Yes, wip pushes are fine" (`wip/*` branches and CI draft releases on this repo; real branches, tags,
+  releases and CurseForge still wait for his yes each time).
+- **Release drafts** in `dev/publish/` (as the SA Series): `curseforge-description.md`, `summary.txt` (235 chars),
+  `changelog-1.0.0.md` (template: `{MC}`, `{LOADER}`, `{ALSO}`, `{FABRIC_API}`), `project-icon.png` (400×400, from
+  `tools/icons/LastLightIcon.java --size=400x400`). Adam: "just cross reference with shooting star addition SA
+  series": done against the SA repo copy and its **live** page (summary starts with the name and ends "Needs
+  RimuLib."; header lines; builds list; "The H menu" like SA's "The remote's menu"; "More"; credits and the
+  distribution line word for word). Categories to pick on the site: **Addons, Magic, Technology** (the SA page's).
+  Not yet re-shown to Adam after the cross-reference.
+- **7 jars, not 8** (2026-11-14, from the SA precedent): SA's **Forge 1.20.1 jar also runs on NeoForge 1.20.1**
+  (NeoForge 1.20.1 is the Forge 47.1 fork), so no `neoforge-1.20.1` branch. Branches: `main` (NeoForge 1.21.1),
+  `forge-1.21.1`, `forge-1.20.1` (also NeoForge 1.20.1), `fabric-1.21.1`, `fabric-1.20.1`, `fabric-1.21.11`,
+  `fabric-26.3`. Tell Adam.
+
 ### Before that (2026-11-14 ~16:15): "can't trigger it" fix built (`0e8c7e1`)
 
 - **Adam's bug (via the SA Series session, logs in `C:\Users\User\Downloads\logs\`)**: "idk why it isnt working i
