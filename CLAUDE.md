@@ -4,7 +4,34 @@ Handoff notes for every Claude session in this folder (`C:\Users\User\Desktop\to
 Started 2026-11-13 by an Opus 5.5 session (xhigh) that was started from Adam's SA Series session. **Read `BRIEF.md`
 first** (Adam's brief, his own words at its end), then this file. Fable's part: `prompts\FABLE-PREVIZ-AND-FILM-PROMPT.md`.
 
-### >>> RESUME HERE (2026-11-14 ~13:50, the VM): icon + unlock note built (`53e9726`); Adam tests; then port, then CurseForge <<<
+### >>> RESUME HERE (2026-11-14 ~16:15, the VM): "can't trigger it" fix built (`0e8c7e1`), untested; then port, then CurseForge <<<
+
+- **Adam's bug (via the SA Series session, logs in `C:\Users\User\Downloads\logs\`)**: "idk why it isnt working i
+  cant trigger it". His answers (clickable): "i wasnt able to cast it" (nothing showed), pressed J: "Not sure",
+  TON 618's own film: "Yes, it played", cast by right-click. The **server did cast it** (13:52:00, "1 player(s) see
+  it"), 6 s after he landed in the dark; he quit 15 s later. No error from us. His profile also has two RimuLibs (1.2.2
+  and 1.2.3; NeoForge took 1.2.3; the SA Series session tells him to disable 1.2.2), Iris, Sodium, C2ME, Distant
+  Horizons, ModernFix, a server lagging up to 106 ticks.
+- **Why nothing showed** (read from RimuLib 1.2.3's `CutsceneDirector.play`): RimuLib plays **one film at a time** and
+  queues a new film behind **any** film still running, whatever its priority; TON 618's own film runs on for ~6 s in
+  the dark after the devour (its shots to tick 530), so Last Light's film waited unseen (Fable's screen layer draws
+  only while RimuLib shows our film; its soundtrack only with a film). Also: with RimuLib's films **off** (its key J;
+  in the dark its "Spell cutscenes: OFF" message is hidden with the action bar) the film never starts at all. In the
+  dark every action-bar message is hidden too (TON 618's HUD cancel), so a cast gave no feedback.
+- **Fix (`0e8c7e1`, ours, outside the film)**: `Ton618AdditionClient.begin` logs "TA-01 · Last Light reached this game
+  at film tick N (films on/off; another film was playing and was skipped)", and if a film is running calls
+  `FilmApi.skip()` (public; works once that film is skippable) before `LastLightFilm.start`; if films get switched on
+  mid-cast it calls `LastLightFilm.start(current)` again (mid-way start, the contract allows it).
+  `client/LastLightNotice`: a small card at the top, drawn after the HUD by `HudRescue` (so also in the dark), while
+  a cast runs **without** a film showing (`!FilmApi.active()`), until the burst: "TA-01 · LAST LIGHT / TON618 is
+  evaporating · the world comes back in N s / Films are off: press J (RimuLib's film key) to watch it" (or "Its film
+  isn't showing (skipped, or waiting for another film)"). `RimuLib`'s `clear()` only clears films owned by the
+  calling mod, so TON 618's film can't be cleared, only skipped.
+- **Test jar**: `C:\Users\User\Desktop\test builds\2026-11-14 TON 618 cast fix\TON 618 Addition 0.1.0 cast fix
+  [NeoForge 1.21.1].jar` (replaces all earlier ones; the SA Series session copies it to Downloads).
+- Next time it fails: his `latest.log` now has the client line above; look for it after the server's cast line.
+
+### Before that (2026-11-14 ~13:50): icon + unlock note built (`53e9726`)
 
 - **Adam's test of TON 618's H menu (screenshot, via the SA Series session)**: "fix this and also add a little note
   somewhere that tells people that u have to set the blackhole to infinite power and then use it and THEN finally u
