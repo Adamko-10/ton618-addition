@@ -66,7 +66,8 @@ first** (Adam's brief, his own words at its end), then this file. Fable's part: 
   series": done against the SA repo copy and its **live** page (summary starts with the name and ends "Needs
   RimuLib."; header lines; builds list; "The H menu" like SA's "The remote's menu"; "More"; credits and the
   distribution line word for word). Categories to pick on the site: **Addons, Magic, Technology** (the SA page's).
-  Not yet re-shown to Adam after the cross-reference.
+  Re-shown to Adam 2026-11-14 ~21:30 (two lines fixed for the ports: the Config screen is NeoForge only; TON 618
+  hides the HUD "on most versions", not 26.3); waiting for his OK or changes.
 - **7 jars, not 8** (2026-11-14, from the SA precedent): SA's **Forge 1.20.1 jar also runs on NeoForge 1.20.1**
   (NeoForge 1.20.1 is the Forge 47.1 fork), so no `neoforge-1.20.1` branch. Branches: `main` (NeoForge 1.21.1),
   `forge-1.21.1`, `forge-1.20.1` (also NeoForge 1.20.1), `fabric-1.21.1`, `fabric-1.20.1`, `fabric-1.21.11`,
