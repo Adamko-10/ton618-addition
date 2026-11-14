@@ -124,16 +124,34 @@ public final class EducationPlate {
         Component title = Component.translatable("gui.ton618_addition.panel").withStyle(ChatFormatting.BOLD);
         Component label = Component.translatable("gui.ton618_addition.educational").withStyle(ChatFormatting.BOLD);
         Component hint = Component.translatable("gui.ton618_addition.educational.hint");
+        // how Last Light unlocks, while it is still locked (Adam, 2026-11-14: "a little note ... in the UI"); in the
+        // dark, one line saying it's ready
+        boolean ready = minecraft.level != null && minecraft.level.dimension() == Ton618Link.DARK;
+        Component[] unlock = ready
+            ? new Component[]{Component.translatable("gui.ton618_addition.unlock.ready").withStyle(ChatFormatting.BOLD)}
+            : new Component[]{Component.translatable("gui.ton618_addition.unlock.title").withStyle(ChatFormatting.BOLD),
+                Component.translatable("gui.ton618_addition.unlock.1"), Component.translatable("gui.ton618_addition.unlock.2"),
+                Component.translatable("gui.ton618_addition.unlock.3")};
         int w = Math.max(WIDTH, Math.max(font.width(title), font.width(hint)) + 22);
+        for (Component line : unlock) {
+            w = Math.max(w, font.width(line) + 22);
+        }
+        int height = HEIGHT + 4 + unlock.length * 11;
         // never below one screen pixel per font pixel; a little smaller on small screens (as the SA Series' plates)
         float scale = Math.max(Mth.clamp(g.guiWidth() / 860.0F, 0.5F, 0.75F) * 0.82F, 1.0F / (float) minecraft.getWindow().getGuiScale());
         g.pose().pushPose();
         // over the menu, in its top right corner (Adam, 2026-11-14; the SA Series' first plate is top left)
         g.pose().translate(g.guiWidth() - 8.0F - w * scale, 8.0F, 400.0F);
         g.pose().scale(scale, scale, 1.0F);
-        plate(g, 2, 3, w + 2, HEIGHT + 3, 0x26000000);
-        plate(g, 0, 0, w, HEIGHT, 0xF4000000 | PLATE);
-        g.fill(w - 3, 2, w, HEIGHT - 2, 0xFF000000 | ACCENT);
+        plate(g, 2, 3, w + 2, height + 3, 0x26000000);
+        plate(g, 0, 0, w, height, 0xF4000000 | PLATE);
+        g.fill(w - 3, 2, w, height - 2, 0xFF000000 | ACCENT);
+        // the unlock note, under the switch
+        g.fill(11, HEIGHT - 5, w - 10, HEIGHT - 4, 0xFF000000 | RULE);
+        for (int i = 0; i < unlock.length; i++) {
+            int color = ready ? ACCENT : i == 0 ? INK : GREY;
+            g.drawString(font, unlock[i], 11, HEIGHT + 1 + i * 11, 0xFF000000 | color, false);
+        }
         g.drawString(font, title, 11, 7, 0xFF000000 | INK, false);
         g.fill(11, 19, w - 10, 20, 0xFF000000 | RULE);
         // the row: label, key cap, state, switch

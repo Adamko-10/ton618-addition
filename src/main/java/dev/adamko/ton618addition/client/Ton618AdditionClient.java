@@ -62,7 +62,7 @@ public final class Ton618AdditionClient {
         LastLightInfo.selectWarning = () -> {
             Minecraft mc = Minecraft.getInstance();
             return mc.level != null && mc.level.dimension() == Ton618Link.DARK ? null
-                : "Only in the dark, after TON 618 has devoured the world";
+                : "Locked: set TON618's Scale to ∞ and use it, then cast Last Light in the dark";
         };
     }
 

@@ -61,7 +61,8 @@ public final class LastLight {
             return deny(player, LastLightInfo.NAME + " is already burning");
         }
         if (!Ton618Link.devoured(server)) {
-            return deny(player, "Nothing to evaporate yet: " + LastLightInfo.NAME + " works only after TON 618 has devoured the world");
+            return deny(player, "Nothing to evaporate yet: set TON618's Scale to ∞ and use it first, then cast "
+                + LastLightInfo.NAME + " in the dark");
         }
         if (!Ton618Link.inDark(player)) {
             return deny(player, "Cast " + LastLightInfo.NAME + " in the dark, beside TON618");
