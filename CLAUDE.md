@@ -12,6 +12,12 @@ first** (Adam's brief, his own words at its end), then this file. Fable's part: 
   like SA's icon) → `dev/publish/project-icon.png`: TON618 (shadow, photon ring, its disk bent over the top), gold
   Hawking sparks escaping, blue partners falling in, a sunrise on Earth's limb, the SA icon's "Addon" tag and a
   **gold "TA" badge** (SA's is blue). Shown to Adam (no changes asked).
+- **Codex tests the jars on Adam's PC** (Adam, 2026-11-14: "make a prompt for codex to test for me"; clickable: "My own PC",
+  "Real game, own folder"): `prompts/CODEX-TEST-PROMPT.md` (Codex sets up its own test games in
+  `C:Usersdam_DocumentsTON 618 Additiondex tests`, never his Modrinth profiles; asks before installs,
+  downloads and each run; screenshots the film at set times; writes `codex testsREPORT.md`). Adam copies the 7 jars to
+  `C:Usersdam_DocumentsTON 618 Addition	est builds2026-11-14 TON 618 Addition 1.0.0 all loaders`. When the
+  report comes back: fix what it finds on `main` first and cherry-pick (§8a).
 - **For later** (Adam: "for later lets change the icon in game aswell like the one that last light uses"): redo Last
   Light's in-game skill icon (the two `last_light.png` sprites, 256×128, now from `tools/icons/LastLightIcon.java`) in
   the same pixel style: **in the next update** (Adam, 2026-11-14, clickable: "Next update"; 1.0.0 keeps the current
