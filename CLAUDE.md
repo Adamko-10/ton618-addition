@@ -534,6 +534,15 @@ machinery (TON 618 needs none: we never name its classes).
   `FilmMesh` (SA's `DynamicMesh`), the space scene in its own texture (`ton618_addition:film_scene`) blitted by
   `FilmGl.present` in the HUD; world effects at `WorldRenderEvents.END_MAIN` (camera from the game renderer, view =
   its rotation, world quads already camera-relative); shader `#version 330` with the blocks, `last_light.json` gone.
+- **fabric-26.3 (in progress 2026-11-14 ~18:45, worktree `ports/fabric-26.3` from `fabric-1.21.11`, not committed)**:
+  build switched (plugin `net.fabricmc.fabric-loom` 1.18-SNAPSHOT, Fabric API 0.162.0+26.3, **no mappings** and plain
+  `implementation`/`compileOnly`/`localRuntime` since 26.x is unobfuscated, Java 25 release + toolchain, mixin configs
+  JAVA_25, inner `+mc26.3` jars). First compile: ~200 errors. 26.3 moved rendering to **`com.mojang.renderpearl.api`**
+  (pipelines with `BindGroupLayout`, `ColorTargetState`, `DepthStencilState`, `CompareOp`, `PrimitiveTopology`,
+  `GpuFormat`; buffers/textures/commands/device under `renderpearl.api.*`; `ProjectionMatrixBuffer`), the HUD to
+  **`GuiGraphicsExtractor`**, Fabric's world hook to **`...rendering.v1.level.LevelRenderEvents`**. SA's
+  `fabric-26.3` has each: `client/render/HalleyPipelines`, `DynamicMesh`, `client/proxima/ProximaRender`,
+  `client/AdditionPanel`, `client/HalleyClient`, `HalleyAddon`.
 - **Next**: the other Fabric branches (SA's `fabric-*` branches: Loom,
   `ConfigFile` instead of `ModConfigSpec`, Fabric callbacks for ticks/HUD/world render, RimuLib packages without a
   version prefix on Fabric).
