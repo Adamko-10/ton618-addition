@@ -7,8 +7,8 @@ first** (Adam's brief, his own words at its end), then this file. Fable's part: 
 ### >>> RESUME HERE (2026-11-14 ~11:40, the VM): film + P1 built (`0f0e737`); Adam tests that jar <<<
 
 - **Test this jar** (newest; replaces both below): `C:\Users\User\Desktop\test builds\2026-11-14 TON 618 film P1\TON
-  618 Addition 0.1.0 film P1 [NeoForge 1.21.1].jar` (not in Downloads: copying there was blocked again by the
-  permission check... not tried again, see §0).
+  618 Addition 0.1.0 film P1 [NeoForge 1.21.1].jar` (not copied to Downloads: Opus's copy there was blocked by the
+  permission check earlier, §0, so it wasn't tried again).
 - **P1 applied** (Adam: "Add it now", 2026-11-14): `net/LastLightEnd` (cast game time), declared in
   `Ton618Link.install`; `LastLight` keeps the cast's watchers and, when the world comes back before RESTORE (an op's
   `/ton618 restore`) or the restore fails, drops the cast and sends `LastLightEnd` to them; `Ton618AdditionClient`
