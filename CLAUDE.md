@@ -4,7 +4,28 @@ Handoff notes for every Claude session in this folder (`C:\Users\User\Desktop\to
 Started 2026-11-13 by an Opus 5.5 session (xhigh) that was started from Adam's SA Series session. **Read `BRIEF.md`
 first** (Adam's brief, his own words at its end), then this file. Fable's part: `prompts\FABLE-PREVIZ-AND-FILM-PROMPT.md`.
 
-### >>> RESUME HERE (2026-11-14 ~13:20, the VM): edu plate moved + new key; Adam tests; then port, then CurseForge <<<
+### >>> RESUME HERE (2026-11-14 ~13:50, the VM): icon + unlock note built (`53e9726`); Adam tests; then port, then CurseForge <<<
+
+- **Adam's test of TON 618's H menu (screenshot, via the SA Series session)**: "fix this and also add a little note
+  somewhere that tells people that u have to set the blackhole to infinite power and then use it and THEN finally u
+  can use last light (im talking about the UI)".
+  - **Missing icon fixed**: RimuLib draws a skill's icon from the gui sprites of its **set's** namespace (as the SA
+    Series ships `shooting_star_demo:.../skill/stellar_remote/<id>.png`). Ours: `assets/ton618/textures/gui/sprites/
+    skill/ton_618/last_light.png` and `assets/shooting_star_demo/textures/gui/sprites/skill/stellar_remote/
+    last_light.png`, 256×128 (the menu's icons are 2:1), our own art drawn by code: `tools/icons/LastLightIcon.java`
+    (`java tools/icons/LastLightIcon.java <out.png>...`): the last flash, its burst ring, Hawking pairs, stars. A
+    candidate for Fable to redo nicer later.
+  - **The red triangle** right of the row is RimuLib's normal unofficial-addon marker (`AddonSkills`, the SA Series'
+    skills have it too): nothing to fix.
+  - **Unlock note**: the plate (`EducationPlate`) shows, under the switch, "How to unlock Last Light: 1. Set TON618's
+    Scale to ∞ (no limit) 2. Use TON618: it devours the world 3. In the dark, cast Last Light" whenever the player is
+    not in the dark, and "In the dark: Last Light is ready" in the dark. Same wording in the menu's select warning
+    ("Locked: set TON618's Scale to ∞ and use it, then cast Last Light in the dark"), the early-cast message and both
+    skill descriptions (lang).
+- **Test jar**: `C:\Users\User\Desktop\test builds\2026-11-14 TON 618 icon and unlock note\TON 618 Addition 0.1.0 icon
+  and unlock note [NeoForge 1.21.1].jar` (replaces all earlier ones; the SA Series session copies it to Downloads).
+
+### Before that (2026-11-14 ~13:20): edu plate moved + new key
 
 - **Adam on the first switch jar**: "can u make the key not J since the cutscene key uses J and move the ui to the top
   right for now like the educational mode ui". The key was "]", whose cap reads as "J" in Minecraft's small font. Now
