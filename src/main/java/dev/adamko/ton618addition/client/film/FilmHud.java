@@ -248,11 +248,11 @@ final class FilmHud {
         if (length < 1F || alpha <= 0.004F) {
             return;
         }
-        g.pose().pushPose();
-        g.pose().translate(x0, y0, 0F);
-        g.pose().mulPose(Axis.ZP.rotation((float) Math.atan2(dy, dx)));
+        g.pose().pushMatrix();
+        g.pose().translate(x0, y0);
+        g.pose().rotate((float) Math.atan2(dy, dx));
         UiApi.box(g, 0F, -0.6F, length, 1.2F, argb(rgb, alpha));
-        g.pose().popPose();
+        g.pose().popMatrix();
     }
 
     /** The lettering's size at scale 1 (RimuLib's faces). */

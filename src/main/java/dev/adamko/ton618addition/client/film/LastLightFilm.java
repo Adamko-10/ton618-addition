@@ -8,13 +8,12 @@ import dev.adamko.ton618addition.lastlight.LastLightClock;
 import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.screens.ReceivingLevelScreen;
+import net.minecraft.client.gui.screens.LevelLoadingScreen;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
-import net.fabricmc.fabric.api.client.rendering.v1.CoreShaderRegistrationCallback;
-import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;
-import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
+import net.fabricmc.fabric.api.client.rendering.v1.world.WorldRenderContext;
+import net.fabricmc.fabric.api.client.rendering.v1.world.WorldRenderEvents;
 import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents;
 import net.minecraft.client.gui.screens.Screen;
 
@@ -61,14 +60,13 @@ public final class LastLightFilm {
     }
 
     public static void init() {
-        CoreShaderRegistrationCallback.EVENT.register(FilmGl::register);
         ClientTickEvents.END_CLIENT_TICK.register(client -> tick());
-        WorldRenderEvents.LAST.register(LastLightFilm::world);
+        WorldRenderEvents.END_MAIN.register(LastLightFilm::world);
         // over the game's own HUD: Forge 1.21.1 has no RenderGuiEvent, so client/HudRescue calls screen(...) right
         // after the HUD every frame (also when TON 618 hides the HUD)
         // the game's "loading terrain" screen during the trip back: kept white
         ScreenEvents.AFTER_INIT.register((client, screen, width, height) -> {
-            if (screen instanceof ReceivingLevelScreen) {
+            if (screen instanceof LevelLoadingScreen) {
                 ScreenEvents.afterRender(screen).register((shown, graphics, mouseX, mouseY, delta) -> loading(graphics));
             }
         });
@@ -177,7 +175,7 @@ public final class LastLightFilm {
         if (now == null) {
             return;
         }
-        float partial = context.tickCounter().getGameTimeDeltaPartialTick(true);
+        float partial = Minecraft.getInstance().getDeltaTracker().getGameTimeDeltaPartialTick(true);
         if (!showing(partial)) {
             return;
         }
@@ -204,10 +202,10 @@ public final class LastLightFilm {
         }
         try {
             float t = FilmScript.toSb(g);
-            // whatever the HUD has drawn so far goes first, then the scene covers it
-            graphics.flush();
+            // the scene is drawn into its own texture now and put on screen over whatever the HUD has drawn so far
             if (FilmSpace.covers(t)) {
                 FilmSpace.draw(t);
+                FilmGl.present(graphics);
             }
             FilmHud.draw(graphics, g, t, now.educational());
         } catch (RuntimeException failed) {

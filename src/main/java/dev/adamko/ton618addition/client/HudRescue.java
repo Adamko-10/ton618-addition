@@ -53,13 +53,11 @@ public final class HudRescue {
         // frame, whether or not TON 618 hid the HUD
         try {
             LastLightFilm.screen(graphics, delta.getGameTimeDeltaPartialTick(false));
-            graphics.flush();
         } catch (RuntimeException failed) {
             warnOnce("the film's layer", failed);
         }
         try {
             LastLightNotice.draw(graphics, delta.getGameTimeDeltaPartialTick(false));
-            graphics.flush();
         } catch (RuntimeException failed) {
             warnOnce("Last Light's notice", failed);
         }
@@ -68,12 +66,10 @@ public final class HudRescue {
     private static void rescue(GuiGraphics graphics, DeltaTracker delta) {
         reached = true;
         try {
-            WhiteSpace.beforeHud();
             WhiteSpace.render(graphics, delta.getGameTimeDeltaPartialTick(true));
         } catch (RuntimeException | LinkageError failed) {
             warnOnce("RimuLib's menu", failed);
         }
-        graphics.flush();
     }
 
     private static void warnOnce(String what, Throwable failed) {

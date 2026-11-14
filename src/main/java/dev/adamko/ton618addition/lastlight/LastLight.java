@@ -16,6 +16,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.permissions.Permissions;
 
 /**
  * TA-01 · Last Light on the server (agreed with Adam 2026-11-13). Only in TON 618's dark, after a no-limit TON 618 has
@@ -50,11 +51,11 @@ public final class LastLight {
 
     /** The cast, from either menu. True when it started (the menu then starts its cooldown). */
     public static boolean cast(ServerPlayer player, LastLightSkill skill) {
-        MinecraftServer server = player.server;
+        MinecraftServer server = player.level().getServer();
         if (!Ton618AdditionConfig.enabled()) {
             return deny(player, LastLightInfo.TITLE + " is turned off on this server");
         }
-        if (Ton618AdditionConfig.operatorsOnly() && !player.hasPermissions(2)) {
+        if (Ton618AdditionConfig.operatorsOnly() && !player.permissions().hasPermission(Permissions.COMMANDS_GAMEMASTER)) {
             return deny(player, "Only operators can cast " + LastLightInfo.NAME + " on this server");
         }
         if (running != null) {
@@ -80,7 +81,7 @@ public final class LastLight {
             }
         }
         Ton618Addition.LOG.info("{} cast {} from {} in TON 618's dark; {} player(s) see it. The world comes back in {} s.",
-            player.getGameProfile().getName(), LastLightInfo.TITLE, skill.onRemote() ? "the Stellar Remote" : "TON 618",
+            player.getGameProfile().name(), LastLightInfo.TITLE, skill.onRemote() ? "the Stellar Remote" : "TON 618",
             told, LastLightClock.RESTORE / 20.0);
         return true;
     }
@@ -116,7 +117,7 @@ public final class LastLight {
         LastLightEnd message = new LastLightEnd(ended.fx.castGameTime());
         for (UUID id : ended.watchers) {
             ServerPlayer watcher = server.getPlayerList().getPlayer(id);
-            if (watcher != null && NetApi.canSend(watcher, LastLightEnd.PACKET)) {
+            if (watcher != null && NetApi.canSend(watcher, LastLightEnd.TYPE)) {
                 NetApi.send(watcher, message);
             }
         }
@@ -128,7 +129,7 @@ public final class LastLight {
      */
     public static void arrived(ServerPlayer player) {
         if (running != null && !running.restored && Ton618Link.inDark(player)
-            && running.tick(player.server) < LastLightClock.BURST) {
+            && running.tick(player.level().getServer()) < LastLightClock.BURST) {
             show(player);
         }
     }
@@ -166,7 +167,7 @@ public final class LastLight {
 
     /** Shows the running cast's film to one player (and remembers them as a watcher). */
     private static boolean show(ServerPlayer player) {
-        if (!NetApi.canSend(player, LastLightFx.PACKET)) {
+        if (!NetApi.canSend(player, LastLightFx.TYPE)) {
             return false;
         }
         NetApi.send(player, running.fx);

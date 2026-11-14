@@ -1,25 +1,54 @@
 package dev.adamko.ton618addition.client.film;
 
-import com.mojang.blaze3d.platform.GlStateManager;
+import com.mojang.blaze3d.buffers.GpuBuffer;
+import com.mojang.blaze3d.buffers.GpuBufferSlice;
+import com.mojang.blaze3d.buffers.Std140Builder;
+import com.mojang.blaze3d.pipeline.BlendFunction;
+import com.mojang.blaze3d.pipeline.RenderPipeline;
+import com.mojang.blaze3d.pipeline.RenderTarget;
+import com.mojang.blaze3d.platform.DepthTestFunction;
+import com.mojang.blaze3d.platform.DestFactor;
+import com.mojang.blaze3d.platform.SourceFactor;
+import com.mojang.blaze3d.shaders.UniformType;
+import com.mojang.blaze3d.systems.GpuDevice;
+import com.mojang.blaze3d.systems.RenderPass;
 import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.textures.FilterMode;
+import com.mojang.blaze3d.textures.GpuTexture;
+import com.mojang.blaze3d.textures.GpuTextureView;
+import com.mojang.blaze3d.textures.TextureFormat;
 import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.MeshData;
 import com.mojang.blaze3d.vertex.Tesselator;
-import com.mojang.blaze3d.vertex.VertexBuffer;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import dev.adamko.ton618addition.Ton618Addition;
-import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.util.OptionalDouble;
+import java.util.OptionalInt;
 import javax.annotation.Nullable;
-import net.minecraft.client.renderer.ShaderInstance;
-import net.minecraft.resources.ResourceLocation;
-import net.fabricmc.fabric.api.client.rendering.v1.CoreShaderRegistrationCallback;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.renderer.PerspectiveProjectionMatrixBuffer;
+import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.client.renderer.texture.AbstractTexture;
+import net.minecraft.resources.Identifier;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
+import org.lwjgl.system.MemoryStack;
 
 /**
- * <b>FABLE'S FILE.</b> The film's one shader program ({@code shaders/film/last_light}) and the few drawing helpers
- * everything in the film uses: quads built on the CPU each frame, drawn with one material ("mode") per call.
+ * <b>FABLE'S FILE</b> (ported to Minecraft 1.21.11's renderer by Opus, Adam's OK 2026-11-14). The film's one shader
+ * ({@code shaders/core/last_light}) and the few drawing helpers everything in the film uses: quads built on the CPU
+ * each frame, drawn with one material ("mode") per call.
+ *
+ * <p>On 1.21.11 there is no shader object to bind and no global blend state: each blend ({@link #opaque()},
+ * {@link #additive()}, {@link #premultiplied()}, {@link #blended()}) and depth mode ({@link #beginOverlay()},
+ * {@link #beginWorld()}) is a {@link RenderPipeline} of its own, the material and the view matrix go in a uniform block
+ * ({@code FilmParams}), the projection in Minecraft's {@code Projection} block, and each {@link #draw} uploads its quads
+ * ({@link FilmMesh}) and runs one render pass. The space scene ({@code FilmSpace}, between {@link #beginOverlay()} and
+ * {@link #end()}) draws into a texture of its own, which {@link #present} puts on screen in the HUD (as the SA Series'
+ * {@code ProximaRender} does); the world effects ({@link #beginWorld()}) draw onto the game's own picture and depth.
  */
 final class FilmGl {
     /** The shader's materials (see {@code last_light.fsh}). */
@@ -33,30 +62,32 @@ final class FilmGl {
     static final int GLOW = 7;
     static final int STREAK = 8;
 
+    private static final int OPAQUE = 0;
+    private static final int ADDITIVE = 1;
+    private static final int PREMULTIPLIED = 2;
+    private static final int BLENDED = 3;
+    /** FilmParams: the view matrix, then Mode (x), Param and Param2. */
+    private static final int UNIFORM_SIZE = 64 + 3 * 16;
+    private static final Identifier SCENE = Ton618Addition.id("film_scene");
+    private static final RenderPipeline[][] PIPELINES = new RenderPipeline[4][2];
+    private static final FilmMesh MESH = new FilmMesh("TA-01 Last Light film");
+
+    private static int blend = BLENDED;
+    /** Drawing the world effects (onto the game's picture, depth-tested), else the space scene (its own texture). */
+    private static boolean world;
     @Nullable
-    private static ShaderInstance shader;
+    private static GpuBuffer uniforms;
     @Nullable
-    private static VertexBuffer buffer;
+    private static PerspectiveProjectionMatrixBuffer projection;
+    @Nullable
+    private static Scene scene;
 
     private FilmGl() {
     }
 
-    /**
-     * Loads the film's program through Fabric API (on Fabric the files live in {@code shaders/core/}, where its
-     * shader registration looks; the NeoForge and Forge branches keep them in {@code shaders/film/}).
-     */
-    static void register(CoreShaderRegistrationCallback.RegistrationContext context) {
-        try {
-            context.register(Ton618Addition.id("last_light"), DefaultVertexFormat.POSITION_TEX_COLOR, loaded -> shader = loaded);
-        } catch (IOException | RuntimeException failed) {
-            // the skill still works; the film then shows its words and the white only
-            Ton618Addition.LOG.error("The Last Light film's shader didn't load, so its pictures won't be drawn", failed);
-            shader = null;
-        }
-    }
-
+    /** The pipelines compile their shaders themselves on first use: nothing to load up front on 1.21.11. */
     static boolean ready() {
-        return shader != null;
+        return true;
     }
 
     static BufferBuilder begin() {
@@ -92,24 +123,31 @@ final class FilmGl {
     static void draw(BufferBuilder b, Matrix4f view, Matrix4f proj, int mode, float p0, float p1, float p2, float p3,
             float q0, float q1, float q2, float q3) {
         MeshData mesh = b.build();
-        ShaderInstance program = shader;
-        if (mesh == null) {
+        if (!MESH.upload(mesh) || !world && scene == null) {
             return;
         }
-        if (program == null) {
-            mesh.close();
-            return;
+        GpuDevice device = RenderSystem.getDevice();
+        if (uniforms == null || uniforms.isClosed()) {
+            uniforms = device.createBuffer(() -> "TA-01 Last Light film parameters", GpuBuffer.USAGE_UNIFORM | GpuBuffer.USAGE_COPY_DST,
+                UNIFORM_SIZE);
         }
-        program.safeGetUniform("Mode").set((float) mode);
-        program.safeGetUniform("Param").set(p0, p1, p2, p3);
-        program.safeGetUniform("Param2").set(q0, q1, q2, q3);
-        if (buffer == null) {
-            buffer = new VertexBuffer(VertexBuffer.Usage.DYNAMIC);
+        try (MemoryStack stack = MemoryStack.stackPush()) {
+            ByteBuffer data = Std140Builder.onStack(stack, UNIFORM_SIZE).putMat4f(view)
+                .putVec4((float) mode, 0F, 0F, 0F).putVec4(p0, p1, p2, p3).putVec4(q0, q1, q2, q3).get();
+            device.createCommandEncoder().writeToBuffer(uniforms.slice(), data);
         }
-        buffer.bind();
-        buffer.upload(mesh);
-        buffer.drawWithShader(view, proj, program);
-        VertexBuffer.unbind();
+        // the world's own projection while drawing in the world; the film's for its space scene
+        GpuBufferSlice projectionSlice = world ? RenderSystem.getProjectionMatrixBuffer() : projection(proj);
+        RenderTarget main = Minecraft.getInstance().getMainRenderTarget();
+        GpuTextureView color = world ? main.getColorTextureView() : scene.getTextureView();
+        GpuTextureView depth = world ? main.getDepthTextureView() : scene.depthView;
+        try (RenderPass pass = device.createCommandEncoder().createRenderPass(() -> "TA-01 Last Light", color,
+                OptionalInt.empty(), depth, OptionalDouble.empty())) {
+            pass.setPipeline(pipeline(blend, world));
+            pass.setUniform("Projection", projectionSlice);
+            pass.setUniform("FilmParams", uniforms);
+            MESH.draw(pass);
+        }
     }
 
     static void draw(BufferBuilder b, Matrix4f view, Matrix4f proj, int mode, float p0, float p1, float p2, float p3) {
@@ -120,48 +158,131 @@ final class FilmGl {
         draw(b, view, proj, mode, 1F, 0F, 0F, 0F, 0F, 0F, 0F, 0F);
     }
 
+    private static GpuBufferSlice projection(Matrix4f matrix) {
+        if (projection == null) {
+            projection = new PerspectiveProjectionMatrixBuffer("TA-01 Last Light film projection");
+        }
+        return projection.getBuffer(matrix);
+    }
+
+    private static RenderPipeline pipeline(int blendMode, boolean depthTested) {
+        int d = depthTested ? 1 : 0;
+        if (PIPELINES[blendMode][d] == null) {
+            RenderPipeline.Builder b = RenderPipeline.builder()
+                .withLocation(Ton618Addition.id("pipeline/last_light_" + blendMode + "_" + d))
+                .withVertexShader(Ton618Addition.id("core/last_light"))
+                .withFragmentShader(Ton618Addition.id("core/last_light"))
+                .withUniform("Projection", UniformType.UNIFORM_BUFFER)
+                .withUniform("FilmParams", UniformType.UNIFORM_BUFFER)
+                .withVertexFormat(DefaultVertexFormat.POSITION_TEX_COLOR, VertexFormat.Mode.QUADS)
+                .withDepthTestFunction(depthTested ? DepthTestFunction.LEQUAL_DEPTH_TEST : DepthTestFunction.NO_DEPTH_TEST)
+                .withDepthWrite(false)
+                .withCull(false)
+                .withColorWrite(true, false);
+            switch (blendMode) {
+                case ADDITIVE -> b.withBlend(new BlendFunction(SourceFactor.ONE, DestFactor.ONE));
+                case PREMULTIPLIED -> b.withBlend(new BlendFunction(SourceFactor.ONE, DestFactor.ONE_MINUS_SRC_ALPHA));
+                case BLENDED -> b.withBlend(BlendFunction.TRANSLUCENT);
+                default -> b.withoutBlend();
+            }
+            PIPELINES[blendMode][d] = b.build();
+        }
+        return PIPELINES[blendMode][d];
+    }
+
     // ---- blending ------------------------------------------------------------------------------------------------------
 
     /** Light added to what's there. */
     static void additive() {
-        RenderSystem.enableBlend();
-        RenderSystem.blendFunc(GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ONE);
+        blend = ADDITIVE;
     }
 
     /** Colour already multiplied by its alpha (the hole: its light adds, its shadow covers). */
     static void premultiplied() {
-        RenderSystem.enableBlend();
-        RenderSystem.blendFunc(GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA);
+        blend = PREMULTIPLIED;
     }
 
     static void blended() {
-        RenderSystem.enableBlend();
-        RenderSystem.blendFunc(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA);
+        blend = BLENDED;
     }
 
     static void opaque() {
-        RenderSystem.disableBlend();
+        blend = OPAQUE;
     }
 
-    /** A scene of our own over everything: no depth, both faces. */
+    /**
+     * A scene of our own over everything: no depth, both faces. On 1.21.11 it is drawn into the film's own texture
+     * (cleared to black here, the size of the window); {@link #present} puts it on screen.
+     */
     static void beginOverlay() {
-        RenderSystem.disableDepthTest();
-        RenderSystem.depthMask(false);
-        RenderSystem.disableCull();
+        world = false;
+        Minecraft mc = Minecraft.getInstance();
+        int width = Math.max(1, mc.getWindow().getWidth());
+        int height = Math.max(1, mc.getWindow().getHeight());
+        if (scene == null || !scene.ready() || scene.width != width || scene.height != height) {
+            scene = new Scene(width, height);
+            mc.getTextureManager().register(SCENE, scene);
+        }
+        RenderSystem.getDevice().createCommandEncoder().clearColorAndDepthTextures(scene.getTexture(), 0xFF000000, scene.depth, 1.0);
     }
 
     /** Light and veils in the world: hidden by what stands in front, writing no depth, both faces. */
     static void beginWorld() {
-        RenderSystem.enableDepthTest();
-        RenderSystem.depthMask(false);
-        RenderSystem.disableCull();
+        world = true;
     }
 
     static void end() {
-        RenderSystem.depthMask(true);
-        RenderSystem.enableDepthTest();
-        RenderSystem.enableCull();
-        RenderSystem.enableBlend();
-        RenderSystem.defaultBlendFunc();
+        blend = BLENDED;
+    }
+
+    /** The space scene drawn since {@link #beginOverlay()}, onto the screen (between the HUD under it and the words). */
+    static void present(GuiGraphics graphics) {
+        if (scene == null || !scene.ready()) {
+            return;
+        }
+        graphics.nextStratum();
+        graphics.blit(RenderPipelines.GUI_TEXTURED, SCENE, 0, 0, 0.0F, -graphics.guiHeight(),
+            graphics.guiWidth(), graphics.guiHeight(), graphics.guiWidth(), -graphics.guiHeight());
+        graphics.nextStratum();
+    }
+
+    /** The space scene's own picture and depth. */
+    private static final class Scene extends AbstractTexture {
+        final int width;
+        final int height;
+        @Nullable
+        private GpuTexture depth;
+        @Nullable
+        private GpuTextureView depthView;
+
+        Scene(int width, int height) {
+            this.width = width;
+            this.height = height;
+            GpuDevice device = RenderSystem.getDevice();
+            this.texture = device.createTexture(SCENE::toString, GpuTexture.USAGE_RENDER_ATTACHMENT | GpuTexture.USAGE_TEXTURE_BINDING,
+                TextureFormat.RGBA8, width, height, 1, 1);
+            this.textureView = device.createTextureView(this.texture);
+            this.sampler = RenderSystem.getSamplerCache().getClampToEdge(FilterMode.LINEAR);
+            this.depth = device.createTexture(() -> "TA-01 Last Light film depth", GpuTexture.USAGE_RENDER_ATTACHMENT,
+                TextureFormat.DEPTH32, width, height, 1, 1);
+            this.depthView = device.createTextureView(this.depth);
+        }
+
+        boolean ready() {
+            return this.texture != null && !this.texture.isClosed();
+        }
+
+        @Override
+        public void close() {
+            super.close();
+            if (this.depthView != null) {
+                this.depthView.close();
+                this.depthView = null;
+            }
+            if (this.depth != null) {
+                this.depth.close();
+                this.depth = null;
+            }
+        }
     }
 }

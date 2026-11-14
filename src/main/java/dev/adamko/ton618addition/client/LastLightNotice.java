@@ -51,9 +51,9 @@ public final class LastLightNotice {
         int w = Math.max(font.width(title), Math.max(font.width(line), font.width(why))) + 20;
         int h = 42;
         float scale = Math.max(Mth.clamp(g.guiWidth() / 640.0F, 0.75F, 1.25F), 1.0F / (float) minecraft.getWindow().getGuiScale());
-        g.pose().pushPose();
-        g.pose().translate(g.guiWidth() / 2.0F - w * scale / 2.0F, g.guiHeight() * 0.16F, 450.0F);
-        g.pose().scale(scale, scale, 1.0F);
+        g.pose().pushMatrix();
+        g.pose().translate(g.guiWidth() / 2.0F - w * scale / 2.0F, g.guiHeight() * 0.16F);
+        g.pose().scale(scale, scale);
         g.fill(1, 0, w - 1, h, PLATE);
         g.fill(0, 1, 1, h - 1, PLATE);
         g.fill(w - 1, 1, w, h - 1, PLATE);
@@ -61,6 +61,6 @@ public final class LastLightNotice {
         g.drawString(font, title, (w - font.width(title)) / 2, 6, TITLE, false);
         g.drawString(font, line, (w - font.width(line)) / 2, 18, TEXT, false);
         g.drawString(font, why, (w - font.width(why)) / 2, 29, DIM, false);
-        g.pose().popPose();
+        g.pose().popMatrix();
     }
 }

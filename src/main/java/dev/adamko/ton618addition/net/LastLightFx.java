@@ -1,10 +1,11 @@
 package dev.adamko.ton618addition.net;
 
-import cyou.rimuru.rimulib.api.NetApi;
-import cyou.rimuru.rimulib.net.RimuPacket;
 import dev.adamko.ton618addition.Ton618Addition;
 import java.util.UUID;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.world.phys.Vec3;
 
 /**
@@ -22,9 +23,15 @@ import net.minecraft.world.phys.Vec3;
  * @param remote        it was fired from The Shooting Star's Stellar Remote (otherwise TON 618's own item)
  */
 public record LastLightFx(UUID caster, int casterId, long castGameTime, Vec3 position, float yaw, float pitch,
-                          boolean offhand, boolean remote) {
-    public static final RimuPacket<LastLightFx> PACKET = NetApi.packet(Ton618Addition.id("last_light"), LastLightFx.class,
-        LastLightFx::write, LastLightFx::read);
+                          boolean offhand, boolean remote) implements CustomPacketPayload {
+    public static final Type<LastLightFx> TYPE = new Type<>(Ton618Addition.id("last_light"));
+    public static final StreamCodec<RegistryFriendlyByteBuf, LastLightFx> CODEC = StreamCodec.of(
+        (buf, value) -> value.write(buf), LastLightFx::read);
+
+    @Override
+    public Type<LastLightFx> type() {
+        return TYPE;
+    }
 
     private void write(FriendlyByteBuf buf) {
         buf.writeUUID(this.caster);

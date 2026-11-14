@@ -1,4 +1,4 @@
-#version 150
+#version 330
 
 // TA-01 Last Light's film (client/film). One program, a material per Mode (all our own, nothing of TON 618's):
 //  0 plain colour (Color)
@@ -13,9 +13,14 @@
 //  6 a far galaxy's smudge (uv already turned and squashed; Color.a how strong), added
 //  7 a wide glow with a hot core (uv -1..1; Color; Param.x a gain), added
 //  8 a streak (uv.x -1..1 across it; Color, which fades along it), added
-uniform float Mode;
-uniform vec4 Param;
-uniform vec4 Param2;
+// Minecraft 1.21.11 (Fabric 1.21.11 branch): the parameters come in one uniform block (see client/film/FilmGl).
+layout(std140) uniform FilmParams {
+    mat4 ModelViewMat;
+    vec4 ModeVec;
+    vec4 Param;
+    vec4 Param2;
+};
+#define Mode (ModeVec.x)
 
 in vec2 uv;
 in vec4 color;

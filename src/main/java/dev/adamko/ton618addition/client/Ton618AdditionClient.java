@@ -46,9 +46,9 @@ public final class Ton618AdditionClient implements ClientModInitializer {
 
     /** Just before RimuLib's client starts (with {@link Ton618Link#install}; client/mixin/RimulibClientMixin). */
     public static void afterConstruction() {
-        NetClientApi.receive(LastLightFx.PACKET, (fx, context) -> Minecraft.getInstance().execute(() -> begin(fx)));
+        NetClientApi.receive(LastLightFx.TYPE, (fx, context) -> Minecraft.getInstance().execute(() -> begin(fx)));
         // the server dropped the cast before its end (the world came back early, or the restore failed)
-        NetClientApi.receive(LastLightEnd.PACKET, (end, context) -> Minecraft.getInstance().execute(() -> {
+        NetClientApi.receive(LastLightEnd.TYPE, (end, context) -> Minecraft.getInstance().execute(() -> {
             if (current != null && current.fx().castGameTime() == end.castGameTime()) {
                 stop();
             }

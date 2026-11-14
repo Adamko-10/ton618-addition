@@ -9,8 +9,9 @@ import cyou.rimuru.rimulib.skill.SkillSet;
 import dev.adamko.ton618addition.link.Ton618Link;
 import java.util.Locale;
 import net.minecraft.ChatFormatting;
-import net.minecraft.Util;
+import net.minecraft.util.Util;
 import net.minecraft.client.KeyMapping;
+import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
@@ -111,7 +112,7 @@ public final class EducationPlate {
     }
 
     private static boolean matches(KeyMapping mapping, int key) {
-        return mapping != null && mapping.matches(key, 0);
+        return mapping != null && mapping.matches(new KeyEvent(key, 0, 0));
     }
 
     static void draw(GuiGraphics g) {
@@ -139,10 +140,10 @@ public final class EducationPlate {
         int height = HEIGHT + 4 + unlock.length * 11;
         // never below one screen pixel per font pixel; a little smaller on small screens (as the SA Series' plates)
         float scale = Math.max(Mth.clamp(g.guiWidth() / 860.0F, 0.5F, 0.75F) * 0.82F, 1.0F / (float) minecraft.getWindow().getGuiScale());
-        g.pose().pushPose();
+        g.pose().pushMatrix();
         // over the menu, in its top right corner (Adam, 2026-11-14; the SA Series' first plate is top left)
-        g.pose().translate(g.guiWidth() - 8.0F - w * scale, 8.0F, 400.0F);
-        g.pose().scale(scale, scale, 1.0F);
+        g.pose().translate(g.guiWidth() - 8.0F - w * scale, 8.0F);
+        g.pose().scale(scale, scale);
         plate(g, 2, 3, w + 2, height + 3, 0x26000000);
         plate(g, 0, 0, w, height, 0xF4000000 | PLATE);
         g.fill(w - 3, 2, w, height - 2, 0xFF000000 | ACCENT);
@@ -172,7 +173,7 @@ public final class EducationPlate {
         Component state = Component.translatable(on ? "gui.ton618_addition.on" : "gui.ton618_addition.off");
         g.drawString(font, state, sx - 22 - font.width(state), y + 1, 0xFF000000 | (on ? ACCENT : GREY), false);
         g.drawString(font, hint, 11, y + 14, 0xFF000000 | GREY, false);
-        g.pose().popPose();
+        g.pose().popMatrix();
     }
 
     /** A symbol key as the keyboard layout prints it. */

@@ -1,9 +1,10 @@
 package dev.adamko.ton618addition.net;
 
-import cyou.rimuru.rimulib.api.NetApi;
-import cyou.rimuru.rimulib.net.RimuPacket;
 import dev.adamko.ton618addition.Ton618Addition;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 
 /**
  * The server dropped a running Last Light before its end (Fable's proposal P1, Adam picked it 2026-11-14): the world
@@ -12,9 +13,15 @@ import net.minecraft.network.FriendlyByteBuf;
  *
  * @param castGameTime which cast ({@link LastLightFx#castGameTime()})
  */
-public record LastLightEnd(long castGameTime) {
-    public static final RimuPacket<LastLightEnd> PACKET = NetApi.packet(Ton618Addition.id("last_light_end"), LastLightEnd.class,
-        LastLightEnd::write, LastLightEnd::read);
+public record LastLightEnd(long castGameTime) implements CustomPacketPayload {
+    public static final Type<LastLightEnd> TYPE = new Type<>(Ton618Addition.id("last_light_end"));
+    public static final StreamCodec<RegistryFriendlyByteBuf, LastLightEnd> CODEC = StreamCodec.of(
+        (buf, value) -> value.write(buf), LastLightEnd::read);
+
+    @Override
+    public Type<LastLightEnd> type() {
+        return TYPE;
+    }
 
     private void write(FriendlyByteBuf buf) {
         buf.writeLong(this.castGameTime);

@@ -16,7 +16,7 @@ import net.minecraft.client.sounds.AudioStream;
 import net.minecraft.client.sounds.SoundBufferLibrary;
 import net.minecraft.client.sounds.SoundManager;
 import net.minecraft.client.sounds.WeighedSoundEvents;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.valueproviders.ConstantFloat;
@@ -33,7 +33,7 @@ import org.lwjgl.BufferUtils;
  */
 final class FilmSound {
     private static final int RATE = FilmSynth.RATE;
-    private static final ResourceLocation ID = Ton618Addition.id("film/last_light");
+    private static final Identifier ID = Ton618Addition.id("film/last_light");
     private static final Sound SOUND = new Sound(ID, ConstantFloat.of(1F), ConstantFloat.of(1F), 1, Sound.Type.FILE, true, false, 16);
     private static final WeighedSoundEvents EVENTS = new WeighedSoundEvents(ID, null);
     @Nullable
@@ -99,7 +99,7 @@ final class FilmSound {
         }
 
         @Override
-        public CompletableFuture<AudioStream> getAudioStream(SoundBufferLibrary buffers, ResourceLocation id, boolean looping) {
+        public CompletableFuture<AudioStream> getAudioStream(SoundBufferLibrary buffers, Identifier id, boolean looping) {
             return prepare().thenApply(pcm -> {
                 this.startedAt = this.clock.getAsDouble() / 20.0;
                 this.played = 0.0;

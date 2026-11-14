@@ -16,7 +16,8 @@ import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.phys.Vec3;
-import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;
+import net.fabricmc.fabric.api.client.rendering.v1.world.WorldRenderContext;
+import org.joml.Quaternionf;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 
@@ -78,14 +79,15 @@ final class FilmWorld {
         if (mc.level == null) {
             return;
         }
-        float partial = context.tickCounter().getGameTimeDeltaPartialTick(true);
-        Camera camera = context.camera();
-        Vec3 eye = camera.getPosition();
-        Vector3f left = camera.getLeftVector();
-        Vector3f up = new Vector3f(camera.getUpVector());
+        float partial = mc.getDeltaTracker().getGameTimeDeltaPartialTick(true);
+        Camera camera = mc.gameRenderer.getMainCamera();
+        Vec3 eye = camera.position();
+        Vector3f left = new Vector3f(camera.leftVector());
+        Vector3f up = new Vector3f(camera.upVector());
         Vector3f right = new Vector3f(-left.x, -left.y, -left.z);
-        Matrix4f view = new Matrix4f(context.positionMatrix());
-        Matrix4f proj = new Matrix4f(context.projectionMatrix());
+        // Minecraft 1.21.11: the camera's rotation as the level's view matrix; FilmGl uses the level's own projection here
+        Matrix4f view = new Matrix4f().rotation(camera.rotation().conjugate(new Quaternionf()));
+        Matrix4f proj = new Matrix4f();
         if (cast.inDark()) {
             if (t < FilmScript.S_COSMOS + 4F) {
                 dark(cast, t, partial, eye, right, up, view, proj);

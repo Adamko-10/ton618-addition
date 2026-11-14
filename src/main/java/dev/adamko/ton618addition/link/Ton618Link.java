@@ -14,7 +14,7 @@ import dev.adamko.ton618addition.net.LastLightFx;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.Level;
@@ -32,9 +32,9 @@ public final class Ton618Link {
 
     /** TON 618's dark, where everyone goes when it devours the world. */
     public static final ResourceKey<Level> DARK = ResourceKey.create(Registries.DIMENSION,
-        ResourceLocation.fromNamespaceAndPath(TON618, "devoured"));
+        Identifier.fromNamespaceAndPath(TON618, "devoured"));
     /** Where TON 618 keeps whether the world is devoured ({@code devoured}, a boolean, and {@code at}, the game time). */
-    private static final ResourceLocation STORAGE = ResourceLocation.fromNamespaceAndPath(TON618, "ton618");
+    private static final Identifier STORAGE = Identifier.fromNamespaceAndPath(TON618, "ton618");
 
     /**
      * TON618 in the dark's sky, as TON 618 1.1.0 draws it: always in this direction from the camera (like the sun),
@@ -66,8 +66,8 @@ public final class Ton618Link {
         }
         installed = true;
         RimulibApi.connect(Ton618Addition.MOD_ID, Ton618Addition.class, "1.2.3");
-        NetApi.toClient(LastLightFx.PACKET);
-        NetApi.toClient(LastLightEnd.PACKET);
+        NetApi.toClient(LastLightFx.TYPE, LastLightFx.CODEC);
+        NetApi.toClient(LastLightEnd.TYPE, LastLightEnd.CODEC);
         SkillApi.whenRegistered(TON618, set -> {
             // TON 618's one set, ton618:ton_618, held by its item
             if (set.hidden || !"ton_618".equals(set.id.getPath()) || SkillApi.setOf(ON_TON618) != null) {
@@ -93,7 +93,7 @@ public final class Ton618Link {
 
     /** TON 618 has devoured the world (its own flag; {@code /ton618 status} reads the same). */
     public static boolean devoured(MinecraftServer server) {
-        return server.getCommandStorage().get(STORAGE).getBoolean("devoured");
+        return server.getCommandStorage().get(STORAGE).getBooleanOr("devoured", false);
     }
 
     public static boolean inDark(ServerPlayer player) {
@@ -105,7 +105,7 @@ public final class Ton618Link {
      * copy it keeps in memory) and sends everyone in the dark to the overworld's spawn. True when the world is back.
      */
     public static boolean restore(MinecraftServer server) {
-        CommandSourceStack source = server.createCommandSourceStack().withPermission(4).withSuppressedOutput();
+        CommandSourceStack source = server.createCommandSourceStack().withSuppressedOutput();
         try {
             server.getCommands().performPrefixedCommand(source, "ton618 restore");
         } catch (RuntimeException failed) {
