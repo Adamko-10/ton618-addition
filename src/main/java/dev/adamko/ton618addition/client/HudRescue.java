@@ -42,11 +42,23 @@ public final class HudRescue {
         reached = true;
     }
 
-    /** Just after the game's HUD call: if it was cut short, draw what it skipped. */
+    /**
+     * Just after the game's HUD call: if it was cut short, draw what it skipped; then, every frame, Last Light's
+     * fallback notice ({@link LastLightNotice}: only while it runs without its film).
+     */
     public static void afterGui(GuiGraphics graphics, DeltaTracker delta) {
-        if (reached) {
-            return;
+        if (!reached) {
+            rescue(graphics, delta);
         }
+        try {
+            LastLightNotice.draw(graphics, delta.getGameTimeDeltaPartialTick(false));
+            graphics.flush();
+        } catch (RuntimeException failed) {
+            warnOnce("Last Light's notice", failed);
+        }
+    }
+
+    private static void rescue(GuiGraphics graphics, DeltaTracker delta) {
         reached = true;
         try {
             RenderGuiEvent.Pre calledOff = new RenderGuiEvent.Pre(graphics, delta);

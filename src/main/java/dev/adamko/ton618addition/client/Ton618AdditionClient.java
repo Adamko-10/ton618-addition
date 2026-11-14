@@ -1,5 +1,6 @@
 package dev.adamko.ton618addition.client;
 
+import cyou.rimuru.rimulib.mc1211.client.api.FilmApi;
 import cyou.rimuru.rimulib.mc1211.client.api.MenuApi;
 import cyou.rimuru.rimulib.mc1211.client.api.NetClientApi;
 import cyou.rimuru.rimulib.mc1211.client.api.UiApi;
@@ -28,6 +29,16 @@ import net.neoforged.neoforge.common.NeoForge;
 public final class Ton618AdditionClient {
     @Nullable
     private static LastLightCast current;
+    /** RimuLib's films were on last tick (to notice them being switched on mid-cast). */
+    private static boolean filmsWereOn;
+
+    private static boolean filmsOn() {
+        try {
+            return FilmApi.automatic();
+        } catch (RuntimeException | LinkageError unsure) {
+            return true;
+        }
+    }
 
     private Ton618AdditionClient() {
     }
@@ -77,6 +88,22 @@ public final class Ton618AdditionClient {
             return;
         }
         current = new LastLightCast(fx);
+        boolean filmsOn = true;
+        boolean other = false;
+        try {
+            filmsOn = FilmApi.automatic();
+            other = FilmApi.active();
+            // RimuLib plays one film at a time and queues a new one behind any film still running, whatever its
+            // priority: TON 618's own film runs on for a while in the dark, so Last Light's would wait unseen
+            if (other) {
+                FilmApi.skip();
+            }
+        } catch (RuntimeException | LinkageError unsure) {
+            // the film starts or queues as RimuLib decides
+        }
+        filmsWereOn = filmsOn;
+        Ton618Addition.LOG.info("{} reached this game at film tick {} (films {}{}).", LastLightInfo.TITLE, current.tick(),
+            filmsOn ? "on" : "off: RimuLib's film key turns them on", other ? "; another film was playing and was skipped" : "");
         try {
             LastLightFilm.start(current);
         } catch (RuntimeException failed) {
@@ -89,6 +116,16 @@ public final class Ton618AdditionClient {
             return;
         }
         current.clientTick();
+        // films switched on mid-cast (RimuLib's film key, as the notice says): start the film where the cast is
+        boolean filmsOn = filmsOn();
+        if (filmsOn && !filmsWereOn && current.tick() < LastLightClock.BURST - 20) {
+            try {
+                LastLightFilm.start(current);
+            } catch (RuntimeException failed) {
+                Ton618Addition.LOG.error("The Last Light film failed to start", failed);
+            }
+        }
+        filmsWereOn = filmsOn;
         if (current.tick() > LastLightClock.END + 40) {
             current = null;
             if (LastLightFilm.active()) {
