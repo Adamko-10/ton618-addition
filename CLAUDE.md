@@ -4,7 +4,18 @@ Handoff notes for every Claude session in this folder (`C:\Users\User\Desktop\to
 Started 2026-11-13 by an Opus 5.5 session (xhigh) that was started from Adam's SA Series session. **Read `BRIEF.md`
 first** (Adam's brief, his own words at its end), then this file. Fable's part: `prompts\FABLE-PREVIZ-AND-FILM-PROMPT.md`.
 
-### >>> RESUME HERE (2026-11-14 ~21:15, the VM): all 7 ports done; next Adam's in-game test, then release <<<
+### >>> RESUME HERE (2026-11-14 ~21:45, the VM): all 7 ports done; drafts OK'd; new pixel icon; next Adam's test <<<
+
+- **Adam on the CurseForge drafts (2026-11-14): "it looks good"** (summary, description, changelog: approved).
+- **New project icon** (Adam: "make the icon pixel styled like shooting star addition SA series"):
+  `tools/icons/ModIcon.java` (Java port of the SA Series' `art/make_icon.js` style: 64×64 pixel art at 4×, 256×256
+  like SA's icon) → `dev/publish/project-icon.png`: TON618 (shadow, photon ring, its disk bent over the top), gold
+  Hawking sparks escaping, blue partners falling in, a sunrise on Earth's limb, the SA icon's "Addon" tag and a
+  **gold "TA" badge** (SA's is blue). Shown to Adam; waiting for his word.
+- **For later** (Adam: "for later lets change the icon in game aswell like the one that last light uses"): redo Last
+  Light's in-game skill icon (the two `last_light.png` sprites, 256×128, now from `tools/icons/LastLightIcon.java`) in
+  the same pixel style; it ships in all 7 jars, so it goes with the next update (or a rebuild before release if Adam
+  wants it in 1.0.0: ask). Also possible: a mod-list logo (we ship none; SA has `shooting_star_addition_icon.png`).
 
 - **`fabric-26.3` done** (`ce7f85f`, built + dev server OK, film on 26.3's renderpearl pipelines; §8a). All 7 branches
   are built; none pushed. **Test jars** (all 7 rebuilt from each branch's commit, 2026-11-14 ~21:20):
@@ -61,13 +72,13 @@ first** (Adam's brief, his own words at its end), then this file. Fable's part: 
   CI**: "Yes, wip pushes are fine" (`wip/*` branches and CI draft releases on this repo; real branches, tags,
   releases and CurseForge still wait for his yes each time).
 - **Release drafts** in `dev/publish/` (as the SA Series): `curseforge-description.md`, `summary.txt` (235 chars),
-  `changelog-1.0.0.md` (template: `{MC}`, `{LOADER}`, `{ALSO}`, `{FABRIC_API}`), `project-icon.png` (400×400, from
-  `tools/icons/LastLightIcon.java --size=400x400`). Adam: "just cross reference with shooting star addition SA
+  `changelog-1.0.0.md` (template: `{MC}`, `{LOADER}`, `{ALSO}`, `{FABRIC_API}`), `project-icon.png` (256×256 pixel
+  art from `tools/icons/ModIcon.java` since 2026-11-14 ~21:45; first a 400×400 glow from `LastLightIcon.java`). Adam: "just cross reference with shooting star addition SA
   series": done against the SA repo copy and its **live** page (summary starts with the name and ends "Needs
   RimuLib."; header lines; builds list; "The H menu" like SA's "The remote's menu"; "More"; credits and the
   distribution line word for word). Categories to pick on the site: **Addons, Magic, Technology** (the SA page's).
   Re-shown to Adam 2026-11-14 ~21:30 (two lines fixed for the ports: the Config screen is NeoForge only; TON 618
-  hides the HUD "on most versions", not 26.3); waiting for his OK or changes.
+  hides the HUD "on most versions", not 26.3); Adam: "it looks good".
 - **7 jars, not 8** (2026-11-14, from the SA precedent): SA's **Forge 1.20.1 jar also runs on NeoForge 1.20.1**
   (NeoForge 1.20.1 is the Forge 47.1 fork), so no `neoforge-1.20.1` branch. Branches: `main` (NeoForge 1.21.1),
   `forge-1.21.1`, `forge-1.20.1` (also NeoForge 1.20.1), `fabric-1.21.1`, `fabric-1.20.1`, `fabric-1.21.11`,
