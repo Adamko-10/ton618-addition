@@ -1,7 +1,7 @@
 package dev.adamko.ton618addition.lastlight;
 
-import cyou.rimuru.rimulib.mc1211.skill.Power;
-import cyou.rimuru.rimulib.mc1211.skill.Skill;
+import cyou.rimuru.rimulib.mc1201.skill.Power;
+import cyou.rimuru.rimulib.mc1201.skill.Skill;
 
 /**
  * TA-01 · Last Light as a skill in a RimuLib skill menu. RimuLib keeps one set per skill, so there is one of these for

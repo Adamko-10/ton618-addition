@@ -1,11 +1,11 @@
 package dev.adamko.ton618addition.client;
 
 import com.mojang.blaze3d.platform.InputConstants;
-import cyou.rimuru.rimulib.mc1211.api.SkillApi;
-import cyou.rimuru.rimulib.mc1211.client.api.MenuApi;
-import cyou.rimuru.rimulib.mc1211.client.magic.ClientSkills;
-import cyou.rimuru.rimulib.mc1211.skill.Skill;
-import cyou.rimuru.rimulib.mc1211.skill.SkillSet;
+import cyou.rimuru.rimulib.mc1201.api.SkillApi;
+import cyou.rimuru.rimulib.mc1201.client.api.MenuApi;
+import cyou.rimuru.rimulib.mc1201.client.magic.ClientSkills;
+import cyou.rimuru.rimulib.mc1201.skill.Skill;
+import cyou.rimuru.rimulib.mc1201.skill.SkillSet;
 import dev.adamko.ton618addition.link.Ton618Link;
 import java.util.Locale;
 import net.minecraft.ChatFormatting;

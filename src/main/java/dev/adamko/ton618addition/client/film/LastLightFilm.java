@@ -1,7 +1,7 @@
 package dev.adamko.ton618addition.client.film;
 
-import cyou.rimuru.rimulib.mc1211.client.api.FilmApi;
-import cyou.rimuru.rimulib.mc1211.client.cinematic.Cutscene;
+import cyou.rimuru.rimulib.mc1201.client.api.FilmApi;
+import cyou.rimuru.rimulib.mc1201.client.cinematic.Cutscene;
 import dev.adamko.ton618addition.Ton618Addition;
 import dev.adamko.ton618addition.client.LastLightCast;
 import dev.adamko.ton618addition.lastlight.LastLightClock;
@@ -63,7 +63,11 @@ public final class LastLightFilm {
 
     public static void init(IEventBus modBus) {
         modBus.addListener(EventPriority.NORMAL, false, RegisterShadersEvent.class, FilmGl::register);
-        MinecraftForge.EVENT_BUS.addListener((TickEvent.ClientTickEvent.Post event) -> tick());
+        MinecraftForge.EVENT_BUS.addListener((TickEvent.ClientTickEvent event) -> {
+            if (event.phase == TickEvent.Phase.END) {
+                tick();
+            }
+        });
         MinecraftForge.EVENT_BUS.addListener(EventPriority.NORMAL, false, RenderLevelStageEvent.class, LastLightFilm::world);
         // over the game's own HUD: Forge 1.21.1 has no RenderGuiEvent, so client/HudRescue calls screen(...) right
         // after the HUD every frame (also when TON 618 hides the HUD)

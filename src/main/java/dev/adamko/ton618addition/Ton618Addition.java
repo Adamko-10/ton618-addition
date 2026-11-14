@@ -11,6 +11,7 @@ import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.server.ServerStoppedEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
+import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.config.ModConfig;
 import net.minecraftforge.fml.event.lifecycle.FMLConstructModEvent;
@@ -19,7 +20,7 @@ import net.minecraftforge.fml.loading.FMLEnvironment;
 import org.slf4j.Logger;
 
 /**
- * TON 618 Addition: an unofficial addon for rimuru_dev's TON 618 (this branch: Forge 1.21.1).
+ * TON 618 Addition: an unofficial addon for rimuru_dev's TON 618 (this branch: Forge 1.20.1, also NeoForge 1.20.1).
  *
  * <ul>
  *   <li>{@link Ton618Link}: the one place that joins TON 618 (and, when installed, The Shooting Star's Stellar Remote),
@@ -34,10 +35,11 @@ public final class Ton618Addition {
     public static final String MOD_ID = "ton618_addition";
     public static final Logger LOG = LogUtils.getLogger();
 
-    public Ton618Addition(FMLJavaModLoadingContext context) {
+    public Ton618Addition() {
+        FMLJavaModLoadingContext context = FMLJavaModLoadingContext.get();
         IEventBus modBus = context.getModEventBus();
         boolean client = FMLEnvironment.dist.isClient();
-        context.registerConfig(ModConfig.Type.COMMON, Ton618AdditionConfig.SPEC);
+        ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, Ton618AdditionConfig.SPEC);
         // Mods are constructed in parallel: join TON 618 once every mod has been constructed (the queue runs on the main
         // thread), still before RimuLib registers its packets and makes the skills' keys (as the SA Series does).
         modBus.addListener((FMLConstructModEvent event) -> event.enqueueWork(() -> {
@@ -51,7 +53,11 @@ public final class Ton618Addition {
             Ton618AdditionClient.init(modBus, context);
         }
 
-        MinecraftForge.EVENT_BUS.addListener((TickEvent.ServerTickEvent.Post event) -> LastLight.tick(event.getServer()));
+        MinecraftForge.EVENT_BUS.addListener((TickEvent.ServerTickEvent event) -> {
+            if (event.phase == TickEvent.Phase.END) {
+                LastLight.tick(event.getServer());
+            }
+        });
         MinecraftForge.EVENT_BUS.addListener((ServerStoppedEvent event) -> LastLight.clear());
         MinecraftForge.EVENT_BUS.addListener((PlayerEvent.PlayerChangedDimensionEvent event) -> {
             if (event.getEntity() instanceof ServerPlayer player) {
@@ -66,6 +72,6 @@ public final class Ton618Addition {
     }
 
     public static ResourceLocation id(String path) {
-        return ResourceLocation.fromNamespaceAndPath(MOD_ID, path);
+        return new ResourceLocation(MOD_ID, path);
     }
 }

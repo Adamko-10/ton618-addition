@@ -4,8 +4,6 @@ import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
-import com.mojang.blaze3d.vertex.MeshData;
-import com.mojang.blaze3d.vertex.Tesselator;
 import com.mojang.blaze3d.vertex.VertexBuffer;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import dev.adamko.ton618addition.Ton618Addition;
@@ -53,7 +51,7 @@ final class FilmGl {
             return base.getResource(path.startsWith("shaders/core/") ? location.withPath("shaders/film/" + path.substring(13)) : location);
         };
         try {
-            event.registerShader(new ShaderInstance(film, ResourceLocation.fromNamespaceAndPath(Ton618Addition.MOD_ID, "last_light"),
+            event.registerShader(new ShaderInstance(film, new ResourceLocation(Ton618Addition.MOD_ID, "last_light"),
                 DefaultVertexFormat.POSITION_TEX_COLOR), loaded -> shader = loaded);
         } catch (IOException | RuntimeException failed) {
             // the skill still works; the film then shows its words and the white only
@@ -66,12 +64,24 @@ final class FilmGl {
         return shader != null;
     }
 
+    /** Builders of the film's own (1.20.1's Tesselator has one shared builder; a mesh may be built while another is open). */
+    private static final BufferBuilder[] BUILDERS = new BufferBuilder[4];
+
     static BufferBuilder begin() {
-        return Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX_COLOR);
+        for (int i = 0; i < BUILDERS.length; i++) {
+            if (BUILDERS[i] == null) {
+                BUILDERS[i] = new BufferBuilder(1 << 16);
+            }
+            if (!BUILDERS[i].building()) {
+                BUILDERS[i].begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX_COLOR);
+                return BUILDERS[i];
+            }
+        }
+        throw new IllegalStateException("more than " + BUILDERS.length + " film meshes open at once");
     }
 
     static void vertex(BufferBuilder b, float x, float y, float z, float u, float v, float r, float g, float bl, float a) {
-        b.addVertex(x, y, z).setUv(u, v).setColor(clamp(r), clamp(g), clamp(bl), clamp(a));
+        b.vertex(x, y, z).uv(u, v).color(clamp(r), clamp(g), clamp(bl), clamp(a)).endVertex();
     }
 
     private static float clamp(float v) {
@@ -98,13 +108,10 @@ final class FilmGl {
     /** Draws what {@code b} holds with material {@code mode} and its two parameter sets. */
     static void draw(BufferBuilder b, Matrix4f view, Matrix4f proj, int mode, float p0, float p1, float p2, float p3,
             float q0, float q1, float q2, float q3) {
-        MeshData mesh = b.build();
+        BufferBuilder.RenderedBuffer mesh = b.end();
         ShaderInstance program = shader;
-        if (mesh == null) {
-            return;
-        }
-        if (program == null) {
-            mesh.close();
+        if (mesh.isEmpty() || program == null) {
+            mesh.release();
             return;
         }
         program.safeGetUniform("Mode").set((float) mode);

@@ -84,7 +84,7 @@ final class FilmWorld {
         Vector3f left = camera.getLeftVector();
         Vector3f up = new Vector3f(camera.getUpVector());
         Vector3f right = new Vector3f(-left.x, -left.y, -left.z);
-        Matrix4f view = new Matrix4f(event.getPoseStack());
+        Matrix4f view = new Matrix4f(event.getPoseStack().last().pose());
         Matrix4f proj = new Matrix4f(event.getProjectionMatrix());
         if (cast.inDark()) {
             if (t < FilmScript.S_COSMOS + 4F) {

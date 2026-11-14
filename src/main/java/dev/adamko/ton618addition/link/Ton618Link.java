@@ -1,10 +1,10 @@
 package dev.adamko.ton618addition.link;
 
-import cyou.rimuru.rimulib.mc1211.api.NetApi;
-import cyou.rimuru.rimulib.mc1211.api.RimulibApi;
-import cyou.rimuru.rimulib.mc1211.api.SkillApi;
-import cyou.rimuru.rimulib.mc1211.skill.Skill;
-import cyou.rimuru.rimulib.mc1211.skill.SkillSet;
+import cyou.rimuru.rimulib.mc1201.api.NetApi;
+import cyou.rimuru.rimulib.mc1201.api.RimulibApi;
+import cyou.rimuru.rimulib.mc1201.api.SkillApi;
+import cyou.rimuru.rimulib.mc1201.skill.Skill;
+import cyou.rimuru.rimulib.mc1201.skill.SkillSet;
 import dev.adamko.ton618addition.Ton618Addition;
 import dev.adamko.ton618addition.lastlight.LastLight;
 import dev.adamko.ton618addition.lastlight.LastLightInfo;
@@ -32,9 +32,9 @@ public final class Ton618Link {
 
     /** TON 618's dark, where everyone goes when it devours the world. */
     public static final ResourceKey<Level> DARK = ResourceKey.create(Registries.DIMENSION,
-        ResourceLocation.fromNamespaceAndPath(TON618, "devoured"));
+        new ResourceLocation(TON618, "devoured"));
     /** Where TON 618 keeps whether the world is devoured ({@code devoured}, a boolean, and {@code at}, the game time). */
-    private static final ResourceLocation STORAGE = ResourceLocation.fromNamespaceAndPath(TON618, "ton618");
+    private static final ResourceLocation STORAGE = new ResourceLocation(TON618, "ton618");
 
     /**
      * TON618 in the dark's sky, as TON 618 1.1.0 draws it: always in this direction from the camera (like the sun),

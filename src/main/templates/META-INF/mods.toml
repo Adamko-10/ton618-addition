@@ -1,6 +1,6 @@
-# TON 618 Addition: an unofficial addon for rimuru_dev's TON 618 (Forge 1.21.1).
+# TON 618 Addition: an unofficial addon for rimuru_dev's TON 618 (Forge 1.20.1; the same jar runs on NeoForge 1.20.1).
 # Values written as dollar-brace placeholders are filled in from gradle.properties when the jar is built.
-# The mixin config is declared in the jar's manifest (Forge 1.21.1 doesn't read [[mixins]] here).
+# The mixin config is declared in the jar's manifest.
 modLoader = "javafml"
 loaderVersion = "${loader_version_range}"
 license = "${mod_license}"

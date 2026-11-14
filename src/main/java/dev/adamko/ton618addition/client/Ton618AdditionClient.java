@@ -1,9 +1,9 @@
 package dev.adamko.ton618addition.client;
 
-import cyou.rimuru.rimulib.mc1211.client.api.FilmApi;
-import cyou.rimuru.rimulib.mc1211.client.api.MenuApi;
-import cyou.rimuru.rimulib.mc1211.client.api.NetClientApi;
-import cyou.rimuru.rimulib.mc1211.client.api.UiApi;
+import cyou.rimuru.rimulib.mc1201.client.api.FilmApi;
+import cyou.rimuru.rimulib.mc1201.client.api.MenuApi;
+import cyou.rimuru.rimulib.mc1201.client.api.NetClientApi;
+import cyou.rimuru.rimulib.mc1201.client.api.UiApi;
 import dev.adamko.ton618addition.Ton618Addition;
 import dev.adamko.ton618addition.client.film.LastLightFilm;
 import dev.adamko.ton618addition.lastlight.LastLightClock;
@@ -15,6 +15,7 @@ import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
+import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.config.ModConfig;
 import net.minecraftforge.client.event.ClientPlayerNetworkEvent;
 import net.minecraftforge.event.TickEvent;
@@ -43,10 +44,14 @@ public final class Ton618AdditionClient {
 
     /** From the mod's constructor, on clients only. */
     public static void init(IEventBus modBus, FMLJavaModLoadingContext context) {
-        context.registerConfig(ModConfig.Type.CLIENT, Ton618AdditionClientConfig.SPEC);
+        ModLoadingContext.get().registerConfig(ModConfig.Type.CLIENT, Ton618AdditionClientConfig.SPEC);
         // (Forge has no generic config screen like NeoForge's: the H-menu plate and the toml hold the settings)
         LastLightFilm.init(modBus);
-        MinecraftForge.EVENT_BUS.addListener((TickEvent.ClientTickEvent.Post event) -> tick());
+        MinecraftForge.EVENT_BUS.addListener((TickEvent.ClientTickEvent event) -> {
+            if (event.phase == TickEvent.Phase.END) {
+                tick();
+            }
+        });
         MinecraftForge.EVENT_BUS.addListener((ClientPlayerNetworkEvent.LoggingOut event) -> stop());
     }
 

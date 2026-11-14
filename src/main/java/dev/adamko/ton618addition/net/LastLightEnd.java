@@ -1,7 +1,7 @@
 package dev.adamko.ton618addition.net;
 
-import cyou.rimuru.rimulib.mc1211.api.NetApi;
-import cyou.rimuru.rimulib.mc1211.net.RimuPacket;
+import cyou.rimuru.rimulib.mc1201.api.NetApi;
+import cyou.rimuru.rimulib.mc1201.net.RimuPacket;
 import dev.adamko.ton618addition.Ton618Addition;
 import net.minecraft.network.FriendlyByteBuf;
 

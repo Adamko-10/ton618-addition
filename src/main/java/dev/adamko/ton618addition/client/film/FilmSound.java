@@ -34,7 +34,7 @@ import org.lwjgl.BufferUtils;
 final class FilmSound {
     private static final int RATE = FilmSynth.RATE;
     private static final ResourceLocation ID = Ton618Addition.id("film/last_light");
-    private static final Sound SOUND = new Sound(ID, ConstantFloat.of(1F), ConstantFloat.of(1F), 1, Sound.Type.FILE, true, false, 16);
+    private static final Sound SOUND = new Sound(ID.toString(), ConstantFloat.of(1F), ConstantFloat.of(1F), 1, Sound.Type.FILE, true, false, 16);
     private static final WeighedSoundEvents EVENTS = new WeighedSoundEvents(ID, null);
     @Nullable
     private static CompletableFuture<short[]> rendered;
