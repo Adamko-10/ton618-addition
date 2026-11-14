@@ -4,7 +4,18 @@ Handoff notes for every Claude session in this folder (`C:\Users\User\Desktop\to
 Started 2026-11-13 by an Opus 5.5 session (xhigh) that was started from Adam's SA Series session. **Read `BRIEF.md`
 first** (Adam's brief, his own words at its end), then this file. Fable's part: `prompts\FABLE-PREVIZ-AND-FILM-PROMPT.md`.
 
-### >>> RESUME HERE (2026-11-14 ~13:00, the VM): educational-mode switch built (`5e623cd`); then port, then CurseForge <<<
+### >>> RESUME HERE (2026-11-14 ~13:20, the VM): edu plate moved + new key; Adam tests; then port, then CurseForge <<<
+
+- **Adam on the first switch jar**: "can u make the key not J since the cutscene key uses J and move the ui to the top
+  right for now like the educational mode ui". The key was "]", whose cap reads as "J" in Minecraft's small font. Now
+  (`client/EducationPlate`): key **"\"** (GLFW 92), the plate in the menu's **top right** corner (accent bar on its
+  right edge, like the SA Series' right plate). On the Stellar Remote it shows only while Last Light is the picked
+  skill (`ClientSkills.selected`, RimuLib internal, guarded), because the SA Series' Convergence plate takes that
+  corner when Stellar Convergence is picked; on TON 618's item it always shows.
+- **Test jar**: `C:\Users\User\Desktop\test builds\2026-11-14 TON 618 educational mode 2\TON 618 Addition 0.1.0
+  educational mode 2 [NeoForge 1.21.1].jar` (replaces the one below).
+
+### Before that (2026-11-14 ~13:00): educational-mode switch built (`5e623cd`)
 
 - **Adam tested the menu fix: "it works"** (2026-11-14, via the SA Series session). He then noticed "theres no
   education mode" (only NeoForge's Config screen had it) and picked (clickable, in the SA Series session):
@@ -17,7 +28,7 @@ first** (Adam's brief, his own words at its end), then this file. Fable's part: 
 - **Built (`5e623cd`)**: `client/EducationPlate`: a small plate in the H menu's **bottom left** (the SA Series' plates
   take the top corners), shown while the menu is open for TON 618's item or the Stellar Remote; key **"]"** flips
   educational mode (saved to the client toml; off by default), with a click and a sliding switch like the SA plate.
-  Drawn and keyed with `UiApi.onMenuDraw` + `MenuApi.onKey`; never takes a key the menu, the films or a shown
+  (Superseded: now top right, key "\", see above.) Drawn and keyed with `UiApi.onMenuDraw` + `MenuApi.onKey`; never takes a key the menu, the films or a shown
   skill uses, or while a key is being rebound. In the dark it shows too (HudRescue draws the menu).
 - **Keys moved**: Last Light's default keys were B (TON 618's item) and V (Stellar Remote), but RimuLib's skill keys
   pick skills inside the H menu, and the SA Series uses **B** (Stellar Convergence) and **V** (its Convergence plate's
