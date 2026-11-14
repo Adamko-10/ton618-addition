@@ -4,8 +4,15 @@ Handoff notes for every Claude session in this folder (`C:\Users\User\Desktop\to
 Started 2026-11-13 by an Opus 5.5 session (xhigh) that was started from Adam's SA Series session. **Read `BRIEF.md`
 first** (Adam's brief, his own words at its end), then this file. Fable's part: `prompts\FABLE-PREVIZ-AND-FILM-PROMPT.md`.
 
-### >>> RESUME HERE (2026-11-14 ~18:40, the VM): 5 ports done (1.21.11 with the film on pipelines); now fabric-26.3 <<<
+### >>> RESUME HERE (2026-11-14 ~21:15, the VM): all 7 ports done; next Adam's in-game test, then release <<<
 
+- **`fabric-26.3` done** (`ce7f85f`, built + dev server OK, film on 26.3's renderpearl pipelines; §8a). All 7 branches
+  are built; none pushed. **Test jars** (all 7 rebuilt from each branch's commit, 2026-11-14 ~21:20):
+  `C:\Users\User\Desktop\test builds\2026-11-14 TON 618 Addition 1.0.0 all loaders\TON 618 Addition 1.0.0 [<Loader>
+  <MC>].jar` (NeoForge 1.21.1, Forge 1.21.1, Forge 1.20.1 = also NeoForge 1.20.1, Fabric 1.21.1, 1.20.1, 1.21.11,
+  26.3; not in Downloads: the SA Series session copies jars there). Next: Adam's in-game test (above all Fabric
+  1.21.11 and 26.3, whose film drawing was rewritten and never seen on a GPU), then re-show the CurseForge drafts
+  and ask (clickable) before pushing the branches, the v1.0.0 GitHub release and CurseForge.
 - **Port status** (§8a has the how): `main` 1.0.0 (`ce64b00`: version bump + HUD fix without MixinExtras) ·
   **`forge-1.21.1` built + dev server OK** ("Last Light joined TON 618's menu ... skill #2", worktree
   `ports/forge-1.21.1`, commit `85b8dd7`) · **`forge-1.20.1` built** (also NeoForge 1.20.1; `ports/forge-1.20.1`,
@@ -13,7 +20,8 @@ first** (Adam's brief, his own words at its end), then this file. Fable's part: 
   directly, which the dev game can't remap, as the SA Series found) · **`fabric-1.21.1` built + dev server OK** (Loom on
   the VM's JDK 25, "Last Light joined TON 618's menu", `ports/fabric-1.21.1`, `d725beb`) · **`fabric-1.20.1` built +
   dev server OK** (`ports/fabric-1.20.1`, `953edeb`) · **`fabric-1.21.11` built + dev server OK, film on render pipelines**
-  (`ports/fabric-1.21.11`, `87c6cea`; never drawn on a GPU: no OpenGL on the VM) · none pushed · left: `fabric-26.3`.
+  (`ports/fabric-1.21.11`, `87c6cea`; never drawn on a GPU: no OpenGL on the VM) · **`fabric-26.3` built + dev server
+  OK** (`ports/fabric-26.3`, `ce7f85f`; never drawn on a GPU either) · none pushed.
 - **1.21.11 and 26.3 (assessed 2026-11-14)**: Minecraft's new render pipelines (1.21.5+): no `ShaderInstance`, so the
   film's `FilmGl` (one shader, blend/depth set by `RenderSystem` per call) must become `RenderPipeline`s (one per blend
   and depth mode, uniform blocks in the GLSL), as the SA Series did (`client/render/HalleyPipelines` 153 lines,
@@ -534,18 +542,32 @@ machinery (TON 618 needs none: we never name its classes).
   `FilmMesh` (SA's `DynamicMesh`), the space scene in its own texture (`ton618_addition:film_scene`) blitted by
   `FilmGl.present` in the HUD; world effects at `WorldRenderEvents.END_MAIN` (camera from the game renderer, view =
   its rotation, world quads already camera-relative); shader `#version 330` with the blocks, `last_light.json` gone.
-- **fabric-26.3 (in progress 2026-11-14 ~18:45, worktree `ports/fabric-26.3` from `fabric-1.21.11`, not committed)**:
-  build switched (plugin `net.fabricmc.fabric-loom` 1.18-SNAPSHOT, Fabric API 0.162.0+26.3, **no mappings** and plain
-  `implementation`/`compileOnly`/`localRuntime` since 26.x is unobfuscated, Java 25 release + toolchain, mixin configs
-  JAVA_25, inner `+mc26.3` jars). First compile: ~200 errors. 26.3 moved rendering to **`com.mojang.renderpearl.api`**
-  (pipelines with `BindGroupLayout`, `ColorTargetState`, `DepthStencilState`, `CompareOp`, `PrimitiveTopology`,
-  `GpuFormat`; buffers/textures/commands/device under `renderpearl.api.*`; `ProjectionMatrixBuffer`), the HUD to
-  **`GuiGraphicsExtractor`**, Fabric's world hook to **`...rendering.v1.level.LevelRenderEvents`**. SA's
-  `fabric-26.3` has each: `client/render/HalleyPipelines`, `DynamicMesh`, `client/proxima/ProximaRender`,
-  `client/AdditionPanel`, `client/HalleyClient`, `HalleyAddon`.
-- **Next**: the other Fabric branches (SA's `fabric-*` branches: Loom,
-  `ConfigFile` instead of `ModConfigSpec`, Fabric callbacks for ticks/HUD/world render, RimuLib packages without a
-  version prefix on Fabric).
+- **fabric-26.3** (`ce7f85f`, 2026-11-14 ~21:15, built + dev server OK: "Last Light joined TON 618's menu
+  (ton618:ton_618) as skill #2"; worktree `ports/fabric-26.3` from `fabric-1.21.11`). Build: plugin
+  `net.fabricmc.fabric-loom` 1.18-SNAPSHOT, Fabric API 0.162.0+26.3, **no mappings** and plain
+  `implementation`/`compileOnly`/`localRuntime` (26.x is unobfuscated), Java 25 release + toolchain, mixin config
+  JAVA_25, inner `+mc26.3` jars. Minecraft 26.3's own jar for `javap`:
+  `~/.gradle/caches/fabric-loom/minecraftMaven/net/minecraft/minecraft-merged-deobf/26.3/`. What changed:
+  - Rendering is **`com.mojang.renderpearl.api`**: `FilmGl` pipelines = `BindGroupLayouts.PROJECTION` + our
+    `FilmParams` `BindGroupLayout`, `withVertexBinding(0, POSITION_TEX_COLOR)`, `PrimitiveTopology.QUADS`, a
+    `ColorTargetState` per blend, `DepthStencilState(GREATER_THAN_OR_EQUAL, false)` in the world (**reversed depth**),
+    `RenderSystem.getCompiledPipeline`, `ProjectionMatrixBuffer`, `gameRenderer.mainRenderTarget()`, Scene textures
+    `RGBA8_UNORM`/`D32_FLOAT` with `USAGE_COPY_DST`; `begin()` = `new BufferBuilder(ByteBufferBuilder, QUADS, format)`
+    from four pooled byte buffers. `FilmSpace`'s projection is `setPerspective(fov, aspect, far, near, isZZeroToOne())`
+    (far and near swapped, as SA's ProximaCosmos). Shaders: `#extension GL_ARB_separate_shader_objects : require`,
+    `#include`, `layout(location = N)` on every in/out.
+  - World effects: `LevelRenderEvents.END_MAIN` (`...rendering.v1.level`), camera from
+    `context.levelState().cameraRenderState` (`pos`, `viewRotationMatrix`) and `gameRenderer.mainCamera()`.
+  - HUD: `GuiGraphicsExtractor` (`text(...)` for `drawString`); `ScreenEvents.afterExtract`. **TON 618 26.3 has no HUD
+    mixin and RimuLib 26.3 never hides the HUD** (only reads `Hud.isHidden`), so the old HUD mixins are gone;
+    `client/mixin/GuiMixin` (MixinExtras `@WrapOperation` round `Hud.extractRenderState` in `Gui.extractRenderState`)
+    calls `HudRescue.afterHud` so the film's layer and the notice draw after the HUD even with F1; a Fabric HUD
+    element (`addLast`) draws them if that optional mixin didn't apply.
+  - Smaller: `ServerEntityLevelChangeEvents.AFTER_PLAYER_CHANGE_LEVEL`; `InputConstants.Type.KEYBOARD` and
+    `InputConstants.KEY_BACKSLASH` (26.3's key codes are SDL scancodes); `SoundInstance.getOrResolve`;
+    `swing(hand, SwingAnimation.DEFAULT, false)`; no `FriendlyByteBuf.write/readVec3` (three doubles); the day is on
+    world clocks: the sunrise = `server.clockManager().setTotalTicks(overworld.dimensionType().defaultClock(), ...)`
+    from `overworld.getDefaultClockTime()` (what `/time set` does).
 
 ## 9. Files
 
