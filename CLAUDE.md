@@ -1,10 +1,43 @@
 # CLAUDE.md: TON 618 Addition
 
-Handoff notes for every Claude session in this folder (`C:\Users\User\Desktop\ton 618 addition`, on Adam's VM).
+Handoff notes for every Claude session in this folder (`C:\Users\User\Desktop\ton 618 addition`, on Adam's VM; since
+2026-11-15 on Adam's PC: `C:\Users\adam_\Documents\TON 618 Addition\ton 618 addition`, run by the SA Series' session).
 Started 2026-11-13 by an Opus 5.5 session (xhigh) that was started from Adam's SA Series session. **Read `BRIEF.md`
 first** (Adam's brief, his own words at its end), then this file. Fable's part: `prompts\FABLE-PREVIZ-AND-FILM-PROMPT.md`.
 
-### >>> RESUME HERE (2026-11-15, moving to Adam's PC): one fresh session takes over both projects <<<
+### >>> RESUME HERE (2026-11-15 ~13:45, Adam's PC): set up here; Codex has tested 2 of the 8 runs <<<
+
+- **This repo is on Adam's PC now**: `C:\Users\adam_\Documents\TON 618 Addition\ton 618 addition\`, cloned from
+  `ton 618 addition (all branches).bundle` (in `C:\Users\adam_\Downloads\Move to PC (2026-11-15)\`). Local branches:
+  `main` (`10e125a`) and the six ports, forge-1.21.1 `85b8dd7`, forge-1.20.1 `3b5e2e8`, fabric-1.21.1 `d725beb`,
+  fabric-1.20.1 `953edeb`, fabric-1.21.11 `87c6cea`, fabric-26.3 `ce7f85f`. `origin` =
+  https://github.com/Adamko-10/ton618-addition.git (GitHub has an older `main` only; the local `origin/<port>` refs came
+  from the bundle and don't exist there). Git identity `Adamko-10 <Adamko-10@users.noreply.github.com>`. **Nothing
+  pushed.** No `ports\` worktrees yet: make them when a fix needs cherry-picking (`git worktree add ports/<branch>
+  <branch>`; the branches already exist).
+- **`libs\` is empty** (not in the bundle): TON 618 1.1.0 + RimuLib 1.2.3 + The Shooting Star. Ask Adam before
+  downloading. Already on this PC without a download: TON 618 1.1.0 NeoForge/Forge/Fabric (9562579, 9562567, 9562551)
+  and RimuLib 1.2.3 NeoForge/Forge (9562438, 9562444) in `..\codex tests\downloads\`; the SA Series' `libs\` has The
+  Shooting Star.
+- **Test jars**: the seven 1.0.0 jars are in `C:\Users\adam_\Documents\TON 618 Addition\test builds\2026-11-14 TON 618
+  Addition 1.0.0 all loaders\`.
+- **Codex's test already ran partly on this PC** (2026-11-15 00:38-01:35, `..\codex tests\REPORT.md`, 8 portable Prism
+  instances in `..\codex tests\Prism\`, 723 screenshots):
+  - **Fabric 26.3 and Fabric 1.21.11: everything works** (load, H menu, devour, cast, the whole film, the return in
+    the morning ~34 s after the cast, educational mode, films off with the countdown card, no errors of ours). Marked
+    FAIL for one bug only: **the magenta lock warning** (casting Last Light outside the dark, in the overworld)
+    **runs off both screen edges at 1280×720**.
+  - Also seen (not failures): the vanilla movement-tutorial toast stays on top of the film (top right, also through
+    the white flash; F1 hides it); **the early hand glow, floor ring and outgoing floor wave (4.5-8.6 s) were
+    "indistinct"** in the captures on both (worth a look: those are world effects, drawn by the rewritten pipelines
+    on these two versions).
+  - **Not run yet**: Forge 1.20.1, NeoForge 1.20.1, Forge 1.21.1, Fabric 1.21.1, Fabric 1.20.1, NeoForge 1.21.1
+    (Codex waits for Adam's go-ahead for each launch; it stopped while Forge 1.20.1 was launching).
+- **Next**: Codex finishes the other six runs, then fix everything it found in one round on `main` first,
+  cherry-picked to the ports (§8a); then, each with Adam's yes: push the branches, the v1.0.0 GitHub release, the
+  CurseForge project and files (drafts already approved).
+
+### RESUME HERE (2026-11-15, moving to Adam's PC): one fresh session takes over both projects
 
 - **Adam, 2026-11-15**: "lets finalize moving this to a fresh session" (clickable: **"On my PC"**, **"Both projects"**):
   one fresh session on his PC carries on the SA Series and this addon. Its prompt and everything it needs are in
