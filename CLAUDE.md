@@ -86,7 +86,19 @@ first** (Adam's brief, his own words at its end), then this file. Fable's part: 
   Markdown first (it comes up WYSIWYG after some files), then set `textarea.mde-text` with the native setter + input
   event; relations through the "Add related project" dialog (search by name; ids don't search), each row's MUI select
   opened with a mousedown.
-- **Fable jobs (2026-11-15)**: the Last Light polish runs now
+- **Last Light polish DONE by Fable (2026-11-15), committed `27e90b7` on `main`, not seen in a game yet**: the early
+  hand glow, ring and wave weren't faint, **TON 618's post pass painted them out in the dark** (its floor is invisible,
+  so everything but players counts as sky); the film now draws them at `AFTER_LEVEL` on NeoForge, shot 2 a little
+  looser, the light stronger; toasts cleared at the film's start and held back during it (`ToastAddEvent`). Details:
+  `previz/HANDOVER.md` "Polish (2026-11)", `previz/polish-check/` (Fable's preview page). Test jar
+  `C:\Users\adam_\Documents\TON 618 Addition\test builds\2026-11-15 Last Light polish\TON 618 Addition 1.0.1 polish TEST
+  [NeoForge 1.21.1].jar` (version inside still 1.0.0: bump for the update). **For the ports**: Fable's proposal **P2**
+  (`reviews/fable/PROPOSALS.md`): Fabric has no hook after the level render, so the Fabric branches need a mixin on
+  `GameRenderer.renderLevel` after `LevelRenderer.renderLevel(...)` calling the film's dark draw (Adam picks).
+- **Next Fable job: TA-02 · Quasar Jets previz**, prompt `prompts/FABLE-TA02-QUASAR-JETS-PREVIZ-PROMPT.md` (Fable asks
+  Adam the open design points first: when it can be cast, what it does to the world, how it differs from SS-21's
+  strike, length). Not started yet: a session in this folder can only be started from Adam's own turn.
+- **Fable jobs (2026-11-15)**: the Last Light polish ran
   ([Fable: Last Light film polish](#local_22632a54-fabf-4609-a051-0906500bfd9b), `prompts/FABLE-LAST-LIGHT-POLISH-PROMPT.md`:
   the faint early glow + toasts hidden during the film; film files only, no git: Opus commits and ports it). Next in
   line, one at a time: TA-02 · Quasar Jets previz (then the SA Series' SA-04B and SA-03 previz).
