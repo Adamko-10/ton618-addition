@@ -4,7 +4,21 @@ Handoff notes for every Claude session in this folder (`C:\Users\User\Desktop\to
 Started 2026-11-13 by an Opus 5.5 session (xhigh) that was started from Adam's SA Series session. **Read `BRIEF.md`
 first** (Adam's brief, his own words at its end), then this file. Fable's part: `prompts\FABLE-PREVIZ-AND-FILM-PROMPT.md`.
 
-### >>> RESUME HERE (2026-11-14 ~21:45, the VM): all 7 ports done; drafts OK'd; new pixel icon; next Adam's test <<<
+### >>> RESUME HERE (2026-11-15, moving to Adam's PC): one fresh session takes over both projects <<<
+
+- **Adam, 2026-11-15**: "lets finalize moving this to a fresh session" (clickable: **"On my PC"**, **"Both projects"**):
+  one fresh session on his PC carries on the SA Series and this addon. Its prompt and everything it needs are in
+  `C:\Users\User\Downloads\Move to PC (2026-11-15).zip` (made by the SA Series session): this repo as a git bundle
+  with every branch (`main` + the six port branches; the `ports/` worktrees and `libs/` jars are not in it), the
+  seven 1.0.0 test jars, `Adam's notes\`, the Discord emoji icons and `HANDOFF PROMPT (2026-11-15).md`.
+- **Planned place on the PC**: the project folder `C:\Users\adam_\Documents\TON 618 Addition\` (the Codex test prompt
+  already uses it), with this repo cloned from the bundle as its `ton 618 addition\` subfolder; `origin` set back to
+  https://github.com/Adamko-10/ton618-addition.git. That GitHub repo has an older `main` only (the local `main` is
+  23 commits ahead; no port branch there): push nothing until Adam says so.
+- After the move, this VM folder is the older copy: don't work here unless Adam comes back to the VM (then bring the
+  PC's commits back with a bundle, as the SA Series does).
+
+### RESUME HERE (2026-11-14 ~21:45, the VM): all 7 ports done; drafts OK'd; new pixel icon; next Adam's test
 
 - **Adam on the CurseForge drafts (2026-11-14): "it looks good"** (summary, description, changelog: approved).
 - **New project icon** (Adam: "make the icon pixel styled like shooting star addition SA series"):
