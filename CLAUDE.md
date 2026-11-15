@@ -5,7 +5,46 @@ Handoff notes for every Claude session in this folder (`C:\Users\User\Desktop\to
 Started 2026-11-13 by an Opus 5.5 session (xhigh) that was started from Adam's SA Series session. **Read `BRIEF.md`
 first** (Adam's brief, his own words at its end), then this file. Fable's part: `prompts\FABLE-PREVIZ-AND-FILM-PROMPT.md`.
 
-### >>> RESUME HERE (2026-11-15 ~13:45, Adam's PC): set up here; Codex has tested 2 of the 8 runs <<<
+### >>> RESUME HERE (2026-11-15 ~14:30, Adam's PC): Codex's test is done; its fixes go to the next update <<<
+
+- **Codex finished all 8 runs** (Adam: "its done"; `..\codex tests\REPORT.md`, 14:16; contact sheets per build in
+  `..\codex tests\screenshots\<nn>-<build>\film-contact-sheet.jpg`):
+  - **Works on Fabric 26.3, 1.21.11, 1.21.1, 1.20.1, Forge 1.21.1 and NeoForge 1.20.1 (on retry)**: devour, the ready
+    panel, the cast, the whole film, the return on a morning ~34.5 s after the cast, educational mode, films off with
+    the countdown card; no warnings or errors of ours. NeoForge 1.21.1: load check only (Adam played it before).
+  - **All six marked FAIL for one bug: the clipped warning.** `LastLight.cast`'s `deny(...)` "Nothing to evaporate
+    yet: set TON618's Scale to ∞ and use it first, then cast Last Light in the dark" (~100 characters) goes through
+    `SkillApi.deny` to the vanilla action bar, one line; at 1280×720 (GUI scale 3) only ~70 fit. Same line on all 7
+    branches (`LastLight.java:64`; `:65` on fabric-1.21.11 and fabric-26.3).
+  - **Forge 1.20.1 crashed** twice in TON 618's dark (the second time on the loading screen), before Last Light ran: a
+    native access violation in Windows' `d3d11.dll` (offset 0x1969e1), no Minecraft crash report. NeoForge 1.20.1 with
+    the same jar crashed the same way once, then ran everything. Medal's hook DLL (Adam's clip recorder) was loaded in
+    all three. Not shown to be ours.
+  - Seen, not failures: Minecraft's movement-tutorial toast stays over the film (brand-new games only); the early hand
+    glow, floor ring and outgoing floor wave (~4.5-8.6 s) are faint on **every** version, NeoForge too (so not a port
+    bug; the rest of the film matches on all).
+- **Adam's answers (2026-11-15, clickable)**:
+  - the warning: **"fix this next update, add it to the list"** (1.0.0 ships as it is). Texts offered: "Not yet: set
+    TON618's Scale to ∞ and use it first" (50 characters, recommended) or "Not yet: TON618 must devour the world
+    first"; ask which when doing it.
+  - the 1.20.1 crash: **"idk decide later"**. Options given: retest Forge 1.20.1 with Medal closed (then TON 618 alone
+    if it still crashes), or ship anyway.
+  - the toast: **"hide but on later version"**: clear Minecraft's toasts when the film starts, on all 7 (the toast
+    API differs on 1.21.11/26.3).
+  - the faint early glow: **"idk lets do it later tho and u decide"**. Opus's call: in the next update Fable checks
+    those shots against the previz's tick table (`previz\NOTES.md`) and fixes them in its own film files
+    (`client/film/`, `shaders/film/`); Opus changes nothing there.
+- **The next update's list**: the warning text; hide toasts in the film; Fable's look at the early glow; the 1.20.1
+  crash decision; real film music; TA-02 · Quasar Jets (only with SS-21 Quasar); Last Light's in-game icon in the
+  pixel style.
+- **Building on this PC**: JDK 21 at `C:\Program Files\Eclipse Adoptium\jdk-21.0.11.10-hotspot`; Gradle-provisioned
+  JDK 25 and 17 in `C:\Users\adam_\.gradle\jdks\` (`eclipse_adoptium-25-amd64-windows.2`, `-17-...`; Loom needs a
+  Java 25 JVM), so all 7 branches can build here. This repo has `dev/publish` but no `dev/ci`. Nothing built here yet.
+- **Next**: 1.0.0's release as it is, step by step, each with Adam's yes: push the 7 branches, the v1.0.0 GitHub
+  release, the CurseForge project and files (drafts approved). Open at that point: whether the Forge 1.20.1 jar
+  ships (the crash above).
+
+### RESUME HERE (2026-11-15 ~13:45, Adam's PC): set up here; Codex has tested 2 of the 8 runs
 
 - **This repo is on Adam's PC now**: `C:\Users\adam_\Documents\TON 618 Addition\ton 618 addition\`, cloned from
   `ton 618 addition (all branches).bundle` (in `C:\Users\adam_\Documents\Move to PC (2026-11-15)\`). Local branches:
