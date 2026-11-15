@@ -807,6 +807,19 @@ machinery (TON 618 needs none: we never name its classes).
     its light back, so all its light pours out the other way and the star pushes itself toward the mirror, which stays
     ahead of it like a sail (in reality over millions of years: the film races time, with a year counter, like Last
     Light).
+  - **PREVIZ v1 APPROVED (2026-11-15, Fable; no v2)**: https://claude.ai/artifact/DY9xtGvDFmCVz9jUnLQKVv, source and
+    **the build notes** in `previz/quasar-jets/` (`NOTES.md`: tick table MARK 0 · LOCK 38 · ENGINE 80 · PUSH 150 ·
+    FLIGHT 200 · ARRIVE 330 · SHRED 350 · IGNITE 440 · JETS 530 · TURN 610 · FLOOD 665 · DAY 680 · SWEEP 745 · LOBE 830 ·
+    POP 890 · NIGHT 905 · END 960 (48 s); the star-type table; shot table with "how it would be drawn in the game";
+    "Things the Opus session needs to know" 1-10). Adam's answers to Fable (clickable): **two presses** (press 1 at a
+    star locks it, press 2 at the ground marks where the jet lands and starts the film); **the film for the caster and
+    players within ~128 blocks** (others see only the world effects); **"Lobe hurts, jet carries"**; **8 stars, two per
+    type**: red dwarfs Barnard's Star, Wolf 359; Sun-like Alpha Centauri A, Tau Ceti; blue giants Rigel, Spica; red
+    supergiants Betelgeuse, Antares; **the second sun ends with the film** (not a minute). Adam on v1: "its pretty good,
+    i'd say when we make the mod lets just make the explosion thing bigger is all, this is good enough, great even, good
+    job on it no need for a v2 but when we make the mod version we gotta slow down the labels a little so theres a tiny
+    bit more time to read. im telling u all this but opus will handle it". So for the mod: **a bigger radio lobe and
+    pop** (all star types) and **labels on screen longer**. Open: are players in the beam carried too.
   - **For a LATER update (Adam, 2026-11-15: "i like the interactive thing too lets add it in a later update")**: drag
     the star yourself: hold the button and drag the locked star across your night sky to TON 618's dark spot; let go
     and it becomes a real shooting star falling toward it, then the film follows it.
