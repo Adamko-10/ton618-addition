@@ -6,6 +6,7 @@ import cyou.rimuru.rimulib.mc1211.client.api.NetClientApi;
 import cyou.rimuru.rimulib.mc1211.client.api.UiApi;
 import dev.adamko.ton618addition.Ton618Addition;
 import dev.adamko.ton618addition.client.film.LastLightFilm;
+import dev.adamko.ton618addition.client.quasar.QuasarClient;
 import dev.adamko.ton618addition.lastlight.LastLightClock;
 import dev.adamko.ton618addition.lastlight.LastLightInfo;
 import dev.adamko.ton618addition.link.Ton618Link;
@@ -49,6 +50,7 @@ public final class Ton618AdditionClient {
         // Mods, TON 618 Addition, Config: NeoForge's own screen for our settings
         container.registerExtensionPoint(IConfigScreenFactory.class, ConfigurationScreen::new);
         LastLightFilm.init(modBus);
+        QuasarClient.init(modBus);
         NeoForge.EVENT_BUS.addListener(ClientTickEvent.Post.class, event -> tick());
         NeoForge.EVENT_BUS.addListener(ClientPlayerNetworkEvent.LoggingOut.class, event -> stop());
     }
@@ -56,6 +58,7 @@ public final class Ton618AdditionClient {
     /** After every mod is constructed (with {@link Ton618Link#install}). */
     public static void afterConstruction() {
         NetClientApi.receive(LastLightFx.PACKET, (fx, context) -> Minecraft.getInstance().execute(() -> begin(fx)));
+        QuasarClient.afterConstruction();
         // the server dropped the cast before its end (the world came back early, or the restore failed)
         NetClientApi.receive(LastLightEnd.PACKET, (end, context) -> Minecraft.getInstance().execute(() -> {
             if (current != null && current.fx().castGameTime() == end.castGameTime()) {

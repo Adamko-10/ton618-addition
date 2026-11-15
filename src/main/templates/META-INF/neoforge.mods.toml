@@ -10,6 +10,8 @@ version = "${mod_version}"
 displayName = "${mod_name}"
 authors = "${mod_authors}"
 description = '''${mod_description}'''
+# The mod's icon in the game's and launchers' mod lists (Adam, 2026-11-15: every project ships its icon).
+logoFile = "ton618_addition_icon.png"
 
 # Client only, optional: puts back RimuLib's H menu and the film's layer where TON 618 hides the HUD (client/HudRescue).
 # If their targets change, they switch themselves off.
@@ -50,6 +52,14 @@ side = "BOTH"
 # Optional: with The Shooting Star installed, its Stellar Remote gets Last Light too.
 [[dependencies.${mod_id}]]
 modId = "${shooting_star_mod_id}"
+type = "optional"
+versionRange = "*"
+ordering = "AFTER"
+side = "BOTH"
+
+# Optional: with SS-21 Quasar (Aether21's addon for The Shooting Star) installed, TA-02 Quasar Jets appears.
+[[dependencies.${mod_id}]]
+modId = "shooting_star_ss21"
 type = "optional"
 versionRange = "*"
 ordering = "AFTER"
