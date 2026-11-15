@@ -628,6 +628,48 @@ apart, told to Adam.
   1.1.0); `./gradlew --no-daemon runClient` opens a dev game with both (`runServer` for a server). Test jar to
   `C:\Users\User\Desktop\test builds\<date> TON 618 film\` for Adam.
 
+## 7b. For Fable: TA-02's film (Quasar Jets)
+
+**Status 2026-11-16: READY for Part 2.** TA-02 is built on `main` (1.1.0, `63a6add`) with a placeholder film by Opus;
+the previz v1 is approved (`previz/quasar-jets/`, its `NOTES.md` is the plan).
+
+- **The film's own files (Fable's alone; write only here):**
+  - Java package `dev.adamko.ton618addition.client.quasarfilm` (`src/main/java/dev/adamko/ton618addition/client/quasarfilm/`).
+    It holds `QuasarJetsFilm.java`, a **placeholder by Opus** (letterbox bars, each shot's words, the title card, the
+    blue-white flood): replace it freely, keeping the four entry points below;
+  - shaders `src/main/resources/assets/ton618_addition/shaders/quasarfilm/`, textures `.../textures/quasarfilm/`, film
+    sounds `.../sounds/quasarfilm/` (or made in code, as Last Light's `FilmSynth`; `sounds.json` entries by proposal).
+  Anything else: a proposal in `reviews/fable/PROPOSALS.md`; bugs: `reviews/fable/FINDINGS.md`.
+- **The contract (propose changes, don't make them):**
+  - `QuasarJetsFilm.init(IEventBus modBus)`: once, from `client/quasar/QuasarClient.init` (clients only).
+  - `QuasarJetsFilm.start(QuasarCast cast)`: the strike reached this client **and it gets the film** (the caster and
+    players within ~128 blocks of the caster or the mark; Adam: "Caster + nearby players"). Everyone else, and anyone
+    arriving mid-way, gets only the world effects. Start from `cast.tick(partial)`.
+  - `QuasarJetsFilm.stop()`: leaving the server, or 40 ticks after END. `QuasarJetsFilm.active()`: it is running.
+- **The clock**: `quasar/QuasarClock` (Opus's), the previz's ticks: MARK 0 · LOCK 38 · ENGINE 80 · PUSH 150 · FLIGHT 200
+  · ARRIVE 330 · SHRED 350 · IGNITE 440 · JETS 530 · TURN 610 · FLOOD 665 · DAY 680 · SWEEP 745 · LANDS 795 · LOBE 830 ·
+  MELT 842 · THROW 846 · POP 890 · NIGHT 905 · END 960; helpers `ramp`, `beamHead(t)`, `lobe(t)`, `day(t)`. The server
+  times every world effect by them, so the film must keep them (ask before moving one).
+- **What the film can read** (`client/quasar/QuasarCast`, Opus's): `tick(partial)`, `tick()`, `star()` (name, `type()`:
+  `QuasarStars.Type` with `color`, `size`, `swept`, `lobe`, `bowl`, `crystals`, `day`, `label`; `distance()`, `size()`,
+  `mass()`, `direction()` = its fixed sky direction), `starIndex()`, `mark()`, `quasarDirection()` (the second sun's sky
+  direction; the jet comes in along it), `caster()`, `casterUuid()`, `isCaster()`, `castPosition()`, `castYaw()`,
+  `castPitch()`, `offhand()`, `viaStellarRemote()`, `secondSun()`, `film()`, `educational()`.
+  `QuasarClient.current()` returns it anywhere on the client.
+- **Not the film's (Opus's, everyone sees them, the film must not draw them again):** `client/quasar/QuasarRender`
+  (our 8 named stars in the night sky, the second sun's glare, the ground mark, the jet's beam, the radio lobe's dome
+  and its pop ring), `client/mixin/ClientLevelMixin` + `QuasarClient.fog` (the second sun's sky light, colours,
+  clouds, stars, fog), `client/quasar/QuasarReticle` (the lock-on HUD, the pop's flash). The film may propose restyling
+  them (Adam picks).
+- **Adam's notes for the mod version** (on v1): **labels on screen a little longer** (Last Light's 2.4 to 5.9 s are
+  fine; the shortest now are 1.3 to 2.2 s); the **bigger explosion** is done in the world (lobe radii 9/15/24/33, the
+  shot-10 framing must fit them); the second sun ends with the film.
+- **Not in TON 618's dark**: everything is in the overworld, so `AFTER_WEATHER`/`AFTER_LEVEL` drawing works (no post-pass
+  problem as in Last Light's dark).
+- **Building and testing**: JDK 21, `./gradlew --no-daemon build`; `libs/extra/` holds The Shooting Star 1.5.2 and
+  SS-21 Quasar 1.8.0 NeoForge (TA-02 only appears with SS-21), so `runClient` has it all. Ask Adam before any game
+  run. Test jar to `C:\Users\adam_\Documents\TON 618 Addition\test builds\<date> TA-02 film\`.
+
 ## 8. Building
 
 Set up 2026-11-14 from the SA Series `main` (ModDevGradle 2.0.x, NeoForge 21.1.248, Parchment 2024.11.17, Gradle
