@@ -5,6 +5,13 @@ Handoff notes for every Claude session in this folder (`C:\Users\User\Desktop\to
 Started 2026-11-13 by an Opus 5.5 session (xhigh) that was started from Adam's SA Series session. **Read `BRIEF.md`
 first** (Adam's brief, his own words at its end), then this file. Fable's part: `prompts\FABLE-PREVIZ-AND-FILM-PROMPT.md`.
 
+### >>> RESUME HERE (2026-11-15 ~20:25, Adam's PC): TA-02 built on main, not tested in a game; usage limit hit <<<
+
+- **TA-02 · Quasar Jets is BUILT on `main` (NeoForge 1.21.1)**, version 1.1.0, committed (not pushed), Adam: "Build TA-02 in the mod". Code: `quasar/` (QuasarInfo, QuasarClock = Fable's ticks, QuasarStars = 8 stars + type table with the lobe/bowl/crystals x1.5 for "bigger explosion", QuasarSkill, QuasarJets = two presses + every world effect, QuasarSky = missing stars saved, QuasarContent = 4 frozen-light blocks + radio_lobe damage type), `net/QuasarFx|QuasarLock|QuasarMissing`, `client/quasar/` (QuasarClient, QuasarCast = what the film reads, QuasarRender = named stars, second-sun glare, mark, jet, dome, pop ring, QuasarReticle = lock-on HUD + pop flash, QuasarGl), `client/mixin/ClientLevelMixin` (second sun: sky light/colour/clouds/stars), `client/quasarfilm/QuasarJetsFilm` = **placeholder by Opus (bars, words, title, flood): Fable's package for the real film (Part 2)**. Server config `[quasar_jets]`. Joins only with SS-21 Quasar (`shooting_star_ss21`); `Ton618Link.showInMenu` (SA Series' fix) puts our skills back in the Stellar Remote's menu, which SS-21 freezes. Art: `tools/icons/QuasarJetsArt.java` (skill icon, crystal textures). **The mod icon is in the metadata now** (`ton618_addition_icon.png`, `logoFile`).
+- Checked: builds; dev server with TSS 1.5.2 + SS-21 1.8.0 NeoForge (downloaded with Adam's OK to `libs/extra`, 4.2 MB): TA-02 joins TON 618's menu (#3) and the remote (#8); without SS-21 it stays hidden. **Not seen in a game.**
+- Test jar: `..	est builds6-11-15 TA-02 Quasar JetsTON 618 Addition 1.1.0 TA-02 TEST [NeoForge 1.21.1].jar` + SS-21 1.8.0 NeoForge beside it.
+- **Next**: Adam's game test; then Fable's in-game film (a Part 2 prompt, contract = QuasarJetsFilm's 4 entry points + QuasarCast); open: players carried (config, off). Then the 6 ports (with the 1.0.1 fixes and Fable's P2). Fable queue after: SA-04B, SA-03A Roche.
+
 ### >>> RESUME HERE (2026-11-15 ~14:30, Adam's PC): Codex's test is done; its fixes go to the next update <<<
 
 - **Codex finished all 8 runs** (Adam: "its done"; `..\codex tests\REPORT.md`, 14:16; contact sheets per build in
