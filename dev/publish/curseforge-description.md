@@ -64,6 +64,7 @@ A small **TON 618 Addition** panel in the top right corner of the H menu holds y
 
 *   **Shader packs** (Iris): the film's space scene and words show; the two waves of light on the ground may not.
 *   **TON 618's dark** hides the game's HUD on most versions; this addon puts back RimuLib's H menu there, so Last Light can be picked.
+*   **Known issue, Forge and NeoForge 1.20.1**: if the game closes with a crash in Windows' `d3d11.dll` and no Minecraft crash report, it comes from the graphics side, not from this addon (it was seen with the Medal screen recorder running). Close screen recorders and overlays, or set `earlyWindowControl = false` in `config/fml.toml`.
 
 ## Settings
 
