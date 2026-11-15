@@ -789,5 +789,10 @@ machinery (TON 618 needs none: we never name its classes).
     crater, read from its jar's description). Educational labels: star types, tidal disruption, how jets launch, blazars,
     the faster-than-light illusion, radio lobes, TON 618's brightness.
   - Settings to have: on/off, who can cast, terrain on/off, second sun on/off, missing-star nights.
+  - **For a FUTURE update (Adam, 2026-11-15: "in a future update write this down, lets add proxima centauri but to
+    stay consistent we keep the dyson sphere and the dyson sphere tries to fight back somehow, lets just write this
+    down only for now")**: Proxima Centauri as a pickable star, still inside its Dyson sphere (as in the SA Series'
+    SA-04 Proxima), and the Dyson sphere **fights back** when it is launched (how: not designed yet). Not in TA-02's
+    first version.
 - Not picked yet ("we will see"): **Black hole merger** (gravitational wave ripples the land), **Time dilation**
   (everything round the caster slows), **Advancements** ("A googol of years", "Information paradox").
