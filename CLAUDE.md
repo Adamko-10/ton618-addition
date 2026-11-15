@@ -766,5 +766,28 @@ machinery (TON 618 needs none: we never name its classes).
   its id in its jar when we get there; ask before downloading). Note: SS-21 joins the Stellar Remote by reflection and
   can hide later API skills from the H menu (SA Series `docs/ADDONS.md`); the SA Series has a workaround
   (`TssLink.showInMenu`) if our Stellar Remote skill goes missing next to it.
+- **TA-02 · Quasar Jets: the plan (Adam + Opus, 2026-11-15; draft, Adam decides on the full plan)**. Adam: "i say we
+  feed ton 618 a planet or something and it turns that planet into a quasar", then "im thinking maybe a star gets
+  launched into ton 618 and gets devoured and then that gets shot through a quasar at the earth or something" (told:
+  the black hole becomes the quasar while it eats; real: tidal disruption events, Swift J1644+57's jet at Earth, 2011).
+  Picks (clickable): **night only, pick a star** ("i really like that idea, pickign a star sounds cool"), **named real
+  stars**, **star type changes the strike**, **missing from the sky for a few nights**; world effects **radio lobe +
+  second sun + frozen light + swept along**.
+  - **Cast**: only with SS-21 Quasar installed; TON 618's item or the Stellar Remote; overworld, **at night**, looking
+    at one of our named stars (a reticle with its name and type). By day: "No stars to launch: wait for night."
+  - **The stars** (drawn by us in the night sky, real-ish colours), four tiers: **red dwarf** (e.g. Barnard's Star:
+    small), **Sun-like** (e.g. Alpha Centauri A: medium), **blue giant** (e.g. Rigel: huge), **red supergiant** (e.g.
+    Betelgeuse: the biggest, slowest). The tier sets the jet, the lobe and bowl size and the crystals' colour.
+  - **The film** (~45 s, Fable): lock-on, launch, the flight to TON 618, the meal (tidal disruption), ignition (title
+    card), the two jets, the blazar turn, second sun, swept along, the radio lobe and its pop. Shot list in
+    `prompts/FABLE-TA02-QUASAR-JETS-PREVIZ-PROMPT.md`.
+  - **In the world**: **second sun** (night turns to day worldwide for ~1 minute); **swept along** (the thin jet comes
+    in low from the horizon; mobs, items and loose blocks in its path lifted and carried toward the crosshair, capped);
+    **radio lobe** (a plasma dome at the crosshair shoves entities out, melts a shallow bowl, pops); **frozen light**
+    crystals (a new block, the star's colour) in the bowl; the launched star **gone from the sky for a few nights**.
+  - Different from SS-21 Quasar (its Milky Way black hole, a pillar straight down, a disc overhead, a spiral-galaxy
+    crater, read from its jar's description). Educational labels: star types, tidal disruption, how jets launch, blazars,
+    the faster-than-light illusion, radio lobes, TON 618's brightness.
+  - Settings to have: on/off, who can cast, terrain on/off, second sun on/off, missing-star nights.
 - Not picked yet ("we will see"): **Black hole merger** (gravitational wave ripples the land), **Time dilation**
   (everything round the caster slows), **Advancements** ("A googol of years", "Information paradox").
