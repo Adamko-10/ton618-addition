@@ -29,8 +29,12 @@ sounds cool"); **named real stars**; **the star's type changes the strike**; **t
 few nights**. The full plan is in `CLAUDE.md` §10 "TA-02 · Quasar Jets: the plan"; the film:
 
 1. **Lock-on** (night): the caster looks up; a reticle locks onto a named star, "BETELGEUSE · RED SUPERGIANT".
-2. **Launch**: the camera rises to that star; it is torn from its place and flung away.
-3. **The flight**: the star streaks across the universe toward TON 618, the camera riding along.
+2. **The star engine** (Adam's pick: a real idea, the **Shkadov thruster**): the camera rises to that star; a giant
+   curved mirror unfolds on its TON 618 side and bounces its light back, so all its light pours out behind it and the
+   star starts to push itself off its place, toward the mirror, which stays ahead like a sail.
+3. **The flight**: the star, its mirror ahead and a tail of its own light behind, streaks across the universe toward
+   TON 618, the camera riding along; time races (a year counter, as in Last Light: a real star engine takes millions
+   of years).
 4. **The meal**: TON 618's pull stretches it into a ribbon that wraps into the disc ("TIDAL DISRUPTION").
 5. **Ignition**: the disc blazes blue-white, outshining its galaxy. Title card **TA-02 · QUASAR JETS**.
 6. **The jets**: the star's matter shoots out of both poles at nearly the speed of light.

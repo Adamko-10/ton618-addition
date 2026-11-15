@@ -793,6 +793,16 @@ machinery (TON 618 needs none: we never name its classes).
     stay consistent we keep the dyson sphere and the dyson sphere tries to fight back somehow, lets just write this
     down only for now")**: Proxima Centauri as a pickable star, still inside its Dyson sphere (as in the SA Series'
     SA-04 Proxima), and the Dyson sphere **fights back** when it is launched (how: not designed yet). Not in TA-02's
-    first version.
+    first version. **Tie-in to keep in mind (Adam, 2026-11-15)**: the star engine below "could tie in with Proxima's
+    Dyson sphere later" (a Dyson sphere is already a megastructure round a star).
+  - **The launch = a star engine** (Adam, 2026-11-15, after the wormhole gate, slingshot, warp bubble, folding space,
+    stealing a partner, reeling on the jet and a cosmic string were offered: "lets do star engine yeah"). A real idea
+    (the **Shkadov thruster**, 1987): a giant curved mirror unfolds on the side of the star facing TON 618 and bounces
+    its light back, so all its light pours out the other way and the star pushes itself toward the mirror, which stays
+    ahead of it like a sail (in reality over millions of years: the film races time, with a year counter, like Last
+    Light).
+  - **For a LATER update (Adam, 2026-11-15: "i like the interactive thing too lets add it in a later update")**: drag
+    the star yourself: hold the button and drag the locked star across your night sky to TON 618's dark spot; let go
+    and it becomes a real shooting star falling toward it, then the film follows it.
 - Not picked yet ("we will see"): **Black hole merger** (gravitational wave ripples the land), **Time dilation**
   (everything round the caster slows), **Advancements** ("A googol of years", "Information paradox").
