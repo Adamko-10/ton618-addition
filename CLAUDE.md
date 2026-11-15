@@ -102,6 +102,12 @@ first** (Adam's brief, his own words at its end), then this file. Fable's part: 
   ([Fable: Last Light film polish](#local_22632a54-fabf-4609-a051-0906500bfd9b), `prompts/FABLE-LAST-LIGHT-POLISH-PROMPT.md`:
   the faint early glow + toasts hidden during the film; film files only, no git: Opus commits and ports it). Next in
   line, one at a time: TA-02 · Quasar Jets previz (then the SA Series' SA-04B and SA-03 previz).
+- **Write-down (Adam, 2026-11-15: "add the mod icon to the mod itself in the metadata so the icon shows when its
+  installed in the downloaded mods ui in the instance")**: **TON 618 Addition ships no mod icon** (checked: no
+  `logoFile`/`"icon"` on any of the 7 branches). For the next update, on all 7: copy `dev/publish/project-icon.png`
+  (256x256 pixel art) to `src/main/resources/ton618_addition_icon.png`; `logoFile = "ton618_addition_icon.png"` in
+  `neoforge.mods.toml` (main) / `mods.toml` (Forge branches), `"icon": "ton618_addition_icon.png"` in
+  `fabric.mod.json` (Fabric branches). (The SA Series already has it on all 7.)
 - **Write-down (Adam, 2026-11-15)**: the CurseForge **Source** link is missing: add
   https://github.com/Adamko-10/ton618-addition; and the description gets the rework all his projects get (better
   look, links to his other projects, roadmap, Discord, emojis): the SA Series' CLAUDE.md has the list.
