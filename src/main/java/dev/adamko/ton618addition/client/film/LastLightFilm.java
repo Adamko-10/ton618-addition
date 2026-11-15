@@ -5,9 +5,13 @@ import cyou.rimuru.rimulib.mc1211.client.cinematic.Cutscene;
 import dev.adamko.ton618addition.Ton618Addition;
 import dev.adamko.ton618addition.client.LastLightCast;
 import dev.adamko.ton618addition.lastlight.LastLightClock;
+import java.util.ArrayList;
+import java.util.List;
 import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.toasts.Toast;
+import net.minecraft.client.gui.components.toasts.ToastComponent;
 import net.minecraft.client.gui.screens.ReceivingLevelScreen;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
@@ -18,6 +22,7 @@ import net.neoforged.neoforge.client.event.RegisterShadersEvent;
 import net.neoforged.neoforge.client.event.RenderGuiEvent;
 import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
 import net.neoforged.neoforge.client.event.ScreenEvent;
+import net.neoforged.neoforge.client.event.ToastAddEvent;
 import net.neoforged.neoforge.common.NeoForge;
 
 /**
@@ -43,6 +48,10 @@ import net.neoforged.neoforge.common.NeoForge;
  * off or skip it with RimuLib's film key: then only the white of the burst is shown, so the trip back to the
  * overworld is still hidden.
  *
+ * <p><b>Toasts.</b> The game draws its toasts (tutorial hints, advancements, recipes) over everything, the film too.
+ * While this film has the camera they are kept off the screen: the ones showing when it starts are cleared, and the ones
+ * that arrive while it plays are held back and shown when it ends.
+ *
  * <p><b>The contract</b> (what the rest of the mod calls): {@link #init}, {@link #start}, {@link #stop},
  * {@link #active}.
  */
@@ -58,6 +67,8 @@ public final class LastLightFilm {
     private static int sinceFilm;
     private static int sinceSound;
     private static boolean pressed;
+    /** Toasts that arrived while the film had the camera: shown when it lets go. */
+    private static final List<Toast> HELD_TOASTS = new ArrayList<>();
 
     private LastLightFilm() {
     }
@@ -76,6 +87,8 @@ public final class LastLightFilm {
         });
         // the game's "loading terrain" screen during the trip back: kept white
         NeoForge.EVENT_BUS.addListener(ScreenEvent.Render.Post.class, LastLightFilm::loading);
+        // the game's toasts would sit on top of the film: held back while it has the camera
+        NeoForge.EVENT_BUS.addListener(ToastAddEvent.class, LastLightFilm::toast);
     }
 
     public static void start(LastLightCast newCast) {
@@ -91,6 +104,8 @@ public final class LastLightFilm {
             FilmApi.play(film);
             FilmSound.prepare();
             Minecraft.getInstance().getMusicManager().stopPlaying();
+            // toasts already on screen (a new game's "Move with W, A, S and D" stays up until the player moves)
+            Minecraft.getInstance().getToasts().clear();
         }
     }
 
@@ -111,6 +126,30 @@ public final class LastLightFilm {
         if (track != null) {
             track.end();
             track = null;
+        }
+        showHeldToasts();
+    }
+
+    /** A toast the game wants to show: not over the film. It is kept (a handful at most) for when the film ends. */
+    private static void toast(ToastAddEvent event) {
+        if (film != null) {
+            event.setCanceled(true);
+            if (HELD_TOASTS.size() < 8) {
+                HELD_TOASTS.add(event.getToast());
+            }
+        }
+    }
+
+    /** The film has let go of the camera ({@code film} is null by now): the toasts held back are shown. */
+    private static void showHeldToasts() {
+        if (HELD_TOASTS.isEmpty() || film != null) {
+            return;
+        }
+        List<Toast> held = new ArrayList<>(HELD_TOASTS);
+        HELD_TOASTS.clear();
+        ToastComponent toasts = Minecraft.getInstance().getToasts();
+        for (Toast toast : held) {
+            toasts.addToast(toast);
         }
     }
 
@@ -142,6 +181,7 @@ public final class LastLightFilm {
                 track.end();
                 track = null;
             }
+            showHeldToasts();
             return;
         }
         // the director let go of it (another film took over, or it was cleared): hand it back
@@ -178,7 +218,9 @@ public final class LastLightFilm {
     /** In the world: the waves, the hand's glow, the motes. */
     private static void world(RenderLevelStageEvent event) {
         LastLightCast now = cast;
-        if (now == null || event.getStage() != RenderLevelStageEvent.Stage.AFTER_WEATHER) {
+        // in the dark the film draws after the level is finished, in the overworld after the weather (see FilmWorld)
+        if (now == null || event.getStage() != RenderLevelStageEvent.Stage.AFTER_WEATHER
+                && event.getStage() != RenderLevelStageEvent.Stage.AFTER_LEVEL) {
             return;
         }
         float partial = event.getPartialTick().getGameTimeDeltaPartialTick(true);
@@ -243,6 +285,7 @@ public final class LastLightFilm {
             track.end();
             track = null;
         }
+        showHeldToasts();
         FilmGl.end();
     }
 }

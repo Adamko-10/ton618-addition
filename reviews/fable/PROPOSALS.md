@@ -38,3 +38,40 @@ To do on your side:
 - TON 618's own effects in the dark (drag, stop, rewind, gravity waves) can still play over the first 200 ticks; from
   the cut into space on they are covered.
 - A player who has RimuLib's films switched off, or skips with its film key, sees only the white of the burst.
+
+## 2026-11-15: hand-over of the Last Light polish (next update)
+
+What and why: `previz/HANDOVER.md`, "Polish (2026-11)". In short: the early hand glow, ring and wave were not faint
+but painted out by TON 618's post pass in the dark (its floor is invisible, so everything but the players is "sky"
+to it); the film now draws there at `AFTER_LEVEL`, with a looser shot 2 and stronger light. Toasts are cleared at
+the film's start and held back while it plays (`ToastAddEvent`). **No change outside the film's files was needed on
+NeoForge.**
+
+To do on your side:
+1. **Commit**: `client/film/FilmWorld.java`, `FilmCamera.java`, `LastLightFilm.java`, `FilmGl.java`,
+   `shaders/film/last_light.fsh`, `previz/HANDOVER.md`, `previz/polish-check/` (2 files, mine), this file.
+2. **Version**: the test jar is built from `mod_version=1.0.0`; bump it for the update.
+3. **CLAUDE.md**: the "faint early glow" item is really "painted out in the dark by TON 618's post pass"; §7's note
+   on drawing in the dark could say that in-world film light there must be drawn at `AFTER_LEVEL`.
+4. **Ports**: "For the ports" in the hand-over. The Fabric branches need one mixin of yours (below).
+
+### Proposal P2 (needed for the Fabric ports only): a hook after the level render
+
+- **What**: a client mixin on `GameRenderer.renderLevel`, injected right after its call to
+  `LevelRenderer.renderLevel(...)`, that calls the film's dark draw (camera, partial tick, the view and projection
+  matrices passed to that call).
+- **Where**: the Fabric branches' `client/mixin/` and `ton618_addition.fabric.mixins.json` (not film files).
+- **Why**: Fabric's `WorldRenderEvents.LAST` fires inside `renderLevel`, before RimuLib's post pass (a RETURN hook
+  on the same method), so in the dark TON 618 paints over everything drawn there. NeoForge and Forge have
+  `AFTER_LEVEL` at exactly that spot; Fabric API has nothing dependable after it.
+- **Patch (sketch)**: `@Inject(method = "renderLevel", at = @At(value = "INVOKE", target =
+  "Lnet/minecraft/client/renderer/LevelRenderer;renderLevel(...)V", shift = At.Shift.AFTER))` →
+  `LastLightFilm.afterLevel(camera, partial, view, projection)`, which draws `FilmWorld`'s dark part; keep
+  `WorldRenderEvents.LAST` for the overworld part.
+
+### Things to tell Adam when he tests
+
+- Not seen in a game: checked by reading where TON 618 and RimuLib paint, and in a preview page that draws the
+  effects with the film's real shader over Codex's game frame (`previz/polish-check/`).
+- Shot 2 (the press) sits a little further back and lower than before, so the hand and the floor are in the picture.
+- Toasts on screen when the film starts are cleared (not brought back); ones that arrive during it show after it.
