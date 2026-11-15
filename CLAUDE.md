@@ -40,9 +40,14 @@ first** (Adam's brief, his own words at its end), then this file. Fable's part: 
 - **Building on this PC**: JDK 21 at `C:\Program Files\Eclipse Adoptium\jdk-21.0.11.10-hotspot`; Gradle-provisioned
   JDK 25 and 17 in `C:\Users\adam_\.gradle\jdks\` (`eclipse_adoptium-25-amd64-windows.2`, `-17-...`; Loom needs a
   Java 25 JVM), so all 7 branches can build here. This repo has `dev/publish` but no `dev/ci`. Nothing built here yet.
-- **Next**: 1.0.0's release as it is, step by step, each with Adam's yes: push the 7 branches, the v1.0.0 GitHub
-  release, the CurseForge project and files (drafts approved). Open at that point: whether the Forge 1.20.1 jar
-  ships (the crash above).
+- **The 7 branches are PUSHED** (Adam, 2026-11-15, clickable: "Yes, push branches"; checked first: GitHub's `main`
+  `43b0e14` was an ancestor, every new commit by the noreply address, no secrets or big files, no jars but Gradle's
+  wrapper). `main` `43b0e14..0ca0beb`; new on GitHub: forge-1.21.1 `85b8dd7`, forge-1.20.1 `3b5e2e8`, fabric-1.21.1
+  `d725beb`, fabric-1.20.1 `953edeb`, fabric-1.21.11 `87c6cea`, fabric-26.3 `ce7f85f`. Commits after `0ca0beb` (this
+  file) are local until the next push.
+- **Next**, each with Adam's yes: the v1.0.0 GitHub release(s) with the jars from `..\test builds\2026-11-14 TON 618
+  Addition 1.0.0 all loaders\` (check each jar's code = its branch head first), then the CurseForge project and
+  files (drafts approved). Open at that point: whether the Forge 1.20.1 jar ships (the crash above).
 
 ### RESUME HERE (2026-11-15 ~13:45, Adam's PC): set up here; Codex has tested 2 of the 8 runs
 
