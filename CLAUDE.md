@@ -8,17 +8,21 @@ first** (Adam's brief, his own words at its end), then this file. Fable's part: 
 ### >>> RESUME HERE (2026-11-15 ~13:45, Adam's PC): set up here; Codex has tested 2 of the 8 runs <<<
 
 - **This repo is on Adam's PC now**: `C:\Users\adam_\Documents\TON 618 Addition\ton 618 addition\`, cloned from
-  `ton 618 addition (all branches).bundle` (in `C:\Users\adam_\Downloads\Move to PC (2026-11-15)\`). Local branches:
+  `ton 618 addition (all branches).bundle` (in `C:\Users\adam_\Documents\Move to PC (2026-11-15)\`). Local branches:
   `main` (`10e125a`) and the six ports, forge-1.21.1 `85b8dd7`, forge-1.20.1 `3b5e2e8`, fabric-1.21.1 `d725beb`,
   fabric-1.20.1 `953edeb`, fabric-1.21.11 `87c6cea`, fabric-26.3 `ce7f85f`. `origin` =
   https://github.com/Adamko-10/ton618-addition.git (GitHub has an older `main` only; the local `origin/<port>` refs came
   from the bundle and don't exist there). Git identity `Adamko-10 <Adamko-10@users.noreply.github.com>`. **Nothing
   pushed.** No `ports\` worktrees yet: make them when a fix needs cherry-picking (`git worktree add ports/<branch>
   <branch>`; the branches already exist).
-- **`libs\` is empty** (not in the bundle): TON 618 1.1.0 + RimuLib 1.2.3 + The Shooting Star. Ask Adam before
-  downloading. Already on this PC without a download: TON 618 1.1.0 NeoForge/Forge/Fabric (9562579, 9562567, 9562551)
-  and RimuLib 1.2.3 NeoForge/Forge (9562438, 9562444) in `..\codex tests\downloads\`; the SA Series' `libs\` has The
-  Shooting Star.
+- **`libs\` filled from jars already on this PC, no download** (Adam, 2026-11-15, clickable: "Copy local, ask for
+  rest"): `libs\ton618-1.1.0-neoforge.jar` (9562579) + `libs\rimulib-1.2.3-neoforge.jar` (9562438) from
+  `..\codex tests\downloads\`; `libs\ports\` = TON 618 Forge (9562567) + Fabric (9562551), RimuLib Forge (9562444) +
+  Fabric (`rimulib-1.2.3-fabric.jar`, id `rimulib_multi` 1.2.3, from Codex's Prism instance `01-Fabric-26.3\mods\`);
+  `libs\extra\the-shooting-star-demo-1.5.2-neoforge.jar` (from the SA Series' `libs\`, for the dev runs). Not built
+  here yet (JDK 21 / Java 25 toolchains on this PC unchecked).
+- **Adam, 2026-11-15** (clickable): **"Codex finishes first"**: he resumes Codex for the other six runs; then one fix
+  round for everything it found.
 - **Test jars**: the seven 1.0.0 jars are in `C:\Users\adam_\Documents\TON 618 Addition\test builds\2026-11-14 TON 618
   Addition 1.0.0 all loaders\`.
 - **Codex's test already ran partly on this PC** (2026-11-15 00:38-01:35, `..\codex tests\REPORT.md`, 8 portable Prism
