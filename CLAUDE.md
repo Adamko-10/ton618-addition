@@ -45,9 +45,29 @@ first** (Adam's brief, his own words at its end), then this file. Fable's part: 
   wrapper). `main` `43b0e14..0ca0beb`; new on GitHub: forge-1.21.1 `85b8dd7`, forge-1.20.1 `3b5e2e8`, fabric-1.21.1
   `d725beb`, fabric-1.20.1 `953edeb`, fabric-1.21.11 `87c6cea`, fabric-26.3 `ce7f85f`. Commits after `0ca0beb` (this
   file) are local until the next push.
-- **Next**, each with Adam's yes: the v1.0.0 GitHub release(s) with the jars from `..\test builds\2026-11-14 TON 618
-  Addition 1.0.0 all loaders\` (check each jar's code = its branch head first), then the CurseForge project and
-  files (drafts approved). Open at that point: whether the Forge 1.20.1 jar ships (the crash above).
+- **v1.0.0 RELEASED ON GITHUB, all 7** (Adam, 2026-11-15: "Yes, make the release"; clickable "Release all 7"):
+  one release per branch, like the SA Series: tags `v1.0.0` (main, **Latest**), `v1.0.0+forge-1.21.1`,
+  `v1.0.0+forge-1.20.1`, `v1.0.0+fabric-1.21.1`, `v1.0.0+fabric-1.20.1`, `v1.0.0+fabric-1.21.11`,
+  `v1.0.0+fabric-26.3`, each at its branch head on GitHub, titled `TON 618 Addition 1.0.0 [<Loader> <MC>]`, its jar
+  attached (asset label = the jar's name). Jars = the VM's 2026-11-14 builds, checked before: each built after its
+  branch's last code commit, resources and class counts match the branch. Release files in the project folder's
+  `releases\1.0.0\` (`jars\`, `changelogs\<branch>.md` = `dev/publish/changelog-1.0.0.md` with {MC} {LOADER} {ALSO}
+  {FABRIC_API} filled: forge-1.20.1 ALSO " (also runs on NeoForge 1.20.1)", Fabric ", plus **Fabric API**").
+- **The Forge 1.20.1 crash, looked into (Adam, 2026-11-15: "ideally try to make a quick fix for forge so it works and
+  oesnt crash, then we publish it on curseforge")**: not our code. Windows' crash reports
+  (`C:\ProgramData\Microsoft\Windows\WER\ReportArchive\AppCrash_javaw*`): all three = `d3d11.dll` c0000005 at
+  0x1969e1, Mojang's Java 17 in Codex's Prism, `medal-hook64-v2.dll` loaded each time; the Forge retry died on the
+  **loading screen** (log ends at the texture atlases, before any world), and Fabric 1.20.1 on the same Java never
+  crashed: so likely Medal's DXGI hook with Forge/NeoForge 1.20.1's early loading window (`fmlearlywindow`), not
+  verified. (Adam's own Modrinth games crashed on 11-11 and 11-13 in `OpenAL.dll`, c0000409: unrelated, sound.)
+  **Adam (clickable): "Publish + known-issue note"**: the Forge 1.20.1 changelog (and its GitHub release, edited)
+  ends with a "Known issue" section: a `d3d11.dll` crash with no crash report is the graphics side, seen with Medal;
+  close screen recorders/overlays or set `earlyWindowControl = false` in `config/fml.toml`. Use it on CurseForge too.
+- **Next: CurseForge** (Adam: "then we publish it on curseforge"): Opus in Adam's browser (Claude in Chrome), he
+  signs in himself; new project "TON 618 Addition" (summary `dev/publish/summary.txt`, description
+  `dev/publish/curseforge-description.md`, icon `dev/publish/project-icon.png`, categories Addons + Magic + Technology),
+  then the 7 files from `releases\1.0.0\jars\` with `releases\1.0.0\changelogs\` (Release, Client + Server; TON 618 +
+  RimuLib required, Fabric API required on Fabric, The Shooting Star optional); ask before each submit.
 
 ### RESUME HERE (2026-11-15 ~13:45, Adam's PC): set up here; Codex has tested 2 of the 8 runs
 
