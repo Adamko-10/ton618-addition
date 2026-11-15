@@ -63,11 +63,31 @@ first** (Adam's brief, his own words at its end), then this file. Fable's part: 
   **Adam (clickable): "Publish + known-issue note"**: the Forge 1.20.1 changelog (and its GitHub release, edited)
   ends with a "Known issue" section: a `d3d11.dll` crash with no crash report is the graphics side, seen with Medal;
   close screen recorders/overlays or set `earlyWindowControl = false` in `config/fml.toml`. Use it on CurseForge too.
-- **Next: CurseForge** (Adam: "then we publish it on curseforge"): Opus in Adam's browser (Claude in Chrome), he
-  signs in himself; new project "TON 618 Addition" (summary `dev/publish/summary.txt`, description
-  `dev/publish/curseforge-description.md`, icon `dev/publish/project-icon.png`, categories Addons + Magic + Technology),
-  then the 7 files from `releases\1.0.0\jars\` with `releases\1.0.0\changelogs\` (Release, Client + Server; TON 618 +
-  RimuLib required, Fabric API required on Fabric, The Shooting Star optional); ask before each submit.
+- **ON CURSEFORGE (2026-11-15 ~15:30)**: project **TON 618 Addition, id 1807506**
+  (https://authors.curseforge.com/#/projects/1807506), made in Adam's Chrome (he was already signed in). Adam's
+  clickable picks: "Yes, start CurseForge", distribution **"Allow 3rd party"**, "Yes, create it", "Yes, add it" (the
+  NeoForge file) and **"Yes, add all 6"** (the rest without asking each). Settings: class Mods, main category Addons +
+  Magic + Technology, comments on, license All Rights Reserved, logo `dev/publish/project-icon.png`, summary
+  `dev/publish/summary.txt` (235/256), description = `dev/publish/curseforge-description.md` (+ one "Known issue,
+  Forge and NeoForge 1.20.1" bullet under More, also in the repo copy now), social links as his profile prefilled
+  them. **Files** (all Release, Client + Server, auto-publish once approved, Markdown changelogs from
+  `releases\1.0.0\changelogs\`; TON 618 + Rimulib required, The Shooting Star [Demo] optional, + Fabric API required on
+  the four Fabric files): 9629847 NeoForge 1.21.1 (Java 21), 9629865 Forge 1.21.1 (Java 21), 9629873 Forge 1.20.1
+  (Forge + NeoForge, Java 17, with the known-issue section), 9629885 Fabric 1.21.1 (Java 21), 9629891 Fabric 1.20.1
+  (Java 17), 9629903 Fabric 1.21.11 (Java 21), 9629912 Fabric 26.3 (Java 25). Checked through
+  `/_api/project-files/1807506/files/<id>`: names, versions, Release, changelogType 5 with its lines and headings.
+  **Status then: the project waits for CurseForge's moderators** ("Until approved by a Moderator, the project will not
+  be visible"); the files were Processing.
+- **How the CurseForge forms were driven this time** (for next time): the project wizard's description is TinyMCE 6
+  (`tinymce.activeEditor.setContent(html)`); a file upload = inject an `<input type=file>`, fill it with the
+  extension's file_upload (only from this session's folders: copied to its scratchpad), then dispatch
+  dragenter/dragover/drop on `div.css-1x73roo`; the file form copies env/loader/Java/MC from the newest file but no
+  relations; MUI chips cleared one at a time (re-query after each delete); the changelog: switch the mode select to
+  Markdown first (it comes up WYSIWYG after some files), then set `textarea.mde-text` with the native setter + input
+  event; relations through the "Add related project" dialog (search by name; ids don't search), each row's MUI select
+  opened with a mousedown.
+- **Next**: wait for CurseForge's approval (then check the public page and that the files published); then the next
+  update's list above. Local commits after `0ca0beb` (notes, the description's known-issue line) aren't pushed.
 
 ### RESUME HERE (2026-11-15 ~13:45, Adam's PC): set up here; Codex has tested 2 of the 8 runs
 
