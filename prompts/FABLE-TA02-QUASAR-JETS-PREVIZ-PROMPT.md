@@ -20,16 +20,33 @@ CurseForge). Now design and previz its second skill, **TA-02 · Quasar Jets**. O
 - Like Last Light: educational-mode labels (off by default; the previz gets the switch), fired from TON 618's own item
   (its H menu) and the Stellar Remote.
 
-## What is open: ask Adam first (clickable choices, AskUserQuestion), before building
+## The plan Adam and Opus made (2026-11-15): build the previz to THIS
 
-Ask only what you need to design the film, a few at a time; give your recommendation first. For example:
-- **When can it be cast?** Any time with TON 618's item, only while a TON 618 is out in the world (a set Scale, before
-  it leaves), only in the devoured dark, or only after Last Light?
-- **What it does to the world**: a long burned line across the land (a trench like a railgun's, but ours), a wide
-  sweep, a column into the sky, or looks only?
-- **How it must differ from SS-21 Quasar's own black-hole jet strike** (read its CurseForge page for what it does; copy
-  nothing) and from the SA Series' skills.
-- Length (Last Light is 42.5 s) and who sees the film.
+Adam's idea: "a star gets launched into ton 618 and gets devoured and then that gets shot through a quasar at the
+earth". Real physics: a black hole that shreds a star (a **tidal disruption event**) flares up, and can launch a jet
+(Swift J1644+57, 2011, fired one straight at Earth). Adam's picks: **night only, you pick a star** ("pickign a star
+sounds cool"); **named real stars**; **the star's type changes the strike**; **the star is missing from the sky for a
+few nights**. The full plan is in `CLAUDE.md` §10 "TA-02 · Quasar Jets: the plan"; the film:
+
+1. **Lock-on** (night): the caster looks up; a reticle locks onto a named star, "BETELGEUSE · RED SUPERGIANT".
+2. **Launch**: the camera rises to that star; it is torn from its place and flung away.
+3. **The flight**: the star streaks across the universe toward TON 618, the camera riding along.
+4. **The meal**: TON 618's pull stretches it into a ribbon that wraps into the disc ("TIDAL DISRUPTION").
+5. **Ignition**: the disc blazes blue-white, outshining its galaxy. Title card **TA-02 · QUASAR JETS**.
+6. **The jets**: the star's matter shoots out of both poles at nearly the speed of light.
+7. **Blazar turn**: one jet swings toward Earth until we look straight down it; the screen floods blue-white.
+8. **Second sun**: on the ground, night turns to day; TON 618 blazes like a sun.
+9. **Swept along**: a thin jet comes in low from the horizon, lifting mobs, items and loose blocks and carrying them
+   toward the crosshair.
+10. **Radio lobe**: at the crosshair a glowing plasma dome swells, shoves everything outward, melts a shallow bowl, then
+    pops in a ring; **frozen light** crystals (the star's colour) are left; night returns, the star missing from the
+    sky.
+
+About 45 s. **Show the star types** in the previz (a switch: red dwarf, Sun-like, blue giant, red supergiant): the
+jet, the lobe and the crystals change size and colour with it. It must look clearly different from SS-21 Quasar's
+strike (the Milky Way's black hole, a pillar straight down onto the mark, a disc overhead, a spiral-galaxy crater).
+
+Ask Adam (clickable) only what the plan leaves open, and show him anything you change from it.
 
 The physics to draw on: matter spiralling into the accretion disk heats to millions of degrees; magnetic fields wound
 by the spinning hole launch two narrow jets from the poles at nearly the speed of light; they run for hundreds of
