@@ -86,6 +86,13 @@ first** (Adam's brief, his own words at its end), then this file. Fable's part: 
   Markdown first (it comes up WYSIWYG after some files), then set `textarea.mde-text` with the native setter + input
   event; relations through the "Add related project" dialog (search by name; ids don't search), each row's MUI select
   opened with a mousedown.
+- **Fable jobs (2026-11-15)**: the Last Light polish runs now
+  ([Fable: Last Light film polish](#local_22632a54-fabf-4609-a051-0906500bfd9b), `prompts/FABLE-LAST-LIGHT-POLISH-PROMPT.md`:
+  the faint early glow + toasts hidden during the film; film files only, no git: Opus commits and ports it). Next in
+  line, one at a time: TA-02 · Quasar Jets previz (then the SA Series' SA-04B and SA-03 previz).
+- **Write-down (Adam, 2026-11-15)**: the CurseForge **Source** link is missing: add
+  https://github.com/Adamko-10/ton618-addition; and the description gets the rework all his projects get (better
+  look, links to his other projects, roadmap, Discord, emojis): the SA Series' CLAUDE.md has the list.
 - **Next**: wait for CurseForge's approval (then check the public page and that the files published); then the next
   update's list above. Local commits after `0ca0beb` (notes, the description's known-issue line) aren't pushed.
 
