@@ -75,3 +75,46 @@ To do on your side:
   effects with the film's real shader over Codex's game frame (`previz/polish-check/`).
 - Shot 2 (the press) sits a little further back and lower than before, so the hand and the floor are in the picture.
 - Toasts on screen when the film starts are cleared (not brought back); ones that arrive during it show after it.
+
+## 2026-11-16: hand-over of TA-02 · Quasar Jets' film (Part 2)
+
+What and how: `previz/quasar-jets/HANDOVER.md`, "Part 2". **No change outside the film's files was needed**: the four
+entry points are kept (`QuasarJetsFilm.init/start/stop/active`). Builds; the shader and the soundtrack were checked
+on their own; **never seen in a game**. Test jar: `C:\Users\adam_\Documents\TON 618 Addition\test builds\2026-11-16
+TA-02 film\TON 618 Addition 1.1.0 TA-02 film TEST [NeoForge 1.21.1].jar` (SS-21 Quasar 1.8.0 beside it).
+
+To do on your side:
+1. **Commit** (Fable ran no git): `client/quasarfilm/` (`QuasarJetsFilm.java` rewritten + 7 new: `JetScript`,
+   `JetCamera`, `JetSpace`, `JetHud`, `JetGl`, `JetSound`, `JetSynth`), `shaders/quasarfilm/` (3 files),
+   `previz/quasar-jets/HANDOVER.md`, `previz/quasar-jets/film-check/shader-check.html` (mine), this file.
+2. **CLAUDE.md §7b**: status "built, not seen in a game"; the film uses no `sounds.json`, sound files or textures;
+   captions and labels were retimed (the hand-over's decision 1), the key ticks weren't.
+3. **Ports**: "For the ports" in the hand-over. No in-world drawing this time, so P2 isn't needed for this film.
+
+### Proposal P3 (optional): world sounds for the strike, for everyone
+
+- **What**: the server plays no sounds for the jet arriving (745 to 795), its landing (795), the lobe swelling (830 to
+  890), the pop (890) or the crystals growing. Players who get the film hear them in the film's own track
+  (unpositioned); everyone else hears nothing.
+- **Where**: `quasar/QuasarJets` (server; vanilla sounds at the mark, or our own through `sounds.json` and registered
+  `SoundEvent`s).
+- **Why**: the previz planned them as real positioned world sounds ("others hear them too").
+- **If applied**: tell Fable, and the film's track drops its own copies (`JetSynth`: the cues from tick 745 on), so
+  film viewers don't hear them twice.
+
+### Proposal P4 (small): let the film read how long the star is gone
+
+- **What**: a public getter on `client/quasar/QuasarClient` (or `QuasarCast`) for the day the launched star is back
+  (`backOnDay[star]`, already sent by `QuasarMissing`).
+- **Why**: the film's last reticle now says "MISSING · gone from the sky for a few nights"; with the number it can say
+  "back in 3 nights", as the previz did.
+- **Patch (sketch)**: `public static long backOnDay(int star) { return backOnDay[star]; }` in `QuasarClient`; the film
+  then shows `backOnDay - QuasarSky.day(level.getDayTime())`.
+
+### Things to tell Adam when he tests
+
+- The list: the hand-over's "To test in the game".
+- The caster isn't posed in shot 8 (no turn, no hand over the eyes): the film can't pose a player.
+- With RimuLib's films off (key J), or after skipping, only the world effects are seen.
+- The last text ("MISSING") is on for 1.3 s; the ending can be made about 2 s longer without touching the world
+  effects, if he wants (his call: the film would run to about 995 ticks).
