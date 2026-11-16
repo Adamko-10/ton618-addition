@@ -184,3 +184,157 @@ blocks), shots 9 and 10 look at land that may not be loaded.
 `previz/quasar-jets/film-check/shader-check.html` holds a copy of `quasar_jets.fsh` and draws each material once
 (open it in a browser; it says "Shader compiled and linked" or prints the error). After changing the shader, paste
 the new file between its `<script id="fsh">` tags.
+
+---
+
+# Part 3: the quality redo (Fable, 2026-11-16)
+
+Job: `prompts/FABLE-TA02-QUALITY-PROMPT.md`, after Adam's first game test of TA-02 ("it looks much worse in game,
+severe lack of sfx", "needs heavy work quality wise in every aspect", "make it feel like a big impact and a proper
+explosion"). Fable now owns all of TA-02's look: the film **and** the world visuals. If usage runs out, resume from
+"Next".
+
+## Status (2026-11-16, ~23:55): DONE for a first round, in a test jar, seen in the game, not heard
+
+- **Test jar**: `C:\Users\adam_\Documents\TON 618 Addition\test builds\2026-11-16 TA-02 quality\TON 618 Addition 1.1.0
+  TA-02 quality TEST [NeoForge 1.21.1].jar`, `ss-21-quasar-1.8.0-neoforge.jar` beside it. Opus puts it in Adam's
+  instance.
+- **Seen in the game** through Opus's harness (six runs; "Seen in the game" below). Pictures to look at:
+  `previz/quasar-jets/redo-check/` (five contact sheets of the new look by story tick, and three of Opus's first
+  harness shots of the old look as `before-*.png`).
+- **Not heard**: no sound was listened to. The cue sheet is written; the files are Opus's to cut.
+- One line changed after the last run and is in the jar unseen: a blue star's cooler gas is drawn dark blue (it was
+  brown on Rigel).
+- Nothing is committed (Fable runs no git): the list is in `reviews/fable/PROPOSALS.md`, "2026-11-16 ... Part 3".
+
+## What changed, by Adam's points
+
+| Adam said | What was done |
+|---|---|
+| "looks much worse in game ... low quality" (the film) | The space scene is drawn into a picture of its own that can hold light brighter than white, then given a real glow (bloom) and brought to the screen with a soft shoulder (`JetPost`, `shaders/quasarfilm/quasar_post`). New materials: a boiling star with a corona and loops of gas, a mirror of unlike panels that glint, deep space with faint gas clouds behind everything, a finer disc for TON618 with a thin photon ring, thin bright jets, a ribbon of 1,700 motes. The star no longer burns out to a white ball; the lit quasar keeps its black shadow |
+| the stars in the sky "look a lil low quality" | Each named star is a shader sprite: a hot core, a halo, four long rays and four short, twinkling. They are drawn **after the clouds** (a cloud hid Antares in the first test run), hidden only by land (a ray from the eye), and each has its name under it while the remote is held. The launched star stays in the sky until the film's cut (it used to vanish at the second press, so the film zoomed on nothing) and swells as the film zooms in |
+| "text is over itself" | The lock hint is a card of its own at 58% of the screen's height, clear of the game's line with the held item's name. The lock-on HUD is redrawn in the film's lettering: a reticle that closes as the aim gets good, a ring of ticks, a card (name, type, distance, size, mass, "PRESS TO LOCK" / "LOCKED") |
+| "the sail is supposed to make the star go really fast not over years" | The remote fast-forwards the star's own time: a dial appears round the star, its hand creeps (a real star engine is slow), then races into a ring of light; the star is at full speed 3 s later. Two clocks in the top bar: **THE STAR'S CLOCK** racing through years, **EARTH'S CLOCK** counting plain seconds. New words: "FAST FORWARD · the remote speeds up the star's own time", "ACROSS THE UNIVERSE · 18 billion light years, in seconds for us" |
+| "the quasar hitting the earth is really underwhelming" | At LANDS 795, for everyone: a flash, a lumpy fireball that swells and rises, a shock wave racing out over the ground to 8 crater radii, a wave of dust behind it, the game's own particles (explosions, sparks, embers, smoke rising from the crater until the lobe), a flash of the screen and a shake of the view for players near it. In the film: the camera stands back far enough for the whole blast, takes a hard kick and a punch of zoom at the landing and a second kick when the shock wave reaches it; a new caption "IMPACT". Opus built the land part (crater, debris, damage) |
+| "more time to read ... when educational mode is enabled" | `quasar/QuasarReading.WINDOWS`: one **hold** inside each of the 12 labels' time, where the picture is calm, slowed 3 to 6 times (+1.5 to +2.7 s each, +27 s in all). Last Light: `lastlight/LastLightReading.WINDOWS`, 8 mild windows (+9 s). Both soundtracks are made for the cast's windows, so they stay in step |
+| "severe lack of sfx" | `previz/quasar-jets/SOUND-CUES.md`: 13 world sounds and 22 film sounds for Opus to cut from the Sonniss library. The film plays each file by name as soon as `sounds.json` has it (`JetCues`), and drops its own code-made version of that cue |
+
+Also new, for everyone (not only the film's viewers): from IGNITE a new point of light appears in the night sky where
+TON618 is and grows until the second sun; the jet is seen coming in from the second sun long before it reaches the
+land (its far part is drawn on the sky); the mark is shown where the second press would land.
+
+## Files (all Fable's; no git was run)
+
+| File | What |
+|---|---|
+| `client/quasar/QuasarGl.java` (rewritten, now `public`) | The world shader and its shapes: quads facing the eye, the jet's band, domes, a lumpy dome, flat rings, a standing strip, the jet's far part on the sky |
+| `client/quasar/QuasarRender.java` (rewritten) | Sky: the new point of light where TON618 is, the second sun, the jet's far part. World: named stars, the mark (and where the second press would land), the jet, the landing blast, the lobe and its pop. Each tick: particles. A shake of the view for players without the film |
+| `client/quasar/QuasarReticle.java` (rewritten) | The lock-on HUD and the two screen flashes (landing, pop) |
+| `shaders/quasar/quasar_world.{json,vsh,fsh}` (new) | One program, 9 materials (star, sun, beam, dome, shock, dust, fireball, mark, glow) |
+| `client/quasarfilm/JetPost.java` (new), `shaders/quasarfilm/quasar_post.*` (new) | The space scene's glow |
+| `client/quasarfilm/JetCues.java` (new) | The film's cues from sound files |
+| `client/quasarfilm/JetSpace, JetScript, JetHud, JetCamera, JetSynth, JetSound, JetGl, QuasarJetsFilm` | The redo itself; `QuasarJetsFilm` gained `hasCamera()` and registers the two new shaders (it has the mod bus) |
+| `shaders/quasarfilm/quasar_jets.fsh` | New materials 12 (corona), 13 (dial), 14 (deep space); the others reworked |
+| `quasar/QuasarReading.java`, `lastlight/LastLightReading.java` | The reading windows |
+| `client/film/FilmSynth.java`, `FilmSound.java`, `LastLightFilm.java` | Only so Last Light's soundtrack follows its reading windows |
+| `previz/quasar-jets/SOUND-CUES.md` (new) | The cue sheet |
+
+## Decisions
+
+1. **The film's camera looks for a clear view.** Adam's test world and the harness's jungle put the old cameras inside
+   trees. Shots 8, 9, 10 and the new bowl shot each try a handful of spots (to either side, then higher) and take the
+   first with a clear line to what the shot is about (`JetCamera.clear`, a block ray that counts leaves). Chosen once a
+   film, so the camera never jumps.
+2. **Shot 10 is two shots now.** 10a, wide from behind the caster, to the pop; under the pop's flash a cut to 10b, over
+   the bowl's rim looking down at the dark glass and the crystals growing, then up to the gap in the sky. (Opus's
+   first harness run showed the bowl as "a dark gash far off".)
+3. **The label on knots that seem faster than light is gone**; in its place, after the landing: "The strongest quasar
+   jets carry, every second, about as much energy as the Sun gives off in 100,000 years." There is no calm moment while
+   the jet comes in, and this one is about what is on screen.
+4. **Reading windows are holds, not whole labels slowed.** A hold sits where nothing is mid-way (the mirror is whole,
+   the reticle has locked, the jets have reached full length), so the action keeps its pace. The mirror now finishes
+   unfolding at 134 (was 150) to leave such a moment before the fast-forward. Kept free because sounds must end on an
+   event there: 56-92, 620-668, **742-800**, **866-900**.
+5. **Earth's clock is real**: seconds since the fast-forward began on the real clock, also when educational mode slows
+   the film.
+6. **The lobe's skin covers a little of what is behind it.** Light only added washed out to a white disc against the
+   second sun's day sky. So does the jet's core.
+7. **The mark is shown before the second press** (a star is locked, the player looks at the ground): dim, red when it
+   is too close, with the distance in the hint card. Range 256 and "lobe + 4 blocks" are copied from `QuasarJets`: if
+   Opus changes them there, change `QuasarRender.MARK_RANGE`, `QuasarRender.aim()` and `QuasarReticle.hint()` too.
+8. **Where the listeners are**: `QuasarRender` registers its own tick (particles) and camera-angle (shake) listeners
+   in a static block (it has no `init`; `QuasarClient` is Opus's). The world shader is registered from
+   `QuasarJetsFilm.init`.
+9. **If the glow can't be set up on a computer** (`JetPost`: its pictures are 16-bit float textures), the film says
+   so once in the log and draws the space scene straight onto the screen as before. Shader packs: the space scene and
+   words are drawn over the finished picture and should show; the world effects use our own shader in the level's
+   drawing, which a pack may treat differently (Adam's Iris has shaders switched off, read from his `iris.properties`).
+
+## Seen in the game (the harness, 2026-11-16, Antares, educational mode on)
+
+Contact sheets of about 40 story ticks a run were read.
+- Run 1 (jungle, the first pass): the glow, the star's surface and corona, the new reticle and the second sun were
+  good at once. Wrong: star, mirror and lit quasar burnt out to white; the jets were fat beaded columns; the dial's
+  ticks were fat; the dust wave was an opaque brown wall when it passed the camera; the lobe looked like a cracked
+  egg; the cameras stood in leaves. All reworked.
+- Run 3 (flat world): all of that right. Wrong: the landing fireball was a plain white dome and the jet looked
+  beaded. Reworked.
+- Run 4 (flat world): the jet comes in with a glowing head and is one clean line; the landing is a white flash, a
+  shock ring, then a lumpy orange fireball with debris flying and smoke; the lobe is an orange bubble with lightning
+  crawling over it; the bowl shot shows the dark glass and the crystals; night falls; the gap in the sky and "MISSING ·
+  back in 3 nights". Nothing left that looked wrong at this size.
+- **One crash, not repeated**: run 3 ended at about story tick 920 with Windows exit code 0xC0000005 (an access
+  violation in native code), with no Java crash file, no game crash report and no Windows crash record. The same run
+  again (run 4) went through to the end, and so did the two after it (run 5: Last Light with educational mode, its
+  labels and slowed soundtrack, no error; run 6: Rigel in the jungle, where the cameras now stand over the canopy
+  with the jet, the blast, the lobe and the bowl all in view). Medal (the clip recorder) was running, and
+  CLAUDE.md has the same kind of crash with Medal on this PC from 2026-11-15. Not shown to be ours; if Adam's game
+  ever dies like that during a strike, test with Medal closed first.
+
+## Not checked
+
+- **Nothing was heard.** The soundtracks were only checked by the game's log (made and played without an error, plain
+  and slowed). Adam has to listen.
+- Only Antares and Rigel were looked at, at 1280 x 720, vanilla drawing (no Sodium or Iris in the dev game).
+- The film as other players see it (a second player near the caster) and the world effects without the film.
+- `previz/quasar-jets/film-check/shader-check.html` still holds the old shader: it is out of date now (the game is
+  the check).
+
+## To test in the game (Adam)
+
+Night, overworld, SS-21 Quasar installed, TA-02 picked on TON 618's item or the Stellar Remote.
+1. **Before casting**: the 8 stars (rays, twinkle, a name under each), the reticle and its card when you aim near one,
+   "PRESS TO LOCK". After the first press: the card "LOCKED", the hint card above the item's name, the ring on the
+   ground where the strike would land (red if too close).
+2. **The film**: is the space part good enough now (the star, the mirror, the dial and the two clocks, the flight,
+   TON618, the ribbon, the ignition, the jets)?
+3. **The landing** (the main thing): is it a big impact now? Flash, fireball, shock wave, debris, the shake.
+4. **The lobe, the pop, the bowl with its crystals**, then the gap in the sky.
+5. **Educational mode on** (the plate in the H menu): is there time to read every label now? Does any slow moment
+   feel wrong? The same for Last Light.
+6. **Without the film** (press J for films off, or watch a friend cast it from far away): the new light in the sky,
+   the second sun, the jet coming in, the blast, the shake.
+7. **Sounds**: still the code-made track and vanilla world sounds until Opus cuts the files.
+8. Try a red dwarf (Barnard's Star) and a blue giant (Rigel): sizes and colours.
+
+## Next
+
+- Opus: commit (the list is in `reviews/fable/PROPOSALS.md`), cut the sounds from the cue sheet, put the test jar in
+  Adam's instance when he isn't playing.
+- After Adam's test: fix what he sees. Numbers to turn: `JetPost.end(0.7, 1.4, ...)` in `JetSpace.draw` (glow,
+  exposure); the blast's sizes and times in `QuasarRender.world`; the camera's distances in `JetCamera`; the holds in
+  `QuasarReading`; cue volumes in `JetCues`.
+- When the sound files are in: listen through once for levels (film cues against the world's sounds), and decide
+  whether the code-made drone and pads stay under them.
+
+## For the ports (adds to Part 2's list)
+
+- `JetPost`: an off-screen picture with a 16-bit float texture and four smaller ones, drawn with `drawWithShader`. On
+  1.20.1 the same calls exist (`TextureTarget`, `GlStateManager._texImage2D`). On 1.21.11 and 26.3 it becomes pipelines
+  and GPU textures like the rest (the scene already goes into a texture of its own there, so the glow passes slot in
+  between that and the blit). If it is too much for a port, `JetPost.begin()` returning false gives the plain scene.
+- `QuasarGl` / `quasar_world`: one more program, drawn in the level at AFTER_SKY and AFTER_WEATHER with blend
+  ONE / ONE_MINUS_SRC_ALPHA, depth test on and off, no depth write: three pipelines on 1.21.11 and 26.3.
+- `QuasarRender` uses `ViewportEvent.ComputeCameraAngles` (the shake) and a client tick: Fabric needs a camera mixin
+  or drops the shake for players without the film.
+- `QuasarReticle` and `JetHud` use RimuLib's `UiApi` as Last Light's `FilmHud` does.

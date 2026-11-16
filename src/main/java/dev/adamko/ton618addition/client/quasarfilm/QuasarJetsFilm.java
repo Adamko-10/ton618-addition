@@ -66,6 +66,9 @@ public final class QuasarJetsFilm {
     /** Once, from {@code QuasarClient.init}, on clients only. */
     public static void init(IEventBus modBus) {
         modBus.addListener(RegisterShadersEvent.class, JetGl::register);
+        modBus.addListener(RegisterShadersEvent.class, JetPost::register);
+        // the world effects' shader too (client/quasar is Fable's since the quality redo; this is where the mod bus is)
+        modBus.addListener(RegisterShadersEvent.class, dev.adamko.ton618addition.client.quasar.QuasarGl::register);
         NeoForge.EVENT_BUS.addListener(ClientTickEvent.Post.class, event -> tick());
         NeoForge.EVENT_BUS.addListener(RenderLevelStageEvent.class, QuasarJetsFilm::world);
         // over the game's own HUD; and when TON 618 calls the HUD off for a film (it does), drawn all the same:
@@ -92,7 +95,8 @@ public final class QuasarJetsFilm {
         if (FilmApi.automatic()) {
             film = JetCamera.cutscene(newCast);
             FilmApi.play(film);
-            JetSound.prepare();
+            JetSound.prepare(newCast.slowed());
+            JetCues.start();
             Minecraft.getInstance().getMusicManager().stopPlaying();
             // toasts already on screen (a new game's "Move with W, A, S and D" stays up until the player moves)
             Minecraft.getInstance().getToasts().clear();
@@ -106,6 +110,11 @@ public final class QuasarJetsFilm {
 
     public static boolean active() {
         return cast != null;
+    }
+
+    /** The film has this player's camera right now (so the world effects leave the shaking of the view to it). */
+    public static boolean hasCamera() {
+        return cast != null && film != null && !film.skipped;
     }
 
     private static void end() {
@@ -124,6 +133,7 @@ public final class QuasarJetsFilm {
             track.end();
             track = null;
         }
+        JetCues.stop();
         showHeldToasts();
     }
 
@@ -179,6 +189,8 @@ public final class QuasarJetsFilm {
             sinceFilm = 0;
             FilmApi.play(film);
         }
+        // the cues that have sound files of their own (previz/quasar-jets/SOUND-CUES.md)
+        JetCues.tick(now.tick(0F), () -> now.tick(0F), () -> cast != now || film == null);
         // the soundtrack: started here, and again whenever it has stopped or drifted too far from the film's clock
         sinceSound++;
         boolean playing = track != null && mc.getSoundManager().isActive(track);
@@ -188,7 +200,8 @@ public final class QuasarJetsFilm {
             }
             sinceSound = 0;
             try {
-                track = JetSound.play(() -> now.tick(), () -> cast != now || film == null);
+                // the track has the strike's slow-downs in it already, so it runs on the real clock
+                track = JetSound.play(now.slowed(), () -> now.realTick(0F), () -> cast != now || film == null);
             } catch (RuntimeException failed) {
                 Ton618Addition.LOG.error("The Quasar Jets soundtrack couldn't start", failed);
                 sinceSound = -100000;

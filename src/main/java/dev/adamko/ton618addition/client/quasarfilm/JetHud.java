@@ -8,8 +8,10 @@ import static dev.adamko.ton618addition.client.quasarfilm.JetScript.ss;
 
 import com.mojang.math.Axis;
 import cyou.rimuru.rimulib.mc1211.client.api.UiApi;
+import dev.adamko.ton618addition.ReadingTime;
 import dev.adamko.ton618addition.client.quasar.QuasarCast;
 import dev.adamko.ton618addition.client.quasar.QuasarClient;
+import dev.adamko.ton618addition.quasar.QuasarReading;
 import dev.adamko.ton618addition.quasar.QuasarSky;
 import dev.adamko.ton618addition.quasar.QuasarStars;
 import java.util.ArrayList;
@@ -37,6 +39,7 @@ final class JetHud {
     private static final int FLOOD = 0xEEF6FF;
     private static final int TITLE = 0xD6E9FF;
     private static final String TITLE_TEXT = "TA-02 · QUASAR JETS";
+    private static final float[][] NO_WINDOWS = {};
 
     /** The world camera of this frame (kept by the film from the level's own drawing), for things placed in the world. */
     private static final Matrix4f WORLD_VIEW = new Matrix4f();
@@ -76,6 +79,10 @@ final class JetHud {
                 box(g, 0F, 0F, w, h, JET, 0.5F * (1F - Math.abs(t - 330F) / 5F) * soften);
             } else if (t >= 438F && t < 456F) {
                 box(g, 0F, 0F, w, h, JET, (t < 441F ? lin(438F, 441F, t) * 0.6F : 0.6F * (1F - lin(441F, 456F, t))) * soften);
+            } else if (popFlash && t >= 795F && t < 811F) {
+                // the jet lands (in a frame where the game's HUD draws, QuasarReticle flashes instead: never both)
+                float u = 1F - lin(795F, 811F, t);
+                box(g, 0F, 0F, w, h, mix(hot, 0xFFFFFF, 0.65F), 0.9F * u * u * soften);
             } else if (popFlash && t >= 889F && t < 906F) {
                 box(g, 0F, 0F, w, h, mix(hot, 0xFFFFFF, 0.5F), 0.8F * (1F - lin(889F, 906F, t)) * soften);
             }
@@ -91,7 +98,7 @@ final class JetHud {
             if (cast.educational()) {
                 labels(g, t, cast, w, h, cq);
             }
-            counters(g, t, hot, w, h, cq);
+            counters(g, t, cast, hot, w, h, cq);
             readouts(g, t, star, w, h, cq);
             title(g, t, w, h, cq);
             caption(g, t, star, w, h, cq, bars);
@@ -161,30 +168,50 @@ final class JetHud {
 
     // ---- the year counter and how fast time runs ---------------------------------------------------------------------------
 
-    private static void counters(GuiGraphics g, float t, int hot, float w, float h, float cq) {
+    /**
+     * Two clocks in the top bar while the remote fast-forwards the star (Adam's pick, 2026-11-16): the star's own,
+     * racing through years, and Earth's under it, counting plain seconds. That contrast is the whole idea.
+     */
+    private static void counters(GuiGraphics g, float t, QuasarCast cast, int hot, float w, float h, float cq) {
         float shown = lin(150F, 156F, t) * (1F - lin(332F, 346F, t));
-        if (shown > 0.01F) {
-            float em = 1.55F * cq;
-            String number = JetScript.years(JetScript.logYears(t));
-            float labelEm = em * 0.68F;
-            float labelWidth = trackedWidth(g, UiApi.Font.LABEL, "YEARS", labelEm, labelEm * 0.34F);
-            float gap = labelEm * 1.1F;
-            float total = labelWidth + gap + rich(g, UiApi.Font.MONO, number, 0F, 0F, em, INK, 0F);
-            float x = (w - total) * 0.5F;
-            float base = h * 0.022F + em * 0.85F;
-            tracked(g, UiApi.Font.LABEL, "YEARS", x + labelWidth * 0.5F, base, labelEm, labelEm * 0.34F, DIM, shown, -1F, 0F);
-            rich(g, UiApi.Font.MONO, number, x + labelWidth + gap, base, em, INK, shown);
+        if (shown <= 0.01F) {
+            return;
         }
-        // the plain-words sign that time has sped up: how many years go by in one second of the film
-        float rate = lin(154F, 160F, t) * (1F - lin(326F, 334F, t));
-        if (rate > 0.01F) {
-            double perSecond = (Math.pow(10.0, JetScript.logYears(t + 0.5F)) - Math.pow(10.0, JetScript.logYears(t - 0.5F))) * 20.0;
-            String years = perSecond > 0.0 ? JetScript.years((float) Math.log10(Math.max(perSecond, 1.0))) : "0";
-            float em = 0.88F * cq;
-            String text = "1 SECOND = " + years + " YEARS";
-            float width = rich(g, UiApi.Font.MONO, text, 0F, 0F, em, hot, 0F);
-            rich(g, UiApi.Font.MONO, text, (w - width) * 0.5F, h * 0.069F + em * 0.85F, em, hot, rate);
-        }
+        float em = 1.55F * cq;
+        String number = JetScript.years(JetScript.logYears(t));
+        float labelEm = em * 0.62F;
+        float gap = labelEm * 1.1F;
+        float starLabel = trackedWidth(g, UiApi.Font.LABEL, "THE STAR'S CLOCK", labelEm, labelEm * 0.3F);
+        float unit = trackedWidth(g, UiApi.Font.LABEL, "YEARS", labelEm, labelEm * 0.3F);
+        float total = starLabel + gap + rich(g, UiApi.Font.MONO, number, 0F, 0F, em, INK, 0F) + gap + unit;
+        float x = (w - total) * 0.5F;
+        float base = h * 0.02F + em * 0.85F;
+        tracked(g, UiApi.Font.LABEL, "THE STAR'S CLOCK", x + starLabel * 0.5F, base, labelEm, labelEm * 0.3F, hot, shown, -1F, 0F);
+        float numberWidth = rich(g, UiApi.Font.MONO, number, x + starLabel + gap, base, em, INK, shown);
+        tracked(g, UiApi.Font.LABEL, "YEARS", x + starLabel + gap + numberWidth + gap + unit * 0.5F, base, labelEm, labelEm * 0.3F, hot, shown,
+            -1F, 0F);
+
+        // Earth's clock: real seconds since the fast-forward began (real ones even when educational mode slows the film)
+        float[][] windows = cast.slowed() ? QuasarReading.WINDOWS : NO_WINDOWS;
+        float seconds = Math.max(0F, ReadingTime.real(windows, t) - ReadingTime.real(windows, 150F)) / 20F;
+        float smallEm = 0.92F * cq;
+        float smallLabelEm = smallEm * 0.9F;
+        String value = String.format(Locale.ROOT, "%.1f", seconds);
+        float earthLabel = trackedWidth(g, UiApi.Font.LABEL, "EARTH'S CLOCK", smallLabelEm, smallLabelEm * 0.3F);
+        float earthUnit = trackedWidth(g, UiApi.Font.LABEL, "SECONDS", smallLabelEm, smallLabelEm * 0.3F);
+        // the widest the number gets, so the line doesn't shiver as the digits change
+        float valueWidth = rich(g, UiApi.Font.MONO, "00.0", 0F, 0F, smallEm, COLD, 0F);
+        float smallGap = smallEm * 0.9F;
+        float earthTotal = earthLabel + smallGap + valueWidth + smallGap + earthUnit;
+        float ex = (w - earthTotal) * 0.5F;
+        float earthBase = h * 0.068F + smallEm * 0.85F;
+        float earthShown = shown * lin(154F, 160F, t);
+        tracked(g, UiApi.Font.LABEL, "EARTH'S CLOCK", ex + earthLabel * 0.5F, earthBase, smallLabelEm, smallLabelEm * 0.3F, COLD, earthShown * 0.8F,
+            -1F, 0F);
+        float actual = rich(g, UiApi.Font.MONO, value, 0F, 0F, smallEm, COLD, 0F);
+        rich(g, UiApi.Font.MONO, value, ex + earthLabel + smallGap + valueWidth - actual, earthBase, smallEm, COLD, earthShown);
+        tracked(g, UiApi.Font.LABEL, "SECONDS", ex + earthLabel + smallGap + valueWidth + smallGap + earthUnit * 0.5F, earthBase, smallLabelEm,
+            smallLabelEm * 0.3F, COLD, earthShown * 0.8F, -1F, 0F);
     }
 
     // ---- the readouts on the right -----------------------------------------------------------------------------------------
@@ -291,6 +318,9 @@ final class JetHud {
                 break;
             case CRYSTALS:
                 at = worldPoint(cast.mark().add(0.0, 0.5, 0.0));
+                break;
+            case CRATER:
+                at = worldPoint(cast.mark().add(0.0, 1.5, 0.0));
                 break;
             case RIBBON:
             case DISC:

@@ -4,7 +4,9 @@ import static dev.adamko.ton618addition.client.quasarfilm.JetScript.keys;
 import static dev.adamko.ton618addition.client.quasarfilm.JetScript.lin;
 import static dev.adamko.ton618addition.client.quasarfilm.JetScript.ss;
 
+import dev.adamko.ton618addition.ReadingTime;
 import java.util.Random;
+import java.util.function.Predicate;
 
 /**
  * <b>FABLE'S FILE.</b> Makes the film's soundtrack: about 50 s of stereo sound built from plain oscillators and filtered
@@ -16,6 +18,14 @@ import java.util.Random;
  * in the track: the server plays them at the mark for everyone near ({@code quasar/QuasarJets.sounds}, proposal P3),
  * and the film's camera is there to hear them. From tick 745 the track only keeps its quiet bed (the drone, the second
  * sun's hum), the soft pops of things being lifted, and the music.
+ *
+ * <p><b>Educational mode's slow-down</b> (the quality redo, 2026-11-16): everything here is written in story ticks, and
+ * the track is made for one strike's reading windows ({@code quasar/QuasarReading}, or none). Held sounds simply last
+ * longer through a window; struck ones land where their story tick falls in real time. So the track is as long as that
+ * strike really takes, and {@link JetSound} plays it against the real clock.
+ *
+ * <p><b>Sound files</b>: a cue whose file is in {@code sounds.json} ({@link JetCues}) is left out of the track, so it
+ * isn't heard twice.
  */
 final class JetSynth {
     static final int RATE = 44100;
@@ -29,31 +39,57 @@ final class JetSynth {
     private static final float[][] PAD = {{150, 0}, {200, 0.03F}, {330, 0.05F}, {438, 0.05F}, {441, 0.08F}, {600, 0.06F}, {662, 0.05F}, {666, 0}};
     private static final float[][] PAD_BACK = {{893, 0}, {905, 0.05F}, {972, 0.04F}, {994, 0}};
 
-    /** The whole track, left and right samples in turn. */
-    static short[] render() {
-        int n = (int) (JetScript.END / 20F * RATE);
+    /** The cues the track leaves out when {@code sounds.json} has a file of that name (see {@link #render}). */
+    static final String[] FILES = {"quasar_mark", "quasar_lift", "quasar_film_reticle", "quasar_film_lock", "quasar_film_zoom",
+        "quasar_film_mirror", "quasar_film_push", "quasar_film_time_loop", "quasar_film_wind_loop", "quasar_film_mirror_break",
+        "quasar_film_stretch", "quasar_film_ribbon_loop", "quasar_film_ignite", "quasar_film_title", "quasar_film_jets",
+        "quasar_film_jet_loop", "quasar_film_flood", "quasar_film_impact_sub", "quasar_film_pop_sub"};
+
+    /** This making's reading windows (one track is made at a time). */
+    private static float[][] windows = {};
+
+    /**
+     * The whole track, left and right samples in turn, for a strike with these reading windows; {@code file} says
+     * which cues have a sound file of their own (those are left out).
+     */
+    static synchronized short[] render(float[][] reading, Predicate<String> file) {
+        windows = reading;
+        int n = (int) (ReadingTime.real(reading, JetScript.END) / 20F * RATE);
         float[] l = new float[n];
         float[] r = new float[n];
         Random random = new Random(1987L);
+        boolean zoom = !file.test("quasar_film_zoom");
+        boolean mirror = !file.test("quasar_film_mirror");
 
         // ---- held sounds
         // the low drone under everything: the star's roar, then the quasar's (a beat of silence before it ignites)
         voice(l, r, t -> keys(DRONE, t), t -> 43F, 0.6F, 3, 0.5F);
         // into the cut: a rising whoosh
-        hiss(l, r, random, t -> t > 60F && t < 84F ? 0.2F * lin(60F, 80F, t) * (1F - lin(80F, 84F, t)) : 0F, t -> 500F + 2600F * lin(60F, 80F, t), 0.7F);
+        hiss(l, r, random, t -> zoom && t > 60F && t < 84F ? 0.2F * lin(60F, 80F, t) * (1F - lin(80F, 84F, t)) : 0F, t -> 500F + 2600F * lin(60F, 80F, t), 0.7F);
         // the mirror opening: a thin shimmer
-        hiss(l, r, random, t -> t > 92F && t < 152F ? 0.03F * lin(92F, 104F, t) * (1F - lin(146F, 152F, t)) : 0F, t -> 6500F, 3F);
+        hiss(l, r, random, t -> mirror && t > 92F && t < 136F ? 0.03F * lin(92F, 104F, t) * (1F - lin(130F, 136F, t)) : 0F, t -> 6500F, 3F);
         // the engine's hum and the wind of stars, both rising with the speed
-        voice(l, r, t -> t > 100F && t < 332F ? (0.04F + 0.05F * JetScript.speed(t) / 60F) * (1F - lin(326F, 332F, t)) : 0F,
+        boolean hum = !file.test("quasar_film_time_loop");
+        boolean wind = !file.test("quasar_film_wind_loop");
+        voice(l, r, t -> hum && t > 100F && t < 332F ? (0.04F + 0.05F * JetScript.speed(t) / 60F) * (1F - lin(326F, 332F, t)) : 0F,
             t -> 70F + 160F * JetScript.speed(t) / 60F, 0.3F, 1, 0F);
-        hiss(l, r, random, t -> t > 150F && t < 332F ? 0.02F + 0.2F * JetScript.speed(t) / 60F : 0F, t -> 500F + 2500F * JetScript.speed(t) / 60F, 0.6F);
+        hiss(l, r, random, t -> wind && t > 150F && t < 332F ? 0.02F + 0.2F * JetScript.speed(t) / 60F : 0F, t -> 500F + 2500F * JetScript.speed(t) / 60F, 0.6F);
+        // the fast-forward: the dial's ticking, quickening into a whir (with the hum above it stands in for the file)
+        if (hum) {
+            for (float t = 152F; t < 206F; t += Math.max(0.35F, 5F - (t - 152F) * 0.13F)) {
+                tone(l, r, at(t), 0.03, 2400F, 0F, 0.05F * (1F - lin(190F, 206F, t)), 0.3F);
+            }
+        }
         // the star stretching: a long low groan sliding down
-        voice(l, r, t -> t > 350F && t < 394F ? 0.1F * lin(350F, 360F, t) * (1F - lin(384F, 394F, t)) : 0F, t -> 82F - 36F * lin(350F, 392F, t), 0.9F, 2, 1.2F);
+        boolean groan = !file.test("quasar_film_stretch");
+        voice(l, r, t -> groan && t > 350F && t < 394F ? 0.1F * lin(350F, 360F, t) * (1F - lin(384F, 394F, t)) : 0F, t -> 82F - 36F * lin(350F, 392F, t), 0.9F, 2, 1.2F);
         // the ribbon meeting the disc: a hiss
-        hiss(l, r, random, t -> t > 350F && t < 440F ? 0.05F * lin(350F, 430F, t) : 0F, t -> 4200F, 0.8F);
+        boolean ribbon = !file.test("quasar_film_ribbon_loop");
+        hiss(l, r, random, t -> ribbon && t > 350F && t < 440F ? 0.05F * lin(350F, 430F, t) : 0F, t -> 4200F, 0.8F);
         // the jets: a tearing beam whose pitch bends up as one turns toward us, a roar of plasma round it
-        voice(l, r, t -> t > 530F && t < 668F ? 0.1F * jets(t) : 0F, t -> 110F * (float) Math.pow(2.0, ss(610F, 665F, t)), 0.8F, 3, 0F);
-        hiss(l, r, random, t -> t > 530F && t < 670F ? 0.2F * jets(t) * (0.8F + 0.2F * (float) Math.sin(t * 1.3)) : 0F,
+        boolean beam = !file.test("quasar_film_jet_loop");
+        voice(l, r, t -> beam && t > 530F && t < 668F ? 0.1F * jets(t) : 0F, t -> 110F * (float) Math.pow(2.0, ss(610F, 665F, t)), 0.8F, 3, 0F);
+        hiss(l, r, random, t -> beam && t > 530F && t < 670F ? 0.2F * jets(t) * (0.8F + 0.2F * (float) Math.sin(t * 1.3)) : 0F,
             t -> 1200F + 2600F * ss(610F, 665F, t), 0.5F);
         // after the crash: a high tone ringing out, a faint electric hum from the new light in the sky
         voice(l, r, t -> t > 668F && t < 750F ? 0.014F * (1F - lin(690F, 750F, t)) : 0F, t -> 1568F, 1.5F, 1, 0F);
@@ -68,43 +104,75 @@ final class JetSynth {
 
         // ---- struck sounds
         // the mark: a soft thud and a ping
-        tone(l, r, at(0.5F), 0.5, 60F, 60F, 0.5F, 0F);
-        tone(l, r, at(0.5F), 0.5, 1320F, 1320F, 0.14F, 0F);
+        if (!file.test("quasar_mark")) {
+            tone(l, r, at(0.5F), 0.5, 60F, 60F, 0.5F, 0F);
+            tone(l, r, at(0.5F), 0.5, 1320F, 1320F, 0.14F, 0F);
+        }
         // the reticle closing in, then the lock's chime
-        for (float t = 24F; t < 40F; t += 3F) {
-            tone(l, r, at(t), 0.05, 1200F + t * 20F, 0F, 0.06F, 0F);
+        if (!file.test("quasar_film_reticle")) {
+            for (float t = 24F; t < 40F; t += 3F) {
+                tone(l, r, at(t), 0.05, 1200F + t * 20F, 0F, 0.06F, 0F);
+            }
         }
-        tone(l, r, at(40F), 0.6, 1760F, 1760F, 0.16F, 0F);
-        tone(l, r, at(40F), 0.5, 2637F, 2637F, 0.07F, 0F);
-        noise(l, r, random, at(78F), 0.6, 0.35F, 2600F);
-        // the mirror's panels clicking open
-        for (float t = 94F; t < 150F; t += 5F) {
-            tone(l, r, at(t), 0.08, 900F + random.nextFloat() * 900F, 0F, 0.05F, random.nextFloat() * 1.6F - 0.8F);
-            noise(l, r, random, at(t), 0.03, 0.12F, 6000F);
+        if (!file.test("quasar_film_lock")) {
+            tone(l, r, at(40F), 0.6, 1760F, 1760F, 0.16F, 0F);
+            tone(l, r, at(40F), 0.5, 2637F, 2637F, 0.07F, 0F);
         }
-        // the push takes hold: a deep thump
-        tone(l, r, at(150F), 2.0, 58F, 30F, 0.8F, 0F);
+        if (zoom) {
+            noise(l, r, random, at(78F), 0.6, 0.35F, 2600F);
+        }
+        // the mirror's panels clicking open (it is whole by 134)
+        if (mirror) {
+            for (float t = 94F; t < 134F; t += 4F) {
+                tone(l, r, at(t), 0.08, 900F + random.nextFloat() * 900F, 0F, 0.05F, random.nextFloat() * 1.6F - 0.8F);
+                noise(l, r, random, at(t), 0.03, 0.12F, 6000F);
+            }
+        }
+        // the fast-forward takes hold: a deep thump
+        if (!file.test("quasar_film_push")) {
+            tone(l, r, at(150F), 2.0, 58F, 30F, 0.8F, 0F);
+        }
         // the mirror cracking away
-        noise(l, r, random, at(336F), 0.25, 0.3F, 5000F);
-        tone(l, r, at(336F), 0.4, 180F, 120F, 0.14F, 0.3F);
-        noise(l, r, random, at(344F), 0.2, 0.2F, 4000F);
+        if (!file.test("quasar_film_mirror_break")) {
+            noise(l, r, random, at(336F), 0.25, 0.3F, 5000F);
+            tone(l, r, at(336F), 0.4, 180F, 120F, 0.14F, 0.3F);
+            noise(l, r, random, at(344F), 0.2, 0.2F, 4000F);
+        }
         // ignition: a deep boom and a bright rush
-        tone(l, r, at(440F), 2.8, 66F, 26F, 0.95F, 0F);
-        noise(l, r, random, at(440F), 2.4, 0.6F, 7000F);
+        if (!file.test("quasar_film_ignite")) {
+            tone(l, r, at(440F), 2.8, 66F, 26F, 0.95F, 0F);
+            noise(l, r, random, at(440F), 2.4, 0.6F, 7000F);
+        }
         // a bell on the title
-        tone(l, r, at(455F), 2.6, 293.66F, 293.66F, 0.2F, -0.2F);
-        tone(l, r, at(455F), 2.2, 587.33F, 587.33F, 0.1F, 0.2F);
+        if (!file.test("quasar_film_title")) {
+            tone(l, r, at(455F), 2.6, 293.66F, 293.66F, 0.2F, -0.2F);
+            tone(l, r, at(455F), 2.2, 587.33F, 587.33F, 0.1F, 0.2F);
+        }
         // the jets launch: a double crack
-        noise(l, r, random, at(530F), 0.12, 0.7F, 8000F);
-        noise(l, r, random, at(533F), 0.12, 0.55F, 8000F);
-        tone(l, r, at(530F), 1.6, 48F, 48F, 0.8F, 0F);
+        if (!file.test("quasar_film_jets")) {
+            noise(l, r, random, at(530F), 0.12, 0.7F, 8000F);
+            noise(l, r, random, at(533F), 0.12, 0.55F, 8000F);
+            tone(l, r, at(530F), 1.6, 48F, 48F, 0.8F, 0F);
+        }
         // looking down the jet: a white crash, a high ring left hanging
-        noise(l, r, random, at(665F), 2.8, 0.7F, 9000F);
-        tone(l, r, at(665F), 3.0, 2093F, 2093F, 0.05F, 0F);
+        if (!file.test("quasar_film_flood")) {
+            noise(l, r, random, at(665F), 2.8, 0.7F, 9000F);
+            tone(l, r, at(665F), 3.0, 2093F, 2093F, 0.05F, 0F);
+        }
+        // the landing, under the world's own sound: only the weight of it (the film's camera stands a way off)
+        if (!file.test("quasar_film_impact_sub")) {
+            tone(l, r, at(795F), 2.4, 52F, 24F, 0.9F, 0F);
+            noise(l, r, random, at(795F), 1.2, 0.3F, 900F);
+        }
+        if (!file.test("quasar_film_pop_sub")) {
+            tone(l, r, at(890F), 1.4, 70F, 34F, 0.6F, 0F);
+        }
         // soft pops as things are lifted into the jet (the film's own; the jet, the lobe, the pop and the crystals are
         // the world's sounds)
-        for (float t = 776F; t < 826F; t += 2F + random.nextFloat() * 3F) {
-            tone(l, r, at(t), 0.1, 300F + random.nextFloat() * 500F, 0F, 0.05F, random.nextFloat() * 1.6F - 0.8F);
+        if (!file.test("quasar_lift")) {
+            for (float t = 776F; t < 794F; t += 2F + random.nextFloat() * 3F) {
+                tone(l, r, at(t), 0.1, 300F + random.nextFloat() * 500F, 0F, 0.05F, random.nextFloat() * 1.6F - 0.8F);
+            }
         }
 
         short[] pcm = new short[n * 2];
@@ -120,9 +188,9 @@ final class JetSynth {
         return lin(530F, 560F, t) * (1F - lin(662F, 670F, t));
     }
 
-    /** Tick {@code t} in seconds. */
+    /** When story tick {@code t} comes, in seconds of real time since the cast. */
     private static double at(float t) {
-        return t / 20.0;
+        return ReadingTime.real(windows, t) / 20.0;
     }
 
     /** Something that changes over the film, by tick. */
@@ -130,12 +198,12 @@ final class JetSynth {
         float at(float t);
     }
 
-    /** A curve read once a control step (an eighth of a game tick). */
+    /** A curve read once a control step (an eighth of a game tick), at the story tick that moment of real time is. */
     private static float[] control(Curve curve, int n) {
         int step = RATE / 160;
         float[] values = new float[n / step + 2];
         for (int i = 0; i < values.length; i++) {
-            values[i] = curve.at(i * step / (float) RATE * 20F);
+            values[i] = curve.at(ReadingTime.story(windows, i * step / (float) RATE * 20F));
         }
         return values;
     }

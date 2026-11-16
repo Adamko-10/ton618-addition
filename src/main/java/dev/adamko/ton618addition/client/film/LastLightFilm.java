@@ -102,7 +102,7 @@ public final class LastLightFilm {
         if (FilmApi.automatic()) {
             film = FilmCamera.cutscene(newCast);
             FilmApi.play(film);
-            FilmSound.prepare();
+            FilmSound.prepare(newCast.slowed());
             Minecraft.getInstance().getMusicManager().stopPlaying();
             // toasts already on screen (a new game's "Move with W, A, S and D" stays up until the player moves)
             Minecraft.getInstance().getToasts().clear();
@@ -199,7 +199,8 @@ public final class LastLightFilm {
             }
             sinceSound = 0;
             try {
-                track = FilmSound.play(() -> now.tick(), () -> cast != now);
+                // the track has the cast's slow-downs in it already (educational mode), so it runs on the real clock
+                track = FilmSound.play(now.slowed(), () -> now.realTick(0F), () -> cast != now);
             } catch (RuntimeException failed) {
                 Ton618Addition.LOG.error("Last Light's soundtrack couldn't start", failed);
                 sinceSound = -100000;

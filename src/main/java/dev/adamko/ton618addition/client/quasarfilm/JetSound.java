@@ -2,8 +2,11 @@ package dev.adamko.ton618addition.client.quasarfilm;
 
 
 import dev.adamko.ton618addition.Ton618Addition;
+import dev.adamko.ton618addition.quasar.QuasarReading;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.DoubleSupplier;
 import javax.annotation.Nullable;
@@ -38,6 +41,9 @@ final class JetSound {
     private static final WeighedSoundEvents EVENTS = new WeighedSoundEvents(ID, null);
     @Nullable
     private static CompletableFuture<short[]> rendered;
+    /** What the track in {@link #rendered} was made for: slowed or not, and which cues had sound files. */
+    private static String renderedFor = "";
+    private static final float[][] NO_WINDOWS = {};
 
     static {
         EVENTS.addSound(SOUND);
@@ -46,13 +52,27 @@ final class JetSound {
     private JetSound() {
     }
 
-    /** Starts making the track (off the game's thread), if it isn't made yet. */
-    static synchronized CompletableFuture<short[]> prepare() {
-        if (rendered == null) {
+    /**
+     * Starts making the track (off the game's thread) for a strike that is {@code slowed} by educational mode's reading
+     * windows or not, unless that very track is made already. Call it on the game's thread: it asks which cues have
+     * sound files.
+     */
+    static synchronized CompletableFuture<short[]> prepare(boolean slowed) {
+        float[][] windows = slowed ? QuasarReading.WINDOWS : NO_WINDOWS;
+        Set<String> files = new HashSet<>();
+        StringBuilder key = new StringBuilder(slowed ? "slowed" : "plain");
+        for (String name : JetSynth.FILES) {
+            if (JetCues.has(name)) {
+                files.add(name);
+                key.append('|').append(name);
+            }
+        }
+        if (rendered == null || !renderedFor.contentEquals(key)) {
+            renderedFor = key.toString();
             rendered = CompletableFuture.supplyAsync(() -> {
                 try {
                     long began = System.nanoTime();
-                    short[] pcm = JetSynth.render();
+                    short[] pcm = JetSynth.render(windows, files::contains);
                     Ton618Addition.LOG.debug("The Quasar Jets soundtrack made in {} ms", (System.nanoTime() - began) / 1000000L);
                     return pcm;
                 } catch (RuntimeException failed) {
@@ -64,9 +84,12 @@ final class JetSound {
         return rendered;
     }
 
-    /** Plays the track from wherever {@code clock} (game ticks from the cast) is; {@code over}: the film has ended. */
-    static Track play(DoubleSupplier clock, java.util.function.BooleanSupplier over) {
-        Track track = new Track(clock, over);
+    /**
+     * Plays the track from wherever {@code clock} is: <b>real</b> game ticks from the cast (the track already has the
+     * strike's slow-downs in it); {@code over}: the film has ended.
+     */
+    static Track play(boolean slowed, DoubleSupplier clock, java.util.function.BooleanSupplier over) {
+        Track track = new Track(clock, over, prepare(slowed));
         Minecraft.getInstance().getSoundManager().play(track);
         return track;
     }
@@ -75,15 +98,17 @@ final class JetSound {
     static final class Track extends AbstractTickableSoundInstance {
         private final DoubleSupplier clock;
         private final java.util.function.BooleanSupplier over;
+        private final CompletableFuture<short[]> made;
         /** The film's second at which this playing started, and how much of it has played since. */
         private double startedAt = Double.NaN;
         private double played;
         private long last;
 
-        private Track(DoubleSupplier clock, java.util.function.BooleanSupplier over) {
+        private Track(DoubleSupplier clock, java.util.function.BooleanSupplier over, CompletableFuture<short[]> made) {
             super(SoundEvent.createVariableRangeEvent(ID), SoundSource.PLAYERS, SoundInstance.createUnseededRandom());
             this.clock = clock;
             this.over = over;
+            this.made = made;
             this.volume = 1F;
             this.pitch = 1F;
             this.relative = true;
@@ -100,7 +125,7 @@ final class JetSound {
 
         @Override
         public CompletableFuture<AudioStream> getStream(SoundBufferLibrary buffers, Sound sound, boolean looping) {
-            return prepare().thenApply(pcm -> {
+            return this.made.thenApply(pcm -> {
                 this.startedAt = this.clock.getAsDouble() / 20.0;
                 this.played = 0.0;
                 this.last = System.nanoTime();

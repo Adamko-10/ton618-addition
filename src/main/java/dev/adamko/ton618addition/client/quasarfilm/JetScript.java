@@ -70,8 +70,11 @@ final class JetScript {
 
     // ---- the film's numbers ----------------------------------------------------------------------------------------
 
-    private static final float[][] SPEED = {{150, 0}, {200, 1.5F}, {230, 14}, {300, 60}, {322, 20}, {330, 6}};
-    private static final float[][] YEARS = {{150, 0}, {200, 6}, {300, 11.5F}, {330, 11.86F}};
+    // The sail (Adam, 2026-11-16: "the sail is supposed to make the star go really fast not over years"; his pick: the
+    // remote fast-forwards the star's own time, Earth's clock stays normal). The star creeps while its clock runs as
+    // ours does (to 162), then the fast-forward takes hold: it is at full speed four seconds after the engine lit.
+    private static final float[][] SPEED = {{150, 0}, {162, 0.5F}, {172, 5}, {188, 28}, {212, 56}, {300, 62}, {322, 20}, {330, 6}};
+    private static final float[][] YEARS = {{150, 0}, {162, 0.9F}, {176, 5}, {212, 9.6F}, {300, 11.6F}, {330, 11.86F}};
     private static final float[][] HOLE_X = {{80, 12000}, {200, 12000}, {270, 6500}, {300, 3000}, {322, 900}, {330, 520}};
     /** How far the stars have gone by (a running total of {@link #speed}). */
     private static final float[] TRAVEL = new float[END + 3];
@@ -93,9 +96,21 @@ final class JetScript {
         return lerp(TRAVEL[i], TRAVEL[i + 1], x - i);
     }
 
-    /** log10 of the years gone by. */
+    /** log10 of the years gone by on the star's own clock. */
     static float logYears(float t) {
         return keys(YEARS, t);
+    }
+
+    /** How many turns the hand of the fast-forward's dial has made: creeping to 162, then racing. */
+    static float dialTurns(float t) {
+        float u = Math.max(0F, t - 162F);
+        return 0.012F * Math.max(0F, t - 150F) + 0.0025F * u * u + 0.00004F * u * u * u;
+    }
+
+    /** How smeared the dial's hand is: 0 a sharp line, 1 one ring of light. */
+    static float dialSmear(float t) {
+        float u = ss(164F, 206F, t);
+        return u * (float) Math.sqrt(u);
     }
 
     /** Light years still to go to TON618. */
@@ -191,8 +206,8 @@ final class JetScript {
         // held across the flash cut: the same star, now close
         new Caption(52, 100, "%STAR%", "%TYPE%"),
         new Caption(102, 150, "THE STAR ENGINE", "a mirror to catch its own light"),
-        new Caption(154, 202, "IT MOVES", "all its light now pours out behind it"),
-        new Caption(206, 262, "ACROSS THE UNIVERSE", "18 billion light years to TON618"),
+        new Caption(154, 202, "FAST FORWARD", "the remote speeds up the star's own time"),
+        new Caption(206, 262, "ACROSS THE UNIVERSE", "18 billion light years, in seconds for us"),
         new Caption(270, 326, "TON618", "66 billion Suns"),
         new Caption(336, 384, "CAUGHT", "the mirror falls in first"),
         new Caption(388, 438, "TIDAL DISRUPTION", "the star is pulled into a ribbon"),
@@ -200,13 +215,14 @@ final class JetScript {
         new Caption(534, 606, "THE JETS", "out of both poles, at nearly the speed of light"),
         new Caption(612, 662, "BLAZAR", "one jet swings to face Earth"),
         new Caption(692, 742, "SECOND SUN", "night turns to day"),
-        new Caption(749, 826, "SWEPT ALONG", "the jet carries what it touches to the mark"),
+        new Caption(749, 792, "SWEPT ALONG", "the jet carries what it touches to the mark"),
+        new Caption(797, 828, "IMPACT", "the jet hits the ground at nearly the speed of light"),
         new Caption(834, 886, "RADIO LOBE", "a bubble of plasma where the jet ends"),
         new Caption(892, 940, "FROZEN LIGHT", "what is left of %STAR%")};
 
     /** What an educational label points at (JetHud works out where that is on the screen). */
     enum Anchor {
-        STAR, MIRROR, TAIL, FAR_HOLE, RIBBON, DISC, NEAR_JET, HOLE, SECOND_SUN, BEAM, DOME, CRYSTALS
+        STAR, MIRROR, TAIL, DIAL, FAR_HOLE, RIBBON, DISC, NEAR_JET, HOLE, SECOND_SUN, BEAM, CRATER, DOME, CRYSTALS
     }
 
     /**
@@ -220,8 +236,8 @@ final class JetScript {
         new Label(40, 94, Anchor.STAR, 9, 10, "%TYPE_FACT%"),
         new Label(98, 150, Anchor.MIRROR, 9, -17,
             "A star engine (Shkadov thruster, 1987): a giant mirror held up by the star's own light. With light escaping only one way, the star is pushed the other way."),
-        new Label(154, 204, Anchor.TAIL, -8, 16,
-            "It is slow. A real one would need a billion years to move a Sun-like star 34,000 light years. The film races time."),
+        new Label(154, 204, Anchor.DIAL, -8, 16,
+            "A real star engine is slow: a billion years to move a Sun-like star 34,000 light years. So the remote fast-forwards the star's own time. On Earth only seconds go by."),
         new Label(274, 326, Anchor.FAR_HOLE, -10, -15, "TON 618: a real black hole of 40 to 66 billion Suns, about 18 billion light years away."),
         new Label(388, 438, Anchor.RIBBON, -9, 15, "Tidal disruption: the near side is pulled much harder than the far side. %TIDAL%"),
         new Label(448, 526, Anchor.DISC, 9, -24, "Falling matter rubs itself to millions of degrees. TON 618 shines like 140 trillion Suns."),
@@ -231,7 +247,10 @@ final class JetScript {
             "A quasar seen straight down its jet is a blazar. In 2011 a shredded star's jet pointed at Earth: Swift J1644+57."),
         new Label(692, 742, Anchor.SECOND_SUN, -9, -13,
             "Beaming: light from a jet aimed at you is boosted thousands of times. From its real distance TON 618 is far too faint to see by eye."),
-        new Label(752, 826, Anchor.BEAM, -9, -16, "Knots in a jet aimed almost at you can seem to move faster than light. It is an illusion of angle."),
+        // (the previz's label here, on knots that seem to outrun light, gave way to one about what is on screen: there
+        // is no calm moment for it while the jet comes in)
+        new Label(800, 828, Anchor.CRATER, -9, -16,
+            "The strongest quasar jets carry, every second, about as much energy as the Sun gives off in 100,000 years."),
         new Label(838, 886, Anchor.DOME, 10, -12,
             "A radio lobe: where a jet ploughs into gas it blows a bubble of hot plasma that glows in radio waves. Real ones are bigger than galaxies."),
         new Label(892, 942, Anchor.CRYSTALS, 10, -15,

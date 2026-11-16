@@ -37,6 +37,9 @@ final class JetGl {
     static final int SOFT = 9;
     static final int JET = 10;
     static final int TAIL = 11;
+    static final int CORONA = 12;
+    static final int DIAL = 13;
+    static final int SPACE = 14;
 
     @Nullable
     private static ShaderInstance shader;

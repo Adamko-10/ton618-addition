@@ -35,7 +35,7 @@ final class JetSpace {
     private static final int SHELL_STARS = 2600;
     private static final float SHELL = 9000F;
     private static final int FLY_GALAXIES = 9;
-    private static final int MOTES = 900;
+    private static final int MOTES = 1700;
     /** The hole's quad is 260 across, its shadow 0.16 of half of that. */
     private static final float HOLE_HALF = 130F;
     private static final float SHADOW = HOLE_HALF * 0.16F;
@@ -50,9 +50,9 @@ final class JetSpace {
     private static final float[][] HOLE_CX = {{330, -255}, {352, -232}, {398, -60}, {432, 0}};
     private static final float[][] HOLE_CY = {{330, 0}, {398, 9}, {440, 0}};
     private static final float[][] HOLE_DISTANCE = {{330, 170}, {352, 178}, {402, 330}, {440, 380}, {530, 460}, {574, 1150}, {610, 1200}, {665, 1000}};
-    private static final float[][] DISC_GAIN = {{330, 0.45F}, {438, 0.7F}, {448, 3.4F}, {472, 2.5F}, {610, 2.5F}, {665, 3.4F}};
+    private static final float[][] DISC_GAIN = {{330, 0.45F}, {438, 0.7F}, {448, 2.3F}, {472, 1.45F}, {610, 1.45F}, {665, 2.4F}};
     private static final float[][] HALO_SIZE = {{440, 0}, {450, 330}, {474, 240}, {530, 260}, {610, 300}, {650, 700}, {668, 2400}};
-    private static final float[][] HALO_GAIN = {{440, 0}, {450, 0.8F}, {474, 0.55F}, {610, 0.6F}, {665, 1}};
+    private static final float[][] HALO_GAIN = {{440, 0}, {450, 0.5F}, {474, 0.3F}, {610, 0.32F}, {665, 0.8F}};
 
     /** The streaming stars: along the way, across it (two numbers), colour, size in pixels of a 720-line picture. */
     private static final float[] TUBE_POS = new float[TUBE_STARS * 3];
@@ -148,6 +148,9 @@ final class JetSpace {
     private static float sinB = 0.2F;
     private static float cosB = 0.98F;
     private static boolean drawn;
+    /** This frame's tick and the picture's width over its height (kept by {@link #camera}). */
+    private static float clock;
+    private static float wide = 1.78F;
 
     private JetSpace() {
     }
@@ -178,6 +181,10 @@ final class JetSpace {
                 return project(2.3F * vis, 1.1F * vis, 0F);
             case TAIL:
                 return project(-5F * vis, 0F, 0F);
+            case DIAL:
+                // a point on the dial's ring, up and to the left of the star as we see it
+                return project(-RIGHT.x * 3.4F * vis + UP.x * 3.4F * vis, -RIGHT.y * 3.4F * vis + UP.y * 3.4F * vis,
+                    -RIGHT.z * 3.4F * vis + UP.z * 3.4F * vis);
             case FAR_HOLE:
                 return project(JetScript.holeX(t), 0F, 0F);
             case RIBBON:
@@ -200,6 +207,8 @@ final class JetSpace {
         Minecraft mc = Minecraft.getInstance();
         float aspect = mc.getWindow().getWidth() / (float) Math.max(1, mc.getWindow().getHeight());
         float[] col = JetScript.rgb(type.color);
+        // into the film's own picture, which can hold light brighter than white; JetPost then gives it its glow
+        boolean post = JetPost.begin();
         JetGl.beginOverlay();
         try {
             if (t < 330F) {
@@ -209,6 +218,10 @@ final class JetSpace {
             }
         } finally {
             JetGl.end();
+            if (post) {
+                JetPost.end(0.7F, 1.4F, t);
+                JetGl.end();
+            }
         }
     }
 
@@ -222,7 +235,7 @@ final class JetSpace {
         float v = JetScript.speed(t);
         EYE.set((float) Math.sin(a) * d, lerp(0.22F, 0.34F, look) * d, (float) Math.cos(a) * d);
         camera(lerp(0.6F * vis, 40F, look), lerp(0F, 3F, look), 0F, aspect, t, 0.004F * kick(t, 150F, 10F) + 0.00012F * v);
-        backdrop();
+        backdrop(1F);
         JetGl.additive();
 
         // the galaxies sliding by
@@ -281,7 +294,7 @@ final class JetSpace {
             float half = Math.max(TUBE_SIZE[i] * 0.5F, 1.5F) * pixel(depth);
             JetGl.billboard(b, x, y, z, RIGHT, UP, half, half, TUBE_RGB[i * 3], TUBE_RGB[i * 3 + 1], TUBE_RGB[i * 3 + 2], 1F);
         }
-        JetGl.draw(b, VIEW, PROJ, JetGl.DOT, 1F, 0F, 0F, 0F);
+        JetGl.draw(b, VIEW, PROJ, JetGl.DOT, 1.5F, 0.3F, 0F, 0F);
 
         // TON618, far ahead: its galaxy behind it, a dim orange disc (it starves until it is fed)
         float hx = JetScript.holeX(t);
@@ -294,8 +307,22 @@ final class JetSpace {
         JetGl.draw(b, VIEW, PROJ, JetGl.HOLE, t * 0.02F, 0.45F, 0.2F, 0F);
 
         // the star, its mirror opening ahead of it, its light pouring out behind
-        starParts(t, new Vector3f(), WORLD_X, WORLD_Y, WORLD_Z, vis, 1F, 1F, col, ss(92F, 150F, t), ss(104F, 150F, t),
-            ss(122F, 160F, t) * 0.5F, lerp(7F, 60F, ss(150F, 250F, t)) * ks, 1F, 0F, 0F, 0F, 2.5F * vis, 1F);
+        // (the mirror is whole by 134: the picture then holds still for a moment before the fast-forward, which is where
+        // educational mode gives its label time to be read)
+        starParts(t, new Vector3f(), WORLD_X, WORLD_Y, WORLD_Z, vis, 1F, 1F, col, ss(92F, 134F, t), ss(104F, 134F, t),
+            ss(118F, 146F, t) * 0.5F, lerp(7F, 60F, ss(150F, 230F, t)) * ks, 1F, 0F, 0F, 0F, 2.5F * vis, 1F);
+
+        // the fast-forward: the remote's dial round the star. Its hand creeps at first (a real star engine is slow), then
+        // races until it is one ring of light: the star's own time, sped up, while ours runs as ever
+        float dial = ss(146F, 154F, t) * (1F - 0.5F * ss(205F, 245F, t)) * (1F - ss(320F, 330F, t));
+        if (dial > 0.004F) {
+            JetGl.additive();
+            float half = 5.6F * vis;
+            BufferBuilder face = JetGl.begin();
+            JetGl.billboard(face, 0F, 0F, 0F, RIGHT, UP, half, half, lerp(col[0], 0.8F, 0.6F), lerp(col[1], 0.92F, 0.6F), lerp(col[2], 1F, 0.6F), dial);
+            JetGl.draw(face, VIEW, PROJ, JetGl.DIAL, JetScript.dialTurns(t), JetScript.dialSmear(t), JetScript.dialTurns(t) * 0.04F,
+                t < 166F ? lin(146F, 166F, t) : 0F);
+        }
     }
 
     // ---- TON618: shots 4 to 7 --------------------------------------------------------------------------------------------
@@ -310,11 +337,11 @@ final class JetSpace {
         sinB = (float) Math.sin(beta);
         cosB = (float) Math.cos(beta);
         float blue = ss(440F, 462F, t);
-        backdrop();
+        // the still sky and the galaxy TON618 sits in: all of it fades as the disc outshines it
+        float out = ss(440F, 476F, t);
+        backdrop(lerp(1F, 0.3F, out));
         JetGl.additive();
 
-        // the still sky and the galaxy TON618 sits in: both fade as the disc outshines them
-        float out = ss(440F, 476F, t);
         float dim = lerp(0.95F, 0.3F, out);
         float turn = t * 0.0004F;
         float cosT = (float) Math.cos(turn);
@@ -333,7 +360,7 @@ final class JetSpace {
             float half = 1.5F * pixel(depth);
             JetGl.billboard(b, x, y, z, RIGHT, UP, half, half, SHELL_RGB[i * 3] * dim, SHELL_RGB[i * 3 + 1] * dim, SHELL_RGB[i * 3 + 2] * dim, 1F);
         }
-        JetGl.draw(b, VIEW, PROJ, JetGl.DOT, 1F, 0F, 0F, 0F);
+        JetGl.draw(b, VIEW, PROJ, JetGl.DOT, 1.4F, 0.3F, 0F, 0F);
         b = JetGl.begin();
         smudge(b, 0F, 0F, -900F, WORLD_X, WORLD_Y, 1800F, 0.417F, 0.3F, lerp(0.5F, 0.1F, out));
         JetGl.draw(b, VIEW, PROJ, JetGl.GALAXY, 1F, 0F, 0F, 0F);
@@ -358,7 +385,7 @@ final class JetSpace {
             JetGl.additive();
             float stretch = 50F * ss(350F, 402F, t);
             float settle = lerp(1F, 0.32F, ss(440F, 472F, t));
-            float shown = 0.5F * ss(350F, 366F, t) * settle * (1F - ss(560F, 610F, t));
+            float shown = 0.26F * ss(350F, 366F, t) * settle * (1F - ss(560F, 610F, t));
             b = JetGl.begin();
             for (int i = 0; i < MOTES; i++) {
                 float tau = t - stretch * MOTE[i * 6];
@@ -374,12 +401,12 @@ final class JetSpace {
                 float z = MOTE[i * 6 + 4] * (1F - 0.7F * w);
                 float heat = w * 0.9F * 0.6F;
                 float al = shown * (0.75F + 0.25F * (float) Math.sin(i * 1.7 + t * 0.2));
-                float half = MOTE[i * 6 + 5] * (2.6F + vis * 1.3F) * (1F - 0.35F * w) * 0.5F;
+                float half = MOTE[i * 6 + 5] * (2.2F + vis * 1.1F) * (1F - 0.35F * w) * 0.5F;
                 JetGl.billboard(b, x, y * sinB + z * cosB, -y * cosB + z * sinB, RIGHT, UP, half, half,
                     lerp(lerp(col[0], 1F, heat), 0.7F, blue), lerp(lerp(col[1], 0.95F, heat), 0.86F, blue),
                     lerp(lerp(col[2], 0.9F, heat), 1F, blue), al);
             }
-            JetGl.draw(b, VIEW, PROJ, JetGl.DOT, 1F, 0F, 0F, 0F);
+            JetGl.draw(b, VIEW, PROJ, JetGl.DOT, 1.6F, 0F, 0F, 0F);
         }
 
         // the star coming in from the left along the disc's plane; its mirror peels off ahead of it and is gone
@@ -415,10 +442,10 @@ final class JetSpace {
             for (int k = 0; k < 4; k++) {
                 boolean away = k % 2 == 1;
                 boolean sheath = k > 1;
-                float wide = (sheath ? 2.3F : 1F) * jet;
-                float gain = (sheath ? 0.3F : 1F) * (away ? 1.25F * (1F - 0.9F * toUs) : 1.25F * (1F + 3.5F * toUs));
+                float wide = (sheath ? 2.8F : 1F) * jet;
+                float gain = (sheath ? 0.16F : 1F) * (away ? 0.95F * (1F - 0.9F * toUs) : 0.95F * (1F + 3.5F * toUs));
                 b = JetGl.begin();
-                tube(b, origin, away ? far : near, 6F * wide, 60F * wide, length, 32, 8, col);
+                tube(b, origin, away ? far : near, 3.2F * wide, 30F * wide, length, 32, 8, col);
                 JetGl.draw(b, VIEW, PROJ, JetGl.JET, t * 0.5F, head, away ? hidden : 0F, 46F, 0.35F, sheath ? 0F : 1F, gain, 0F);
             }
         }
@@ -470,8 +497,16 @@ final class JetSpace {
         if (alpha > 0.004F) {
             JetGl.additive();
             BufferBuilder b = JetGl.begin();
-            JetGl.billboard(b, at.x, at.y, at.z, RIGHT, UP, 3.75F * vis, 3.75F * vis, col[0], col[1], col[2], 0.85F * alpha);
+            float pulled = sat((stretch - 1F) / 2F);
+            JetGl.billboard(b, at.x, at.y, at.z, RIGHT, UP, 3.75F * vis, 3.75F * vis, col[0], col[1], col[2], 0.45F * alpha * (1F - 0.7F * pulled));
             JetGl.draw(b, VIEW, PROJ, JetGl.SOFT, 1F, 0F, 0F, 0F);
+            // its corona: streamers and loops of hot gas round it (gone once the tide has pulled it out of shape)
+            float crown = 0.75F * alpha * sat(1F - (stretch - 1F) / 1.2F);
+            if (crown > 0.004F) {
+                b = JetGl.begin();
+                JetGl.billboard(b, at.x, at.y, at.z, RIGHT, UP, 4.4F * vis, 4.4F * vis, col[0], col[1], col[2], crown);
+                JetGl.draw(b, VIEW, PROJ, JetGl.CORONA, t * 0.12F, 1F / 4.4F, 0F, 0F);
+            }
 
             // the ball itself: one quad, stretched along the way it falls once the tide has hold of it
             JetGl.premultiplied();
@@ -489,7 +524,7 @@ final class JetSpace {
                 JetGl.billboard(b, at.x, at.y, at.z, along, over, (float) Math.sqrt(longHalf * longHalf + deepHalf * deepHalf),
                     vis * squash, col[0], col[1], col[2], alpha);
             }
-            JetGl.draw(b, VIEW, PROJ, JetGl.STAR, t * 0.12F, 0F, 0F, 0F);
+            JetGl.draw(b, VIEW, PROJ, JetGl.STAR, t * 0.12F, 0.12F - 0.3F * pulled, pulled, 0F);
         }
 
         if (mirrorShown) {
@@ -554,7 +589,7 @@ final class JetSpace {
                 JetGl.vertex(b, corner[3].x, corner[3].y, corner[3].z, u0, v1, col[0], col[1], col[2], face);
             }
         }
-        JetGl.draw(b, VIEW, PROJ, JetGl.MIRROR, open, lit, alpha, 0F);
+        JetGl.draw(b, VIEW, PROJ, JetGl.MIRROR, open, lit, alpha, clock);
     }
 
     /** A point of the mirror's cap: ring {@code i} out from its middle, {@code j} round it. */
@@ -582,18 +617,27 @@ final class JetSpace {
         }
         VIEW.setLookAt(EYE.x, EYE.y, EYE.z, EYE.x + FORWARD.x, EYE.y + FORWARD.y, EYE.z + FORWARD.z, 0F, 1F, 0F);
         PROJ.setPerspective((float) Math.toRadians(40.0), aspect, 0.1F, 40000F);
+        clock = t;
+        wide = aspect;
         drawn = true;
     }
 
-    /** Black over the whole screen. */
-    private static void backdrop() {
+    /**
+     * Deep space over the whole screen, {@code bright} strong: faint clouds of gas and the dust of far stars, so far
+     * off that they only slide as the view turns.
+     */
+    private static void backdrop(float bright) {
+        // how far the view has turned, in half screen heights (the picture is 40 degrees tall)
+        float turned = 0.5F / TAN_HALF;
+        float yaw = (float) Math.atan2(FORWARD.x, -FORWARD.z) * turned;
+        float pitch = (float) Math.asin(Math.max(-1F, Math.min(1F, FORWARD.y))) * turned;
         JetGl.opaque();
         BufferBuilder b = JetGl.begin();
-        JetGl.vertex(b, -1F, -1F, 0F, 0F, 0F, 0F, 0F, 0F, 1F);
-        JetGl.vertex(b, 1F, -1F, 0F, 1F, 0F, 0F, 0F, 0F, 1F);
+        JetGl.vertex(b, -1F, -1F, 0F, -1F, -1F, 0F, 0F, 0F, 1F);
+        JetGl.vertex(b, 1F, -1F, 0F, 1F, -1F, 0F, 0F, 0F, 1F);
         JetGl.vertex(b, 1F, 1F, 0F, 1F, 1F, 0F, 0F, 0F, 1F);
-        JetGl.vertex(b, -1F, 1F, 0F, 0F, 1F, 0F, 0F, 0F, 1F);
-        JetGl.draw(b, IDENTITY, IDENTITY, JetGl.PLAIN);
+        JetGl.vertex(b, -1F, 1F, 0F, -1F, 1F, 0F, 0F, 0F, 1F);
+        JetGl.draw(b, IDENTITY, IDENTITY, JetGl.SPACE, yaw, pitch, wide, bright);
     }
 
     /** One pixel of a 720-line picture, {@code depth} away. */
