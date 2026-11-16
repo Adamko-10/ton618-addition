@@ -191,7 +191,21 @@ final class Harness {
         if ("lastlight".equals(SKILL)) {
             run(player.server, "data modify storage ton618:ton618 devoured set value 1b");
             run(player.server, "execute in ton618:devoured run tp " + name + " 0.5 1 0.5 0 0");
+            return;
         }
+        // a glass perch above the trees, so both presses see open sky and the ground far off (spawn can be in a forest)
+        ServerLevel level = player.serverLevel();
+        int x = Mth.floor(player.getX());
+        int z = Mth.floor(player.getZ());
+        int top = 0;
+        for (int dx = -2; dx <= 2; dx++) {
+            for (int dz = -2; dz <= 2; dz++) {
+                top = Math.max(top, level.getHeight(Heightmap.Types.MOTION_BLOCKING, x + dx, z + dz));
+            }
+        }
+        int y = top + 12;
+        run(player.server, "fill " + (x - 1) + " " + y + " " + (z - 1) + " " + (x + 1) + " " + y + " " + (z + 1) + " glass");
+        player.teleportTo(level, x + 0.5, y + 1, z + 0.5, player.getYRot(), player.getXRot());
     }
 
     private static void castQuasar(ServerPlayer player) {
