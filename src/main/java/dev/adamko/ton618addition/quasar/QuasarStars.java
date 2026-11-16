@@ -13,10 +13,10 @@ import net.minecraft.world.phys.Vec3;
 public final class QuasarStars {
     /** What the star's type changes. Lengths in blocks. */
     public enum Type {
-        RED_DWARF("Red dwarf", 0xFF7A4D, 0.7f, 1.5, 9, 3, 12, 1f, 4f, 0.8f),
-        SUN_LIKE("Sun-like", 0xFFE2A0, 1.0f, 2.6, 15, 4, 20, 2f, 6f, 0.9f),
-        BLUE_GIANT("Blue giant", 0xA8C8FF, 1.6f, 4.2, 24, 6, 32, 3f, 9f, 1f),
-        RED_SUPERGIANT("Red supergiant", 0xFF9450, 2.3f, 6.1, 33, 8, 44, 4f, 12f, 1f);
+        RED_DWARF("Red dwarf", 0xFF7A4D, 0.7f, 1.5, 9, 3, 12, 1f, 4f, 0.8f, 7, 5, 8f, 20),
+        SUN_LIKE("Sun-like", 0xFFE2A0, 1.0f, 2.6, 15, 4, 20, 2f, 6f, 0.9f, 10, 7, 12f, 30),
+        BLUE_GIANT("Blue giant", 0xA8C8FF, 1.6f, 4.2, 24, 6, 32, 3f, 9f, 1f, 15, 10, 16f, 45),
+        RED_SUPERGIANT("Red supergiant", 0xFF9450, 2.3f, 6.1, 33, 8, 44, 4f, 12f, 1f, 20, 13, 20f, 60);
 
         public final String label;
         /** Its colour: the star, the jet's sheath, the lobe, the crystals, the reticle. */
@@ -36,9 +36,18 @@ public final class QuasarStars {
         public final float popDamage;
         /** How bright the second sun's day is (1 = noon). */
         public final float day;
+        /**
+         * The jet's landing blast at {@code QuasarClock.LANDS} (Adam, 2026-11-16: "a big impact and a proper explosion"):
+         * the crater's radius and its depth at the middle, the hit at the middle (less further out, to 1.6 x the radius),
+         * and how many blocks are thrown out as debris.
+         */
+        public final double blast;
+        public final int blastDepth;
+        public final float blastDamage;
+        public final int debris;
 
         Type(String label, int color, float size, double swept, double lobe, int bowl, int crystals, float lobeDamage,
-             float popDamage, float day) {
+             float popDamage, float day, double blast, int blastDepth, float blastDamage, int debris) {
             this.label = label;
             this.color = color;
             this.size = size;
@@ -49,6 +58,10 @@ public final class QuasarStars {
             this.lobeDamage = lobeDamage;
             this.popDamage = popDamage;
             this.day = day;
+            this.blast = blast;
+            this.blastDepth = blastDepth;
+            this.blastDamage = blastDamage;
+            this.debris = debris;
         }
     }
 
