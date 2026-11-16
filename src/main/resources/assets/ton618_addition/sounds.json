@@ -1,0 +1,205 @@
+{
+  "quasar_beam_loop": {
+    "sounds": [
+      "ton618_addition:quasar/quasar_beam_loop"
+    ],
+    "subtitle": "subtitles.ton618_addition.quasar_beam_loop"
+  },
+  "quasar_crystal": {
+    "sounds": [
+      "ton618_addition:quasar/quasar_crystal",
+      "ton618_addition:quasar/quasar_crystal_2",
+      "ton618_addition:quasar/quasar_crystal_3",
+      "ton618_addition:quasar/quasar_crystal_4"
+    ],
+    "subtitle": "subtitles.ton618_addition.quasar_crystal"
+  },
+  "quasar_debris": {
+    "sounds": [
+      "ton618_addition:quasar/quasar_debris"
+    ],
+    "subtitle": "subtitles.ton618_addition.quasar_debris"
+  },
+  "quasar_film_arrive": {
+    "sounds": [
+      "ton618_addition:quasar/quasar_film_arrive"
+    ]
+  },
+  "quasar_film_birds": {
+    "sounds": [
+      "ton618_addition:quasar/quasar_film_birds"
+    ]
+  },
+  "quasar_film_flood": {
+    "sounds": [
+      "ton618_addition:quasar/quasar_film_flood"
+    ]
+  },
+  "quasar_film_ignite": {
+    "sounds": [
+      "ton618_addition:quasar/quasar_film_ignite"
+    ]
+  },
+  "quasar_film_impact_sub": {
+    "sounds": [
+      "ton618_addition:quasar/quasar_film_impact_sub"
+    ]
+  },
+  "quasar_film_jet_loop": {
+    "sounds": [
+      "ton618_addition:quasar/quasar_film_jet_loop"
+    ]
+  },
+  "quasar_film_jets": {
+    "sounds": [
+      "ton618_addition:quasar/quasar_film_jets"
+    ]
+  },
+  "quasar_film_lock": {
+    "sounds": [
+      "ton618_addition:quasar/quasar_film_lock"
+    ]
+  },
+  "quasar_film_mirror": {
+    "sounds": [
+      "ton618_addition:quasar/quasar_film_mirror"
+    ]
+  },
+  "quasar_film_mirror_break": {
+    "sounds": [
+      "ton618_addition:quasar/quasar_film_mirror_break"
+    ]
+  },
+  "quasar_film_pop_sub": {
+    "sounds": [
+      "ton618_addition:quasar/quasar_film_pop_sub"
+    ]
+  },
+  "quasar_film_push": {
+    "sounds": [
+      "ton618_addition:quasar/quasar_film_push"
+    ]
+  },
+  "quasar_film_quasar_loop": {
+    "sounds": [
+      "ton618_addition:quasar/quasar_film_quasar_loop"
+    ]
+  },
+  "quasar_film_reticle": {
+    "sounds": [
+      "ton618_addition:quasar/quasar_film_reticle"
+    ]
+  },
+  "quasar_film_ribbon_loop": {
+    "sounds": [
+      "ton618_addition:quasar/quasar_film_ribbon_loop"
+    ]
+  },
+  "quasar_film_star_loop": {
+    "sounds": [
+      "ton618_addition:quasar/quasar_film_star_loop"
+    ]
+  },
+  "quasar_film_stretch": {
+    "sounds": [
+      "ton618_addition:quasar/quasar_film_stretch"
+    ]
+  },
+  "quasar_film_time_loop": {
+    "sounds": [
+      "ton618_addition:quasar/quasar_film_time_loop"
+    ]
+  },
+  "quasar_film_title": {
+    "sounds": [
+      "ton618_addition:quasar/quasar_film_title"
+    ]
+  },
+  "quasar_film_turn": {
+    "sounds": [
+      "ton618_addition:quasar/quasar_film_turn"
+    ]
+  },
+  "quasar_film_wind_loop": {
+    "sounds": [
+      "ton618_addition:quasar/quasar_film_wind_loop"
+    ]
+  },
+  "quasar_film_zoom": {
+    "sounds": [
+      "ton618_addition:quasar/quasar_film_zoom"
+    ]
+  },
+  "quasar_impact": {
+    "sounds": [
+      "ton618_addition:quasar/quasar_impact"
+    ],
+    "subtitle": "subtitles.ton618_addition.quasar_impact"
+  },
+  "quasar_impact_big": {
+    "sounds": [
+      "ton618_addition:quasar/quasar_impact_big"
+    ],
+    "subtitle": "subtitles.ton618_addition.quasar_impact_big"
+  },
+  "quasar_impact_small": {
+    "sounds": [
+      "ton618_addition:quasar/quasar_impact_small"
+    ],
+    "subtitle": "subtitles.ton618_addition.quasar_impact_small"
+  },
+  "quasar_jet_incoming": {
+    "sounds": [
+      "ton618_addition:quasar/quasar_jet_incoming"
+    ],
+    "subtitle": "subtitles.ton618_addition.quasar_jet_incoming"
+  },
+  "quasar_lift": {
+    "sounds": [
+      "ton618_addition:quasar/quasar_lift"
+    ],
+    "subtitle": "subtitles.ton618_addition.quasar_lift"
+  },
+  "quasar_lobe_loop": {
+    "sounds": [
+      "ton618_addition:quasar/quasar_lobe_loop"
+    ],
+    "subtitle": "subtitles.ton618_addition.quasar_lobe_loop"
+  },
+  "quasar_lobe_rise": {
+    "sounds": [
+      "ton618_addition:quasar/quasar_lobe_rise"
+    ],
+    "subtitle": "subtitles.ton618_addition.quasar_lobe_rise"
+  },
+  "quasar_lock": {
+    "sounds": [
+      "ton618_addition:quasar/quasar_lock"
+    ],
+    "subtitle": "subtitles.ton618_addition.quasar_lock"
+  },
+  "quasar_mark": {
+    "sounds": [
+      "ton618_addition:quasar/quasar_mark"
+    ],
+    "subtitle": "subtitles.ton618_addition.quasar_mark"
+  },
+  "quasar_night": {
+    "sounds": [
+      "ton618_addition:quasar/quasar_night"
+    ],
+    "subtitle": "subtitles.ton618_addition.quasar_night"
+  },
+  "quasar_pop": {
+    "sounds": [
+      "ton618_addition:quasar/quasar_pop"
+    ],
+    "subtitle": "subtitles.ton618_addition.quasar_pop"
+  },
+  "quasar_sun_ignite": {
+    "sounds": [
+      "ton618_addition:quasar/quasar_sun_ignite"
+    ],
+    "subtitle": "subtitles.ton618_addition.quasar_sun_ignite"
+  }
+}

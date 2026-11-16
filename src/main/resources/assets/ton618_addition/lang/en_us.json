@@ -45,5 +45,20 @@
   "ton618_addition.configuration.carry_players": "Carry players",
   "ton618_addition.configuration.carry_players.tooltip": "Players in the jet's path are carried like mobs and items (never the caster).",
   "ton618_addition.configuration.max_carried": "Most things carried",
-  "ton618_addition.configuration.missing_nights": "Nights a star is missing"
+  "ton618_addition.configuration.missing_nights": "Nights a star is missing",
+  "subtitles.ton618_addition.quasar_lock": "Star locked",
+  "subtitles.ton618_addition.quasar_mark": "Strike marked",
+  "subtitles.ton618_addition.quasar_sun_ignite": "Second sun ignites",
+  "subtitles.ton618_addition.quasar_jet_incoming": "Quasar jet roars in",
+  "subtitles.ton618_addition.quasar_impact_small": "Quasar jet hits the ground",
+  "subtitles.ton618_addition.quasar_impact": "Quasar jet hits the ground",
+  "subtitles.ton618_addition.quasar_impact_big": "Quasar jet hits the ground",
+  "subtitles.ton618_addition.quasar_debris": "Debris rains down",
+  "subtitles.ton618_addition.quasar_beam_loop": "Quasar jet hums",
+  "subtitles.ton618_addition.quasar_lobe_loop": "Radio lobe crackles",
+  "subtitles.ton618_addition.quasar_lobe_rise": "Radio lobe swells",
+  "subtitles.ton618_addition.quasar_pop": "Radio lobe bursts",
+  "subtitles.ton618_addition.quasar_crystal": "Frozen light grows",
+  "subtitles.ton618_addition.quasar_lift": "Something is lifted",
+  "subtitles.ton618_addition.quasar_night": "Second sun fades"
 }

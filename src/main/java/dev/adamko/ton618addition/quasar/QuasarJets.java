@@ -23,6 +23,7 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.protocol.game.ClientboundStopSoundPacket;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -61,6 +62,8 @@ import net.minecraft.world.phys.Vec3;
 public final class QuasarJets {
     /** A lock lasts a minute (then press 1 again). */
     private static final int LOCK_TIMEOUT = 1200;
+    /** How long the world's loops ({@code quasar_beam_loop}, {@code quasar_lobe_loop}) are: 3 s. */
+    private static final int LOOP_TICKS = 60;
     /** How far the ground can be for press 2 (blocks). */
     private static final double MARK_RANGE = 256.0;
     /** Players this close to the caster or the mark get the film (Adam: "Caster + nearby players", ~128 blocks). */
@@ -110,6 +113,9 @@ public final class QuasarJets {
         boolean blasted;
         final List<int[]> craterColumns = new ArrayList<>();
         int craterDone;
+        /** The real tick (since the cast) the beam's and the lobe's loops are next replayed at. */
+        long nextBeam;
+        long nextLobe;
         /** The last tick {@link #sounds} has played up to. */
         long soundsDone = -1;
         long lastLobeHit = Long.MIN_VALUE;
@@ -169,6 +175,7 @@ public final class QuasarJets {
             LOCKS.put(player.getUUID(), new Lock(star, now));
             // the HUD hint (QuasarReticle) says "locked: aim at the ground"; no action-bar line on top of it (Adam, 2026-11-16)
             send(player, new QuasarLock(star));
+            player.playNotifySound(QuasarContent.LOCK.get(), SoundSource.PLAYERS, 1F, 1F);
             return false;
         }
         if (lock == null) {
@@ -377,6 +384,8 @@ public final class QuasarJets {
     }
 
     private static void pickUp(Running run, Entity entity) {
+        entity.level().playSound(null, entity.getX(), entity.getY(), entity.getZ(), QuasarContent.LIFT.get(), SoundSource.BLOCKS,
+            1F, 0.85F + run.random.nextFloat() * 0.3F);
         entity.setNoGravity(true);
         run.carriedIds.add(entity.getUUID());
         run.carried.add(new Carried(entity, run.carried.size()));
@@ -592,24 +601,54 @@ public final class QuasarJets {
     private static void sounds(ServerLevel level, Running run, long t) {
         long from = run.soundsDone;
         run.soundsDone = t;
-        if (due(from, t, QuasarClock.SWEEP)) {
-            play(level, run, SoundEvents.BEACON_ACTIVATE, 6F, 0.5F);
+        long real = level.getGameTime() - run.fx.castGameTime();
+        if (due(from, t, QuasarClock.MARK)) {
+            play(level, run, QuasarContent.MARK.get(), 2F, 1F);
         }
-        if (due(from, t, QuasarClock.SWEEP + 22)) {
-            play(level, run, SoundEvents.WARDEN_SONIC_CHARGE, 6F, 0.6F);
-        }
-        if (due(from, t, QuasarClock.LANDS)) {
-            play(level, run, SoundEvents.WARDEN_SONIC_BOOM, 8F, 0.6F);
-            play(level, run, SoundEvents.GENERIC_EXPLODE.value(), 4F, 0.5F);
-        }
-        for (int i = 0; i < 4; i++) {
-            if (due(from, t, QuasarClock.LOBE + i * 15)) {
-                play(level, run, SoundEvents.RESPAWN_ANCHOR_CHARGE, 4F, 0.5F + i * 0.2F);
+        // the second sun: everyone in the overworld hears it where they stand
+        if (due(from, t, QuasarClock.DAY) && run.fx.secondSun()) {
+            for (ServerPlayer player : level.players()) {
+                player.playNotifySound(QuasarContent.SUN_IGNITE.get(), SoundSource.AMBIENT, 1F, 1F);
             }
         }
+        if (due(from, t, QuasarClock.SWEEP)) {
+            play(level, run, QuasarContent.JET_INCOMING.get(), 16F, 1F);
+        }
+        if (due(from, t, QuasarClock.LANDS)) {
+            QuasarStars.Type type = run.star.type();
+            play(level, run, (type == QuasarStars.Type.RED_DWARF ? QuasarContent.IMPACT_SMALL
+                : type == QuasarStars.Type.SUN_LIKE ? QuasarContent.IMPACT : QuasarContent.IMPACT_BIG).get(), 16F, 1F);
+        }
+        if (due(from, t, QuasarClock.LANDS + 6)) {
+            play(level, run, QuasarContent.DEBRIS.get(), 8F, 1F);
+        }
+        // the jet standing on the ground and the swelling lobe: 3 s loops replayed by real time (educational mode slows
+        // story time there), stopped at the pop
+        if (t >= QuasarClock.LANDS && t < QuasarClock.POP && real >= run.nextBeam) {
+            run.nextBeam = real + LOOP_TICKS;
+            play(level, run, QuasarContent.BEAM_LOOP.get(), 8F, 1F);
+        }
+        if (t >= QuasarClock.LOBE && t < QuasarClock.POP && real >= run.nextLobe) {
+            run.nextLobe = real + LOOP_TICKS;
+            play(level, run, QuasarContent.LOBE_LOOP.get(), 8F, 1F);
+        }
+        if (due(from, t, QuasarClock.POP - 20)) {
+            play(level, run, QuasarContent.LOBE_RISE.get(), 8F, 1F);
+        }
         if (due(from, t, QuasarClock.POP)) {
-            play(level, run, SoundEvents.GENERIC_EXPLODE.value(), 8F, 0.7F);
-            play(level, run, SoundEvents.LIGHTNING_BOLT_THUNDER, 6F, 0.8F);
+            stopLoops(level);
+            play(level, run, QuasarContent.POP.get(), 16F, 1F);
+        }
+        if (due(from, t, QuasarClock.NIGHT)) {
+            play(level, run, QuasarContent.NIGHT.get(), 4F, 1F);
+        }
+    }
+
+    /** The beam's and the lobe's loops end with the pop, for everyone who may hear them. */
+    private static void stopLoops(ServerLevel level) {
+        for (ServerPlayer player : level.players()) {
+            player.connection.send(new ClientboundStopSoundPacket(QuasarContent.BEAM_LOOP.getId(), SoundSource.BLOCKS));
+            player.connection.send(new ClientboundStopSoundPacket(QuasarContent.LOBE_LOOP.getId(), SoundSource.BLOCKS));
         }
     }
 
@@ -746,8 +785,8 @@ public final class QuasarJets {
             if (level.getBlockState(on).isAir() && level.getBlockState(on.below()).isFaceSturdy(level, on.below(),
                 net.minecraft.core.Direction.UP)) {
                 level.setBlock(on, crystal, Block.UPDATE_ALL);
-                level.playSound(null, on, SoundEvents.AMETHYST_CLUSTER_PLACE, SoundSource.BLOCKS, 1.5F,
-                    0.7F + run.random.nextFloat() * 0.8F);
+                level.playSound(null, on, QuasarContent.CRYSTAL.get(), SoundSource.BLOCKS, 1.5F,
+                    0.8F + run.random.nextFloat() * 0.6F);
                 run.crystalsPlaced++;
             }
         }
