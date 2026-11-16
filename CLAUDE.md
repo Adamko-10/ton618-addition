@@ -5,6 +5,45 @@ Handoff notes for every Claude session in this folder (`C:\Users\User\Desktop\to
 Started 2026-11-13 by an Opus 5.5 session (xhigh) that was started from Adam's SA Series session. **Read `BRIEF.md`
 first** (Adam's brief, his own words at its end), then this file. Fable's part: `prompts\FABLE-PREVIZ-AND-FILM-PROMPT.md`.
 
+### >>> RESUME HERE (2026-11-16 ~14:20, Adam's PC): Adam's first game test of TA-02; the quality redo plan <<<
+
+**Adam's test (2026-11-16, his NeoForge 1.21.1 (1) instance, Iris on; log clean: cast, film, pop all ran)**, his words:
+"it looks much worse in game, severe lack of sfx"; "the sail is supposed to make the star go really fast not over
+years"; "there should be more time to read, maybe when educational mode is enabled you get more time"; "the stars in the
+sky should only appear when you hold the ton remote specifically and they look a lil low quality and so does the
+cutscene, needs heavy work quality wise in every aspect"; "text is over itself, when u select a star theres cyan text
+over the other text"; "the quasar hitting the earth is really underwhelming, make it feel like a big impact and a proper
+explosion"; "also apply a similar educational thing to ton 618 last light so like give more time to read if neccesary".
+He asked whether ponytail made it worse: probably partly (its rules were in the context of Fable's film session and of
+this session while TA-02 was built; Fable's own "Stop ponytail" doesn't switch it off). It is off in its own setting now.
+
+**His picks (clickable, 2026-11-16)**:
+- The sail: **the remote fast-forwards the star's own time** (as Last Light fast-forwards); Earth's clock stays normal
+  (the film shows the star's years racing while seconds pass on Earth).
+- Reading time: **longer in educational mode**, slowing **only the parts with text** (the action keeps its pace), for
+  everyone watching that strike; **the same for Last Light**.
+- Named stars in the sky (and the reticle): **only while holding TON 618's item or the Stellar Remote with TA-02
+  picked** (done, `a5ec28e`: `QuasarClient.holdingQuasarJets()`). TA-02 stays on both.
+- Sounds: **the Sonniss GDC 2026 library** (as Proxima's; the project folder of the SA Series has it:
+  `C:\Users\adam_\Documents\Shooting Star Addition\sound library\sonniss gdc 2026\`, `catalogue.csv`, and its
+  `envelope.js` measuring tool); only processed sounds go in the jar.
+- The jet's landing: **a bigger crater + debris** (a real blast at LANDS: crater, blocks and debris thrown out, a shock
+  wave, flash, shake, boom; sized by the star's type, kept clear of the caster).
+- **Fable redoes film + world visuals** (the film, the named stars, the jet, the lobe, the reticle: drawing files only).
+- **Test games on his PC are allowed when he isn't playing** (check no `javaw` first), for Fable and Opus, to screenshot
+  and fix the look.
+Done already: the doubled "locked" text (the server's cyan action-bar line is gone; the HUD hint stays).
+
+**Who does what**:
+- **Opus**: (1) a test harness for `runClient` that casts TA-02 / Last Light on its own and saves screenshots by film
+  tick (for Fable and Opus); (2) educational mode's slow-down: the client sends its switch to the server, the cast
+  carries it, a time warp (real tick -> story tick) slows only the reading windows, on the server and the client alike;
+  the windows live in data files Fable owns (`quasar/QuasarReading`, `lastlight/LastLightReading`); (3) the landing
+  blast's land part (crater, debris, damage, knock-back); (4) the Sonniss sounds (files, `sounds.json`, the world's
+  sounds; Fable places the film's).
+- **Fable** (one session, its prompt `prompts\FABLE-TA02-QUALITY-PROMPT.md`): the quality redo of the film and the world
+  visuals, the sail story change, the landing blast's look, the reading windows, Last Light's reading windows.
+
 ### >>> RESUME HERE (2026-11-15 ~20:25, Adam's PC): TA-02 built on main, not tested in a game; usage limit hit <<<
 
 - **TA-02 · Quasar Jets is BUILT on `main` (NeoForge 1.21.1)**, version 1.1.0, committed (not pushed), Adam: "Build TA-02 in the mod". Code: `quasar/` (QuasarInfo, QuasarClock = Fable's ticks, QuasarStars = 8 stars + type table with the lobe/bowl/crystals x1.5 for "bigger explosion", QuasarSkill, QuasarJets = two presses + every world effect, QuasarSky = missing stars saved, QuasarContent = 4 frozen-light blocks + radio_lobe damage type), `net/QuasarFx|QuasarLock|QuasarMissing`, `client/quasar/` (QuasarClient, QuasarCast = what the film reads, QuasarRender = named stars, second-sun glare, mark, jet, dome, pop ring, QuasarReticle = lock-on HUD + pop flash, QuasarGl), `client/mixin/ClientLevelMixin` (second sun: sky light/colour/clouds/stars), `client/quasarfilm/QuasarJetsFilm` = **placeholder by Opus (bars, words, title, flood): Fable's package for the real film (Part 2)**. Server config `[quasar_jets]`. Joins only with SS-21 Quasar (`shooting_star_ss21`); `Ton618Link.showInMenu` (SA Series' fix) puts our skills back in the Stellar Remote's menu, which SS-21 freezes. Art: `tools/icons/QuasarJetsArt.java` (skill icon, crystal textures). **The mod icon is in the metadata now** (`ton618_addition_icon.png`, `logoFile`).
