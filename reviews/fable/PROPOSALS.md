@@ -116,5 +116,9 @@ To do on your side:
 - The list: the hand-over's "To test in the game".
 - The caster isn't posed in shot 8 (no turn, no hand over the eyes): the film can't pose a player.
 - With RimuLib's films off (key J), or after skipping, only the world effects are seen.
-- The last text ("MISSING") is on for 1.3 s; the ending can be made about 2 s longer without touching the world
-  effects, if he wants (his call: the film would run to about 995 ticks).
+- ~~The last text ("MISSING") is on for 1.3 s~~: **Adam picked "2 s longer" (2026-11-16)**, done in the film's files:
+  the film's own end is tick 996 (`JetScript.END`), the reticle is on about 2.6 s, `QuasarClock` untouched. The test
+  jar was rebuilt in place (same path). **To commit**: `client/quasarfilm/JetScript.java`, `JetHud.java`,
+  `JetSynth.java`, `JetSound.java`, `previz/quasar-jets/HANDOVER.md`, this file. **CLAUDE.md §7b** still says "the
+  ending could run ~2 s longer, Adam's call": it is done. Keep `QuasarClient`'s `QuasarClock.END + 40` (the film's end
+  must stay under it).

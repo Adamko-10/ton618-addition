@@ -10,12 +10,15 @@ import java.util.Locale;
  * tick.
  *
  * <p>The captions and labels sit a little longer than in the previz (Adam on v1: "slow down the labels a little"): none
- * is on screen for less than about 2.4 s (48 ticks). The film's length and every key tick are unchanged.
+ * is on screen for less than about 2.3 s. Every key tick of {@code QuasarClock} is unchanged; only the film's own
+ * ending runs on about 2 s past the strike's END (960), holding on the gap in the sky (Adam, 2026-11-16: "2 s
+ * longer"). The world effects are over by then, and {@code QuasarClient} keeps the strike until END + 40.
  */
 final class JetScript {
-    static final int END = 960;
+    /** The film's own end (the strike's is 960). Must stay under {@code QuasarClock.END + 40}. */
+    static final int END = 996;
     /** The camera's last shot ends here; RimuLib then blends back to the player's own view by END. */
-    static final int LAST_SHOT_END = 948;
+    static final int LAST_SHOT_END = 984;
     /** Our own space scene covers the screen from the flash cut to under the flood's white. */
     static final float SPACE_FROM = 80F;
     static final float SPACE_TO = 680F;

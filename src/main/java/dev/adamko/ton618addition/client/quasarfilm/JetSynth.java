@@ -7,7 +7,7 @@ import static dev.adamko.ton618addition.client.quasarfilm.JetScript.ss;
 import java.util.Random;
 
 /**
- * <b>FABLE'S FILE.</b> Makes the film's soundtrack: 48 s of stereo sound built from plain oscillators and filtered
+ * <b>FABLE'S FILE.</b> Makes the film's soundtrack: about 50 s of stereo sound built from plain oscillators and filtered
  * noise, every cue at its tick (the previz's "sound sketch" grown up; {@code previz/quasar-jets/NOTES.md}, "Sounds
  * planned"). Nothing here touches the game, so it can be run and measured on its own. {@link JetSound} plays what it
  * makes. The same track for every star.
@@ -22,10 +22,10 @@ final class JetSynth {
     }
 
     private static final float[][] DRONE = {{0, 0.04F}, {80, 0.04F}, {90, 0.13F}, {330, 0.13F}, {436, 0.16F}, {439, 0.015F}, {441, 0.18F},
-        {665, 0.18F}, {680, 0.03F}, {940, 0.03F}, {960, 0}};
+        {665, 0.18F}, {680, 0.03F}, {976, 0.03F}, {994, 0}};
     /** Music, placeholders until the film's music is chosen: M1 (150 to the crash at 665) and M2 (from 895). */
     private static final float[][] PAD = {{150, 0}, {200, 0.03F}, {330, 0.05F}, {438, 0.05F}, {441, 0.08F}, {600, 0.06F}, {662, 0.05F}, {666, 0}};
-    private static final float[][] PAD_BACK = {{893, 0}, {905, 0.05F}, {945, 0.04F}, {960, 0}};
+    private static final float[][] PAD_BACK = {{893, 0}, {905, 0.05F}, {972, 0.04F}, {994, 0}};
 
     /** The whole track, left and right samples in turn. */
     static short[] render() {

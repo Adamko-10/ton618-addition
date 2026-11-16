@@ -63,8 +63,11 @@ projects. If usage runs out, resume from "Next".
   TA-02 film TEST [NeoForge 1.21.1].jar`, with `ss-21-quasar-1.8.0-neoforge.jar` beside it (TA-02 only appears with
   SS-21 Quasar installed).
 - Checked without the game: `./gradlew build` passes; the shader compiles and every material draws in a browser
-  (WebGL2; `previz/quasar-jets/film-check/shader-check.html`); the soundtrack was rendered on its own (48.0 s, made in
+  (WebGL2; `previz/quasar-jets/film-check/shader-check.html`); the soundtrack was rendered on its own (49.8 s, made in
   about 1 s, peak 26,000 of 32,767: no clipping, every cue at its tick). **No game run** (Adam wasn't asked).
+- **2026-11-16 ~13:30: the ending made 2 s longer** at Adam's pick (decision 1); the test jar was rebuilt in place.
+  That change is **not committed** (Opus committed the film before it): `JetScript.java`, `JetHud.java`,
+  `JetSynth.java`, `JetSound.java` (a comment), this file, `reviews/fable/PROPOSALS.md`.
 - No git was run. Proposals for Opus: `reviews/fable/PROPOSALS.md`, "2026-11-16".
 
 ## What was built (all in `client/quasarfilm/` and `shaders/quasarfilm/`)
@@ -94,10 +97,13 @@ Nothing is simulated: every position is a function of `cast.tick(partial)`.
      392-436 → **388-438**; blazar 616-660 → **612-662**; second sun 694-741 → **692-742**; crystals 898-924 (1.3 s) →
      **892-942 (2.5 s)**. The rest were already 2.4 s or more.
    - The star's readout (TYPE / DISTANCE / SIZE / MASS) runs 42-98 instead of 42-78.
-   - To make room at the end, shot 10's tilt up to the sky is **928-948** (previz 922-948) and the "MISSING" reticle
-     932-958 (1.3 s: the one text that is still short). If Adam wants the ending slower: `QuasarClient` keeps the
-     strike until END + 40, so the film's last shot could run to about 995 with no change outside the film
-     (`JetScript.END`, `LAST_SHOT_END`, `TILT_*`, the bars in `JetHud`). Not done: the prompt says to ask first.
+   - To make room at the end, shot 10's tilt up to the sky is **928-948** (previz 922-948).
+   - **The ending is 2 s longer (Adam, 2026-11-16, clickable: "2 s longer").** The film's own end is tick **996**
+     (`JetScript.END`; the strike's `QuasarClock.END` stays 960 and no world effect moved): the camera holds on the gap
+     in the sky until 984 (`LAST_SHOT_END`), the "MISSING" reticle is on 932-994 (about 2.6 s at full strength, was
+     1.3 s), the bars leave 976-994, the soundtrack is 49.8 s (M2 and the drone fade by 994). It fits because
+     `QuasarClient` keeps the strike until `QuasarClock.END + 40` = 1000: **if Opus ever shortens that, the film's END
+     must come down with it** (it must stay under it).
 2. **Shot 10 is framed for the bigger lobe** (radius 9 / 15 / 24 / 33). The camera stands on the far side of the caster
    from the mark, at `max(caster's distance + 8, 2.3 x lobe radius)` from the mark (so the whole dome and its 1.3 x
    pop fit), `max(6, 15% of that)` up, looking at a point 0.3 lobe radii over the mark. FOV 58, narrowed (down to 34)

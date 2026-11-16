@@ -23,7 +23,7 @@ import net.minecraft.util.valueproviders.ConstantFloat;
 import org.lwjgl.BufferUtils;
 
 /**
- * <b>FABLE'S FILE.</b> The film's soundtrack: one continuous stereo track for the whole film (48 s), <b>made by this
+ * <b>FABLE'S FILE.</b> The film's soundtrack: one continuous stereo track for the whole film (about 50 s), <b>made by this
  * code</b> the first time it is needed (plain oscillators and filtered noise, the previz's "sound sketch" grown up; the same way Last Light's is made and played) and
  * played through the game's own sound engine on the Players volume slider, as the SA Series plays its films'
  * soundtracks. No sound file is used, ours or anyone's.

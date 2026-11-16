@@ -80,7 +80,7 @@ final class JetHud {
             box(g, 0F, 0F, w, h, FLOOD, JetScript.white(t));
 
             // the bars: in over the first ticks, away at the end
-            float bars = ss(0F, 10F, t) * (1F - ss(940F, 958F, t));
+            float bars = ss(0F, 10F, t) * (1F - ss(976F, 994F, t));
             float bar = h * 0.11F;
             box(g, 0F, -bar * (1F - bars), w, bar, 0x000000, 1F);
             box(g, 0F, h - bar * bars, w, bar, 0x000000, 1F);
@@ -111,7 +111,8 @@ final class JetHud {
                 name = "";
             }
         } else if (t >= 930F) {
-            shown = ss(932F, 942F, t) * (1F - lin(952F, 958F, t)) * 0.85F;
+            // held on the gap in the sky for about 2.5 s
+            shown = ss(932F, 942F, t) * (1F - lin(984F, 994F, t)) * 0.85F;
             size = 4.6F;
             small = "MISSING · gone from the sky for a few nights";
         } else {
