@@ -1,6 +1,8 @@
 package dev.adamko.ton618addition.client.quasar;
 
 import cyou.rimuru.rimulib.mc1211.client.api.NetClientApi;
+import cyou.rimuru.rimulib.mc1211.client.magic.ClientSkills;
+import cyou.rimuru.rimulib.mc1211.skill.SkillHolder;
 import dev.adamko.ton618addition.Ton618Addition;
 import dev.adamko.ton618addition.client.quasarfilm.QuasarJetsFilm;
 import dev.adamko.ton618addition.net.QuasarFx;
@@ -8,6 +10,7 @@ import dev.adamko.ton618addition.net.QuasarLock;
 import dev.adamko.ton618addition.net.QuasarMissing;
 import dev.adamko.ton618addition.quasar.QuasarClock;
 import dev.adamko.ton618addition.quasar.QuasarInfo;
+import dev.adamko.ton618addition.quasar.QuasarSkill;
 import dev.adamko.ton618addition.quasar.QuasarSky;
 import dev.adamko.ton618addition.quasar.QuasarStars;
 import javax.annotation.Nullable;
@@ -70,6 +73,23 @@ public final class QuasarClient {
     /** The star this player has locked (press 1), or -1. */
     public static int lockedStar() {
         return lockedStar;
+    }
+
+    /**
+     * This player holds TON 618's item or the Stellar Remote with TA-02 picked: only then are the named stars and the
+     * reticle shown (Adam, 2026-11-16). RimuLib internals: if they change, false.
+     */
+    public static boolean holdingQuasarJets() {
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.player == null) {
+            return false;
+        }
+        try {
+            SkillHolder holder = SkillHolder.held(mc.player);
+            return holder != null && holder.skillSet() != null && ClientSkills.selected(holder.skillSet()) instanceof QuasarSkill;
+        } catch (RuntimeException | LinkageError unsure) {
+            return false;
+        }
     }
 
     /** The named star is in the sky today (not launched lately). */

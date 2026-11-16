@@ -1,10 +1,6 @@
 package dev.adamko.ton618addition.client.quasar;
 
-import cyou.rimuru.rimulib.mc1211.client.magic.ClientSkills;
-import cyou.rimuru.rimulib.mc1211.skill.Skill;
-import cyou.rimuru.rimulib.mc1211.skill.SkillHolder;
 import dev.adamko.ton618addition.quasar.QuasarClock;
-import dev.adamko.ton618addition.quasar.QuasarSkill;
 import dev.adamko.ton618addition.quasar.QuasarStars;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
@@ -30,7 +26,7 @@ final class QuasarReticle {
             return;
         }
         flash(g, mc, partial);
-        if (mc.level.dimension() != Level.OVERWORLD || !holdingQuasarJets(mc)) {
+        if (mc.level.dimension() != Level.OVERWORLD || !QuasarClient.holdingQuasarJets()) {
             return;
         }
         Font font = mc.font;
@@ -63,18 +59,6 @@ final class QuasarReticle {
     }
 
     /** TA-02 is the picked skill of what the player holds (RimuLib's client state; nothing shown if it can't tell). */
-    private static boolean holdingQuasarJets(Minecraft mc) {
-        try {
-            SkillHolder holder = SkillHolder.held(mc.player);
-            if (holder == null || holder.skillSet() == null) {
-                return false;
-            }
-            Skill selected = ClientSkills.selected(holder.skillSet());
-            return selected instanceof QuasarSkill;
-        } catch (RuntimeException | LinkageError unsure) {
-            return false;
-        }
-    }
 
     /** Screen position of a sky direction, or null when it is behind the view. */
     private static float[] project(Vec3 dir, int w, int h) {

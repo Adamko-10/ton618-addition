@@ -65,7 +65,8 @@ final class QuasarRender {
         boolean any = false;
         // our 8 named stars: bigger and brighter than vanilla's, in their colours (the locked one pulses)
         float strength = Math.min(1f, night * 2.2f);
-        if (strength > 0.01f) {
+        // only while holding TON 618's item or the Stellar Remote with TA-02 picked (Adam, 2026-11-16)
+        if (strength > 0.01f && QuasarClient.holdingQuasarJets()) {
             for (int i = 0; i < QuasarStars.ALL.size(); i++) {
                 QuasarStars.Star star = QuasarStars.ALL.get(i);
                 if (!QuasarClient.starShown(i)) {

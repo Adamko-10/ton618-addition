@@ -159,9 +159,8 @@ public final class QuasarJets {
                 return deny(player, picked.name() + " is gone: back in " + nights + (nights == 1 ? " night" : " nights"));
             }
             LOCKS.put(player.getUUID(), new Lock(star, now));
+            // the HUD hint (QuasarReticle) says "locked: aim at the ground"; no action-bar line on top of it (Adam, 2026-11-16)
             send(player, new QuasarLock(star));
-            SkillApi.deny(player, Component.literal(picked.name() + " locked: aim at the ground, cast again")
-                .withStyle(ChatFormatting.AQUA));
             return false;
         }
         if (lock == null) {
