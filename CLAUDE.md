@@ -5,6 +5,27 @@ Handoff notes for every Claude session in this folder (`C:\Users\User\Desktop\to
 Started 2026-11-13 by an Opus 5.5 session (xhigh) that was started from Adam's SA Series session. **Read `BRIEF.md`
 first** (Adam's brief, his own words at its end), then this file. Fable's part: `prompts\FABLE-PREVIZ-AND-FILM-PROMPT.md`.
 
+### >>> RESUME HERE (2026-11-17 ~00:30, Adam's PC): TA-02 redo round 1 + sounds in his instance; his test next <<<
+
+- **Fable's first redo round is committed** (`45dd562`; its report: film look, the remote fast-forwarding the star's
+  time with two clocks, sky stars with rays and names, the lock hint clear of RimuLib's label, the ground preview, the
+  landing's flash/fireball/shock wave/dust/shake, cameras keeping a clear view, a new shot into the bowl, 12 reading
+  windows for TA-02 (~27 s longer slowed) and 8 for Last Light (~9 s), the cue sheet). Its screenshots
+  `previz/quasar-jets/redo-check/` stay on disk, kept out of git (`.git/info/exclude`: the repo is public). One of its 6
+  test runs died with a native crash and no crash file (Medal was running; the 3 runs after were clean).
+- **The sounds are made** (`0060021`, Adam's pick "Wait for sounds" = one jar with both): `art/sonniss_sounds.sh` (the
+  SA Series' recipe engine, plus stereo for the film's sounds, seamless loops by crossfade, and a level fix for sounds
+  under 0.4 s), 37 sounds in 40 files in `assets/ton618_addition/sounds/quasar/` (1.4 MB), `sounds.json`, subtitles for
+  the world ones; `art/sounds/sources.md` lists every Sonniss file used. World sounds are registered
+  (`QuasarContent.LOCK` ... `NIGHT`) and played by `QuasarJets.sounds()` (vanilla ones gone): lock (caster only), mark,
+  second sun (every overworld player at their own place), jet incoming, impact by star size, debris, beam and lobe
+  loops (replayed every 60 real ticks, stopped at the pop with `ClientboundStopSoundPacket`), lobe rise, pop, night;
+  crystal per crystal, lift per thing picked up. The film plays its 22 by name (Fable's `JetCues`). Harness run clean
+  (no missing-sound warnings of ours). **Nobody has heard them** (picked by measuring).
+- **Test jar** `..\test builds\2026-11-17 TA-02 quality and sounds\TON 618 Addition 1.1.0 TA-02 quality and sounds TEST
+  [NeoForge 1.21.1].jar` (+ SS-21 1.8.0), **in his instance** `NeoForge 1.21.1 (1)` (the TA-02 film jar there renamed
+  `.disabled`). Next: Adam's test; his notes go to Fable (look) and Opus (sounds, land, logic).
+
 ### >>> RESUME HERE (2026-11-16 ~14:20, Adam's PC): Adam's first game test of TA-02; the quality redo plan <<<
 
 **Adam's test (2026-11-16, his NeoForge 1.21.1 (1) instance, Iris on; log clean: cast, film, pop all ran)**, his words:
