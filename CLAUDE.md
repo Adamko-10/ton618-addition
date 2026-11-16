@@ -636,9 +636,13 @@ Opus). `client/quasarfilm/`: `QuasarJetsFilm` + `JetScript` (timings; captions/l
 sound files or textures); `shaders/quasarfilm/`. Everything is drawn in the HUD pass (no in-world drawing: Fabric
 ports need no P2 hook). Details and "To test in the game": `previz/quasar-jets/HANDOVER.md` "Part 2". Test jar:
 `..\test builds\2026-11-16 TA-02 film\TON 618 Addition 1.1.0 TA-02 film TEST [NeoForge 1.21.1].jar` (+ SS-21 1.8.0).
-Fable's open proposals (Adam picks): **P3** positioned world sounds for the jet, landing, lobe, pop, crystals (server,
-for everyone; the film then drops its own copies), **P4** a getter for the missing star's day so the film can say
-"back in 3 nights". Known limits: the caster isn't posed in shot 8; films off (J) = world effects only; the last
+**P3 and P4 applied (Adam: "Yes, build both", 2026-11-16; `2cb94f6`)**: `QuasarJets.sounds()` plays vanilla
+sounds at the mark for everyone in range (SoundSource.BLOCKS, 16 x volume blocks): BEACON_ACTIVATE at SWEEP,
+WARDEN_SONIC_CHARGE at 767, WARDEN_SONIC_BOOM + GENERIC_EXPLODE at LANDS, RESPAWN_ANCHOR_CHARGE rising at 830/845/860/875,
+GENERIC_EXPLODE + LIGHTNING_BOLT_THUNDER at POP, AMETHYST_CLUSTER_PLACE per crystal; `QuasarClient.backOnDay(star)`
+for the film. **Sent to the Fable film session** to drop its own copies of those cues in `JetSynth` (keeping the
+pickup pops, drone, music) and show "back in N nights" (tonight counts as the first), then rebuild the test jar in
+place: commit its film files when it reports. Not heard in a game. Known limits: the caster isn't posed in shot 8; films off (J) = world effects only; the last
 "MISSING" text is on ~2.6 s: **the ending is 2 s longer** (Adam's pick, 2026-11-16): the film ends at tick 996
 (`JetScript.END`; `QuasarClock.END` stays 960, no world effect moved). It fits because `QuasarClient` keeps the strike
 until `QuasarClock.END + 40` = 1000: never shorten that without bringing the film's END down too. Test jar rebuilt in place.
