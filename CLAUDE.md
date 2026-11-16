@@ -420,13 +420,16 @@ first** (Adam's brief, his own words at its end), then this file. Fable's part: 
 - Next: Adam's test results; Fable's film (its proposals in `reviews\fable\PROPOSALS.md`); the open questions in §3
   when they matter; then TA-02 · Quasar Jets (§10).
 
-## 0. Rules (Adam's; also in `C:\Users\User\.claude\CLAUDE.md`)
+## 0. Rules (Adam's; also in his personal rules, `C:\Users\adam_\.claude\CLAUDE.md`)
+
+2026-11-16: his personal rules now carry the general rules of every project ("Every mod project": git, releases,
+CurseForge, other people's assets, the main version first, test jars in his Modrinth instance); they apply here too.
 
 - Short replies, answer first (he skims). **Every open question as clickable choices** (AskUserQuestion); re-ask
   anything he left unanswered.
 - After coding: a list of **what he needs to do**; for testing: a list of **what to test**.
 - Budget-conscious: say what a big step costs (time, usage, money) before it; don't over-test (he tests in game).
-- **Never push, publish or upload without asking.** No GitHub repo yet. Commit as
+- **Never push, publish or upload without asking.** GitHub: https://github.com/Adamko-10/ton618-addition. Commit as
   `Adamko-10 <Adamko-10@users.noreply.github.com>` (set in this repo's git config) with the session's Co-Authored-By
   line.
 - **Never commit or ship other people's jars, code or assets** (`libs/*.jar` is git-ignored). Decompile only into a
@@ -434,7 +437,8 @@ first** (Adam's brief, his own words at its end), then this file. Fable's part: 
   Quasar's: make our own. NASA / ESO / Solar System Scope imagery is fine with credit (download from the source, ask
   first: file, source, size). **No Bedrock ports.** Credit TON 618 and RimuLib as required dependencies (The Shooting
   Star and SS-21 Quasar as optional ones).
-- New features on **NeoForge 1.21.1 first** (Adam plays it); other loaders only after he tests and approves.
+- New features **and fixes** on **NeoForge 1.21.1 first** (Adam plays it), tested and polished there until he says
+  it's good; only then the other loaders' jars, then CurseForge (his personal rules).
 - **Fable 5.2 makes the previz and the in-game film** (Adam runs it himself). Fable writes only in the film's own files
   (§7) and in `previz\`; anything else it wants goes to `reviews\fable\PROPOSALS.md`; bugs it sees go to
   `reviews\fable\FINDINGS.md`. **Opus builds everything else and applies only the proposals Adam picks.** Fable never
@@ -447,8 +451,9 @@ first** (Adam's brief, his own words at its end), then this file. Fable's part: 
   2026-11-14: copying 0.1.0 to `C:\Users\User\Downloads\` was blocked by the session's permission check; it is only in
   `test builds\` (Adam told).
 - Update this file at the end of every turn and commit it on its own.
-- Adam plays on his own PC (Modrinth, NeoForge 1.21.1), not the VM: test jars go in
-  `C:\Users\User\Desktop\test builds\<date> <what>\`; tell him the path.
+- Adam plays on his own PC (Modrinth, NeoForge 1.21.1): test jars go in `..\test builds\<date> <what>\` **and into
+  his Modrinth instance** `D:\ModrinthApp\profiles\NeoForge 1.21.1 (1)\mods` (older copies `.disabled`, never while
+  he plays); tell him the path. (On the VM: `C:\Users\User\Desktop\test builds\` and Downloads.)
 
 ## 1. What this is
 
