@@ -44,6 +44,32 @@ Done already: the doubled "locked" text (the server's cyan action-bar line is go
 - **Fable** (one session, its prompt `prompts\FABLE-TA02-QUALITY-PROMPT.md`): the quality redo of the film and the world
   visuals, the sail story change, the landing blast's look, the reading windows, Last Light's reading windows.
 
+**Done by Opus (2026-11-16, built, committed, not pushed, not run in a game)**:
+- `a5ec28e` the doubled lock text; named stars + reticle only while `QuasarClient.holdingQuasarJets()`.
+- `5631da5` **educational reading time**: the client sends its switch (`net/EducationChoice`, once per world and on every
+  change, from `Ton618AdditionClient.sendEducation`), the server keeps it (`link/Education`), the cast carries it
+  (`QuasarFx.educational`, `LastLightFx.educational`), and `ReadingTime.story/real` warp real ticks <-> story ticks
+  inside the windows of `quasar/QuasarReading` / `lastlight/LastLightReading` (Fable's data files, empty until Fable
+  fills them) on the server (`Running.tick`) and the client (`QuasarCast.tick`, `LastLightCast.tick`) alike.
+  `realTick(partial)` = unslowed (soundtracks), `slowed()` = the strike's flag, `educational()` = the viewer's own
+  setting (labels). The maths checked both ways (a scratch check, all ok).
+- `5631da5` **the test harness**: source set `src/clienttest` (mod `ton618_clienttest`, never in the release jar),
+  `./gradlew --no-daemon runClientTest -Dton618test.skill=quasar|lastlight -Dton618test.star=Antares
+  -Dton618test.distance=80 -Dton618test.shots=600-1000/10 -Dton618test.edu=false` (also `world=normal|flat`,
+  `seed`, default 618): game dir `run/clienttest` (its mods synced from `libs/` by `copyTestMods`), 1280x720, a fresh
+  world at midnight, TON 618's item with TA-02 picked; shots `sky.png`, `locked.png`, then `<skill>_<story tick>.png`
+  in `run/clienttest/screenshots/`; quits after the last; its log lines start `[TON618TEST]`. Last Light: it sets the
+  devoured flag in `ton618:ton618` storage and moves the player to `ton618:devoured` (TON 618's own dark effects don't
+  run). **Never run yet** (Adam was playing all afternoon; check `Get-Process javaw` first).
+- `2647305` **the landing blast** (land part) at LANDS: `QuasarJets.blast()` (hit + shove within 1.6 x `blast`, debris =
+  surface blocks flung as falling blocks, `dropItem` off) and `crater()` (cut from the middle out over 6 ticks, scorched
+  floor: blackstone, basalt, some magma); `QuasarStars.Type.blast` 7/10/15/20, `blastDepth` 5/7/10/13, `blastDamage`
+  8/12/16/20, `debris` 20/30/45/60.
+- Fable's session [Fable: TA-02 quality redo](#local_89d133b7-381e-4222-b7db-49bd77b35ec8) (Fable 5.2, High): started
+  ~14:20 (came up on Opus: model set, then "go"), hit the 5-hour limit before writing anything, resumed 18:33 with the
+  blast numbers. **Next for Opus**: the Sonniss sounds once Fable's cue sheet (`previz/quasar-jets/SOUND-CUES.md`) is
+  in; commit Fable's files when it reports; the harness's first run when Adam isn't playing.
+
 ### >>> RESUME HERE (2026-11-15 ~20:25, Adam's PC): TA-02 built on main, not tested in a game; usage limit hit <<<
 
 - **TA-02 · Quasar Jets is BUILT on `main` (NeoForge 1.21.1)**, version 1.1.0, committed (not pushed), Adam: "Build TA-02 in the mod". Code: `quasar/` (QuasarInfo, QuasarClock = Fable's ticks, QuasarStars = 8 stars + type table with the lobe/bowl/crystals x1.5 for "bigger explosion", QuasarSkill, QuasarJets = two presses + every world effect, QuasarSky = missing stars saved, QuasarContent = 4 frozen-light blocks + radio_lobe damage type), `net/QuasarFx|QuasarLock|QuasarMissing`, `client/quasar/` (QuasarClient, QuasarCast = what the film reads, QuasarRender = named stars, second-sun glare, mark, jet, dome, pop ring, QuasarReticle = lock-on HUD + pop flash, QuasarGl), `client/mixin/ClientLevelMixin` (second sun: sky light/colour/clouds/stars), `client/quasarfilm/QuasarJetsFilm` = **placeholder by Opus (bars, words, title, flood): Fable's package for the real film (Part 2)**. Server config `[quasar_jets]`. Joins only with SS-21 Quasar (`shooting_star_ss21`); `Ton618Link.showInMenu` (SA Series' fix) puts our skills back in the Stellar Remote's menu, which SS-21 freezes. Art: `tools/icons/QuasarJetsArt.java` (skill icon, crystal textures). **The mod icon is in the metadata now** (`ton618_addition_icon.png`, `logoFile`).
