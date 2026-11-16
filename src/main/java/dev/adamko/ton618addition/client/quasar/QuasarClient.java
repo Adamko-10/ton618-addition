@@ -81,6 +81,14 @@ public final class QuasarClient {
         return QuasarSky.day(mc.level.getDayTime()) >= backOnDay[star];
     }
 
+    /**
+     * The overworld day ({@link QuasarSky#day}) from which the named star is back in the sky; 0 when it never left.
+     * For the film's "back in N nights" (Fable's proposal P4): {@code backOnDay(star) - QuasarSky.day(level.getDayTime())}.
+     */
+    public static long backOnDay(int star) {
+        return star >= 0 && star < backOnDay.length ? backOnDay[star] : 0L;
+    }
+
     /** The second sun, 0 (none) to 1 (full day), for this client right now (in the overworld only). */
     public static float secondSun(float partial) {
         QuasarCast cast = current;

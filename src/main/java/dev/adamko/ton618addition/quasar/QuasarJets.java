@@ -24,6 +24,9 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
@@ -101,6 +104,8 @@ public final class QuasarJets {
         int crystalsPlaced;
         boolean loosened;
         boolean popped;
+        /** The last tick {@link #sounds} has played up to. */
+        long soundsDone = -1;
         long lastLobeHit = Long.MIN_VALUE;
 
         Running(QuasarFx fx, QuasarStars.Star star) {
@@ -243,6 +248,7 @@ public final class QuasarJets {
         long t = run.tick(server);
         try {
             boolean terrain = Ton618AdditionConfig.quasarTerrain();
+            sounds(level, run, t);
             if (terrain && !run.loosened && t >= QuasarClock.SWEEP + 30) {
                 run.loosened = true;
                 loosen(level, run);
@@ -454,6 +460,45 @@ public final class QuasarJets {
     }
 
     /** POP: the dome bursts: a last hit inside it, a shove out to twice its size. */
+    /**
+     * The strike's world sounds, positioned at the mark, for everyone in range (Fable's proposal P3, Adam's yes,
+     * 2026-11-16; the film's own track drops its copies of these): the jet coming down (SWEEP), its landing (LANDS), the
+     * radio lobe charging up (LOBE..), its pop (POP). The crystals chime as each grows ({@link #crystals}). Vanilla sounds.
+     */
+    private static void sounds(ServerLevel level, Running run, long t) {
+        long from = run.soundsDone;
+        run.soundsDone = t;
+        if (due(from, t, QuasarClock.SWEEP)) {
+            play(level, run, SoundEvents.BEACON_ACTIVATE, 6F, 0.5F);
+        }
+        if (due(from, t, QuasarClock.SWEEP + 22)) {
+            play(level, run, SoundEvents.WARDEN_SONIC_CHARGE, 6F, 0.6F);
+        }
+        if (due(from, t, QuasarClock.LANDS)) {
+            play(level, run, SoundEvents.WARDEN_SONIC_BOOM, 8F, 0.6F);
+            play(level, run, SoundEvents.GENERIC_EXPLODE.value(), 4F, 0.5F);
+        }
+        for (int i = 0; i < 4; i++) {
+            if (due(from, t, QuasarClock.LOBE + i * 15)) {
+                play(level, run, SoundEvents.RESPAWN_ANCHOR_CHARGE, 4F, 0.5F + i * 0.2F);
+            }
+        }
+        if (due(from, t, QuasarClock.POP)) {
+            play(level, run, SoundEvents.GENERIC_EXPLODE.value(), 8F, 0.7F);
+            play(level, run, SoundEvents.LIGHTNING_BOLT_THUNDER, 6F, 0.8F);
+        }
+    }
+
+    /** {@code cue} falls after the last tick played and by this one (once each, even if a tick is skipped). */
+    private static boolean due(long from, long t, long cue) {
+        return from < cue && cue <= t;
+    }
+
+    /** Heard up to 16 x {@code volume} blocks from the mark. */
+    private static void play(ServerLevel level, Running run, SoundEvent sound, float volume, float pitch) {
+        level.playSound(null, run.mark.x, run.mark.y, run.mark.z, sound, SoundSource.BLOCKS, volume, pitch);
+    }
+
     private static void pop(ServerLevel level, Running run) {
         double r = run.star.type().lobe;
         for (LivingEntity e : level.getEntitiesOfClass(LivingEntity.class, new AABB(run.mark, run.mark).inflate(r * 2.0),
@@ -577,6 +622,8 @@ public final class QuasarJets {
             if (level.getBlockState(on).isAir() && level.getBlockState(on.below()).isFaceSturdy(level, on.below(),
                 net.minecraft.core.Direction.UP)) {
                 level.setBlock(on, crystal, Block.UPDATE_ALL);
+                level.playSound(null, on, SoundEvents.AMETHYST_CLUSTER_PLACE, SoundSource.BLOCKS, 1.5F,
+                    0.7F + run.random.nextFloat() * 0.8F);
                 run.crystalsPlaced++;
             }
         }
