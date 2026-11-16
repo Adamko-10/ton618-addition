@@ -60,7 +60,12 @@ Done already: the doubled "locked" text (the server's cyan action-bar line is go
   world at midnight, TON 618's item with TA-02 picked; shots `sky.png`, `locked.png`, then `<skill>_<story tick>.png`
   in `run/clienttest/screenshots/`; quits after the last; its log lines start `[TON618TEST]`. Last Light: it sets the
   devoured flag in `ton618:ton618` storage and moves the player to `ton618:devoured` (TON 618's own dark effects don't
-  run). **Never run yet** (Adam was playing all afternoon; check `Get-Process javaw` first).
+  run). **Works** (2026-11-16 18:45, ~3 min a run): the player stands on a glass perch 12 blocks above the trees
+  (`516ea25`: seed 618 spawns in jungle, where the second press hit leaves and was refused). Before a run, this must
+  return nothing: `Get-Process java,javaw -ErrorAction SilentlyContinue | Where-Object MainWindowTitle -like
+  'Minecraft*'`. Found by it: Adam's "cyan text over the other text" is our lock hint landing on RimuLib's
+  selected-skill label ("◆ TA-02 · Quasar Jets", above the hotbar), not the action-bar line `a5ec28e` removed:
+  Fable moves it; the film's camera at LANDS was buried in jungle trees (Fable).
 - `2647305` **the landing blast** (land part) at LANDS: `QuasarJets.blast()` (hit + shove within 1.6 x `blast`, debris =
   surface blocks flung as falling blocks, `dropItem` off) and `crater()` (cut from the middle out over 6 ticks, scorched
   floor: blackstone, basalt, some magma); `QuasarStars.Type.blast` 7/10/15/20, `blastDepth` 5/7/10/13, `blastDamage`
