@@ -9,6 +9,8 @@ import static dev.adamko.ton618addition.client.quasarfilm.JetScript.ss;
 import com.mojang.math.Axis;
 import cyou.rimuru.rimulib.mc1211.client.api.UiApi;
 import dev.adamko.ton618addition.client.quasar.QuasarCast;
+import dev.adamko.ton618addition.client.quasar.QuasarClient;
+import dev.adamko.ton618addition.quasar.QuasarSky;
 import dev.adamko.ton618addition.quasar.QuasarStars;
 import java.util.ArrayList;
 import java.util.List;
@@ -85,7 +87,7 @@ final class JetHud {
             box(g, 0F, -bar * (1F - bars), w, bar, 0x000000, 1F);
             box(g, 0F, h - bar * bars, w, bar, 0x000000, 1F);
 
-            reticle(g, t, star, w, h, cq);
+            reticle(g, t, star, cast.starIndex(), w, h, cq);
             if (cast.educational()) {
                 labels(g, t, cast, w, h, cq);
             }
@@ -98,7 +100,21 @@ final class JetHud {
 
     // ---- the reticle: on the star in shot 1, on the gap it left at the end ------------------------------------------------
 
-    private static void reticle(GuiGraphics g, float t, QuasarStars.Star star, float w, float h, float cq) {
+    /**
+     * The words under the empty reticle: how long the launched star stays out of the sky. The server counts tonight as
+     * the first of its nights, so "back in 3 nights" means gone tonight and the next two.
+     */
+    private static String missing(int starIndex) {
+        Minecraft mc = Minecraft.getInstance();
+        long nights = mc.level == null ? 0L : QuasarClient.backOnDay(starIndex) - QuasarSky.day(mc.level.getDayTime());
+        if (nights <= 0L) {
+            // the server keeps no star out of the sky (or hasn't said): no promise about nights
+            return "FED TO TON618";
+        }
+        return nights == 1L ? "MISSING · back tomorrow night" : "MISSING · back in " + nights + " nights";
+    }
+
+    private static void reticle(GuiGraphics g, float t, QuasarStars.Star star, int starIndex, float w, float h, float cq) {
         float shown;
         float size;
         String name = star.name().toUpperCase(Locale.ROOT);
@@ -114,7 +130,7 @@ final class JetHud {
             // held on the gap in the sky for about 2.5 s
             shown = ss(932F, 942F, t) * (1F - lin(984F, 994F, t)) * 0.85F;
             size = 4.6F;
-            small = "MISSING · gone from the sky for a few nights";
+            small = missing(starIndex);
         } else {
             return;
         }

@@ -65,9 +65,11 @@ projects. If usage runs out, resume from "Next".
 - Checked without the game: `./gradlew build` passes; the shader compiles and every material draws in a browser
   (WebGL2; `previz/quasar-jets/film-check/shader-check.html`); the soundtrack was rendered on its own (49.8 s, made in
   about 1 s, peak 26,000 of 32,767: no clipping, every cue at its tick). **No game run** (Adam wasn't asked).
-- **2026-11-16 ~13:30: the ending made 2 s longer** at Adam's pick (decision 1); the test jar was rebuilt in place.
-  That change is **not committed** (Opus committed the film before it): `JetScript.java`, `JetHud.java`,
-  `JetSynth.java`, `JetSound.java` (a comment), this file, `reviews/fable/PROPOSALS.md`.
+- **2026-11-16 ~13:30: the ending made 2 s longer** at Adam's pick (decision 1); committed by Opus (`86bce18`).
+- **2026-11-16 ~13:45: the film side of P3 and P4** (Adam said yes; Opus built the rest in `2cb94f6`): the track
+  drops its copies of the world sounds (decision 9) and the last reticle says "back in N nights" (decision 8). Builds;
+  the track was rendered again on its own (49.8 s, no clipping, quiet from 745 to the music at 895); the test jar was
+  rebuilt in place. **Not committed**: `JetSynth.java`, `JetHud.java`, this file, `reviews/fable/PROPOSALS.md`.
 - No git was run. Proposals for Opus: `reviews/fable/PROPOSALS.md`, "2026-11-16".
 
 ## What was built (all in `client/quasarfilm/` and `shaders/quasarfilm/`)
@@ -121,11 +123,16 @@ Nothing is simulated: every position is a function of `cast.tick(partial)`.
 7. **Camera and land.** Shots 8, 9, 10 lift the camera when the ground under it is higher than the shot's own height
    (heightmap). Shot 1's swing from the mark to the star goes round the short way (a real turn, so a star behind the
    caster doesn't flip the picture).
-8. **The reticle at the end** says "MISSING · gone from the sky for a few nights": the client can't read how many
-   nights (proposal P4).
-9. **The soundtrack** has the world part's sounds too (the jet's whine and landing, the lobe's swell, the pop, the
-   crystal chimes), unpositioned, for the players who get the film: the mod plays no world sounds yet (proposal P3).
-   M1 (150 to the crash at 665) and M2 (from 895) are placeholder pads, as agreed.
+8. **The reticle at the end** says "MISSING · back in N nights" (P4, applied 2026-11-16): N =
+   `QuasarClient.backOnDay(star) - QuasarSky.day(level.getDayTime())`. The server counts tonight as the first night, so
+   "back in 3 nights" means gone tonight and the next two. N = 1 reads "back tomorrow night"; N of 0 or less (the
+   server keeps no star out of the sky, or hasn't said) reads "FED TO TON618", with no promise about nights.
+9. **The soundtrack no longer has the world part's big sounds** (P3, applied 2026-11-16): the server plays them at the
+   mark for everyone near (`quasar/QuasarJets.sounds`: the jet arriving and landing, the lobe, the pop, the crystals),
+   and the film's camera is near the mark in shots 9 and 10 to hear them. Dropped from `JetSynth`: the jet's whine and
+   hum (745 and 760 on), the landing (795), the lobe's voice and two hisses (830 to 890), the pop (890, 892), the
+   crystal chimes (893 to 922). Kept from 745 on: the drone, the second sun's hum, the soft pops of things being
+   lifted (776 to 826), the music. M1 (150 to the crash at 665) and M2 (from 895) are placeholder pads, as agreed.
 10. **Flashes**: the three short ones (the cut at 330, the ignition, the pop) are softened to a third for players who
     switched on the game's "Hide Lightning Flashes". The flash into space at 80 and the flood at 665 are not: they
     hide cuts.
@@ -144,7 +151,9 @@ Night, overworld, SS-21 Quasar installed, TA-02 picked. Press 1 at a named star,
 3. Back in the world: day, the second sun low in the picture (shot 8); the jet coming in from the horizon to the
    mark (shot 9); the dome whole in the picture, the pop, the crystals; then up to the sky and "MISSING" (shot 10).
 4. Words: are the captions and labels on long enough now? (Educational mode: the plate in the H menu.)
-5. Sound: a track all the way through; boom at the ignition, crack at the jets, crash at the white, pop at 44.5 s.
+5. Sound: a track all the way through; boom at the ignition, crack at the jets, crash at the white. From the jet's
+   arrival on, the loud sounds are the world's (heard by everyone near the mark): do they sit well with the film, and
+   is the pop at 44.5 s loud enough from shot 10's camera?
 6. Try one small star (Barnard's Star) and one big one (Betelgeuse): colours, sizes, shot 10's framing.
 
 Known limits to tell him: with a shader pack (Iris) the world effects are Opus's and may differ; the space scene,

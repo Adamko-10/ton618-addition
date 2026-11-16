@@ -91,6 +91,17 @@ To do on your side:
    captions and labels were retimed (the hand-over's decision 1), the key ticks weren't.
 3. **Ports**: "For the ports" in the hand-over. No in-world drawing this time, so P2 isn't needed for this film.
 
+### P3 and P4: APPLIED 2026-11-16 (Adam said yes)
+
+Opus built the non-film side (`2cb94f6`: `QuasarJets.sounds()`, `QuasarClient.backOnDay`). Fable did the film side
+the same day: `JetSynth` drops its copies of the jet's arrival and hum, the landing, the lobe, the pop and the
+crystal chimes (it keeps the drone, the second sun's hum, the soft pickup pops and the music); `JetHud`'s last
+reticle says "MISSING · back in N nights" ("back tomorrow night" for 1; "FED TO TON618" when the server keeps no
+star out of the sky). Test jar rebuilt in place. **To commit**: `client/quasarfilm/JetSynth.java`, `JetHud.java`,
+`previz/quasar-jets/HANDOVER.md`, this file. One thing to hear in the game: whether the vanilla pop is loud enough
+from shot 10's camera, which stands 2.3 lobe radii or more from the mark (up to about 76 blocks for a supergiant;
+the pop's sounds reach 96 and 128 blocks, so it should be, but quieter with distance).
+
 ### Proposal P3 (optional): world sounds for the strike, for everyone
 
 - **What**: the server plays no sounds for the jet arriving (745 to 795), its landing (795), the lobe swelling (830 to

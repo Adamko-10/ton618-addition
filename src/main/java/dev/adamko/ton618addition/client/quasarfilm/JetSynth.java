@@ -12,8 +12,10 @@ import java.util.Random;
  * planned"). Nothing here touches the game, so it can be run and measured on its own. {@link JetSound} plays what it
  * makes. The same track for every star.
  *
- * <p>The sounds of the world part (the jet arriving, the lobe, its pop, the crystals) are in the track too, for the
- * players who get the film: the mod plays no world sounds for those yet.
+ * <p>The world part's big sounds (the jet arriving and landing, the lobe swelling, its pop, the crystals) are <b>not</b>
+ * in the track: the server plays them at the mark for everyone near ({@code quasar/QuasarJets.sounds}, proposal P3),
+ * and the film's camera is there to hear them. From tick 745 the track only keeps its quiet bed (the drone, the second
+ * sun's hum), the soft pops of things being lifted, and the music.
  */
 final class JetSynth {
     static final int RATE = 44100;
@@ -56,13 +58,6 @@ final class JetSynth {
         // after the crash: a high tone ringing out, a faint electric hum from the new light in the sky
         voice(l, r, t -> t > 668F && t < 750F ? 0.014F * (1F - lin(690F, 750F, t)) : 0F, t -> 1568F, 1.5F, 1, 0F);
         voice(l, r, t -> t > 684F && t < 926F ? 0.016F * lin(684F, 704F, t) * (1F - lin(900F, 926F, t)) : 0F, t -> 120F, 0.7F, 2, 0F);
-        // the jet arriving: a thin whine from far off, then its steady hum
-        voice(l, r, t -> t > 745F && t < 896F ? 0.028F * lin(745F, 795F, t) * (1F - lin(888F, 896F, t)) : 0F, t -> 500F + 900F * lin(745F, 795F, t), 0.4F, 1, 0F);
-        voice(l, r, t -> t > 760F && t < 896F ? 0.05F * lin(760F, 795F, t) * (1F - lin(888F, 896F, t)) : 0F, t -> 110F, 0.6F, 3, 0F);
-        // the lobe swelling: a rising, crackling drone
-        voice(l, r, t -> t > 830F && t < 890F ? 0.03F + 0.1F * lin(830F, 890F, t) : 0F, t -> 90F * (float) Math.pow(2.0, lin(830F, 890F, t) * 2.0), 0.5F, 2, 0F);
-        hiss(l, r, random, t -> t > 830F && t < 890F ? 0.14F * lin(830F, 888F, t) : 0F, t -> 1400F, 0.5F);
-        hiss(l, r, random, t -> t > 830F && t < 890F ? 0.07F * lin(830F, 890F, t) * (0.5F + 0.5F * (float) Math.sin(t * t * 0.05)) : 0F, t -> 5200F, 1.2F);
         // the music
         for (float note : new float[] {146.83F, 220F, 293.66F}) {
             voice(l, r, t -> keys(PAD, t), t -> note, 0.5F, 1, 0.4F);
@@ -106,21 +101,10 @@ final class JetSynth {
         // looking down the jet: a white crash, a high ring left hanging
         noise(l, r, random, at(665F), 2.8, 0.7F, 9000F);
         tone(l, r, at(665F), 3.0, 2093F, 2093F, 0.05F, 0F);
-        // the jet lands
-        tone(l, r, at(795F), 1.2, 52F, 52F, 0.6F, 0F);
-        noise(l, r, random, at(795F), 0.5, 0.3F, 3000F);
-        // soft pops as things are lifted into it
+        // soft pops as things are lifted into the jet (the film's own; the jet, the lobe, the pop and the crystals are
+        // the world's sounds)
         for (float t = 776F; t < 826F; t += 2F + random.nextFloat() * 3F) {
             tone(l, r, at(t), 0.1, 300F + random.nextFloat() * 500F, 0F, 0.05F, random.nextFloat() * 1.6F - 0.8F);
-        }
-        // the pop: sharp, a deep drop under it, a ring of wind running out
-        noise(l, r, random, at(890F), 0.1, 0.9F, 9000F);
-        noise(l, r, random, at(890F), 1.3, 0.8F, 6000F);
-        tone(l, r, at(890F), 2.0, 90F, 30F, 0.9F, 0F);
-        noise(l, r, random, at(892F), 1.8, 0.3F, 900F);
-        // glassy chimes as the crystals grow
-        for (float t = 893F; t < 922F; t += 3F) {
-            tone(l, r, at(t), 0.5, 1800F + random.nextFloat() * 2200F, 0F, 0.03F, random.nextFloat() * 1.6F - 0.8F);
         }
 
         short[] pcm = new short[n * 2];
