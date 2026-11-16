@@ -10,6 +10,7 @@ import dev.adamko.ton618addition.client.quasar.QuasarClient;
 import dev.adamko.ton618addition.lastlight.LastLightClock;
 import dev.adamko.ton618addition.lastlight.LastLightInfo;
 import dev.adamko.ton618addition.link.Ton618Link;
+import dev.adamko.ton618addition.net.EducationChoice;
 import dev.adamko.ton618addition.net.LastLightEnd;
 import dev.adamko.ton618addition.net.LastLightFx;
 import javax.annotation.Nullable;
@@ -32,6 +33,9 @@ public final class Ton618AdditionClient {
     private static LastLightCast current;
     /** RimuLib's films were on last tick (to notice them being switched on mid-cast). */
     private static boolean filmsWereOn;
+    /** The educational mode last told to this server, or null when not told yet in this world. */
+    @Nullable
+    private static Boolean sentEducation;
 
     private static boolean filmsOn() {
         try {
@@ -115,6 +119,7 @@ public final class Ton618AdditionClient {
     }
 
     private static void tick() {
+        sendEducation();
         if (current == null || Minecraft.getInstance().isPaused()) {
             return;
         }
@@ -134,6 +139,30 @@ public final class Ton618AdditionClient {
             if (LastLightFilm.active()) {
                 LastLightFilm.stop();
             }
+        }
+    }
+
+    /**
+     * Tells the server this player's educational mode once in each world and whenever it changes (the H-menu switch or
+     * the config screen): a strike they cast then runs its reading windows slower ({@code ReadingTime}).
+     */
+    private static void sendEducation() {
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.player == null || mc.getConnection() == null) {
+            sentEducation = null;
+            return;
+        }
+        boolean on = Ton618AdditionClientConfig.educational();
+        if (sentEducation != null && sentEducation == on) {
+            return;
+        }
+        try {
+            if (NetClientApi.canSend(EducationChoice.PACKET)) {
+                NetClientApi.send(new EducationChoice(on));
+                sentEducation = on;
+            }
+        } catch (RuntimeException | LinkageError unsure) {
+            sentEducation = on;
         }
     }
 

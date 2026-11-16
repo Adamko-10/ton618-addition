@@ -1,0 +1,9 @@
+modLoader = "javafml"
+loaderVersion = "[4,)"
+license = "All Rights Reserved"
+
+[[mods]]
+modId = "ton618_clienttest"
+version = "0"
+displayName = "TON 618 Addition test harness (dev only)"
+description = "Casts TA-02 or Last Light by itself and saves screenshots by story tick. Never shipped."

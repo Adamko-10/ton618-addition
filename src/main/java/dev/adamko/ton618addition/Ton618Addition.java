@@ -3,6 +3,7 @@ package dev.adamko.ton618addition;
 import com.mojang.logging.LogUtils;
 import dev.adamko.ton618addition.client.Ton618AdditionClient;
 import dev.adamko.ton618addition.lastlight.LastLight;
+import dev.adamko.ton618addition.link.Education;
 import dev.adamko.ton618addition.link.Ton618Link;
 import dev.adamko.ton618addition.quasar.QuasarContent;
 import dev.adamko.ton618addition.quasar.QuasarJets;
@@ -78,6 +79,7 @@ public final class Ton618Addition {
         NeoForge.EVENT_BUS.addListener(PlayerEvent.PlayerLoggedOutEvent.class, event -> {
             if (event.getEntity() instanceof ServerPlayer player) {
                 QuasarJets.left(player);
+                Education.forget(player.getUUID());
             }
         });
     }

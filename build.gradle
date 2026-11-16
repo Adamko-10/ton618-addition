@@ -29,7 +29,14 @@ repositories {
     mavenLocal()
 }
 
+// A dev-only source set for the screenshot harness (src/clienttest): never in the release jar, loaded only by the
+// clientTest run below as its own second mod. ./gradlew runClientTest -Dton618test.skill=quasar ... (see its Harness).
+sourceSets {
+    clienttest {}
+}
+
 var mainMod
+var testMod
 
 neoForge {
     version = project.neo_version
@@ -43,8 +50,12 @@ neoForge {
         "${mod_id}" {
             sourceSet(sourceSets.main)
         }
+        ton618_clienttest {
+            sourceSet(sourceSets.clienttest)
+        }
     }
     mainMod = mods.getByName(mod_id)
+    testMod = mods.getByName('ton618_clienttest')
 
     runs {
         client {
@@ -55,6 +66,21 @@ neoForge {
             server()
             programArgument '--nogui'
             loadedMods.set([mainMod])
+        }
+        // Dev-only: casts TA-02 / Last Light by itself and saves screenshots by story tick into run/clienttest/screenshots
+        clientTest {
+            client()
+            gameDirectory = layout.projectDirectory.dir('run/clienttest')
+            loadedMods.set([mainMod, testMod])
+            programArguments.addAll('--width', '1280', '--height', '720')
+            systemProperty 'ton618test', 'true'
+            ['skill', 'star', 'distance', 'shots', 'edu', 'world', 'seed'].each { key ->
+                var name = "ton618test.${key}"
+                var value = project.findProperty(name) ?: System.getProperty(name)
+                if (value != null) {
+                    systemProperty name, value.toString()
+                }
+            }
         }
         configureEach {
             systemProperty 'forge.logging.markers', 'REGISTRIES'
@@ -73,8 +99,12 @@ if (rimulib.files.size() > 1) {
     throw new GradleException("libs/ has more than one RimuLib: ${rimulib.files*.name} - keep one")
 }
 
+neoForge.addModdingDependenciesTo(sourceSets.clienttest)
+
 dependencies {
     compileOnly rimulib
+    clienttestCompileOnly rimulib
+    clienttestImplementation sourceSets.main.output
 }
 
 tasks.named('compileJava') {
@@ -90,8 +120,12 @@ var copyRunMods = tasks.register('copyRunMods', Sync) {
     from rimulib, ton618, extraMods
     into layout.projectDirectory.dir('run/mods')
 }
+var copyTestMods = tasks.register('copyTestMods', Sync) {
+    from rimulib, ton618, extraMods
+    into layout.projectDirectory.dir('run/clienttest/mods')
+}
 tasks.matching { it.name.startsWith('run') }.configureEach {
-    dependsOn copyRunMods
+    dependsOn copyRunMods, copyTestMods
 }
 
 // neoforge.mods.toml is filled in from gradle.properties.

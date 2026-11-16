@@ -24,15 +24,17 @@ import net.minecraft.world.phys.Vec3;
  * @param remote       it was fired from the Stellar Remote (otherwise TON 618's own item)
  * @param film         this player gets the film (the caster and players within 128 blocks); the rest see the world only
  * @param secondSun    the server allows the second sun
+ * @param educational  the caster had educational mode on: the reading windows run slower ({@code ReadingTime})
  */
 public record QuasarFx(UUID caster, int casterId, long castGameTime, Vec3 mark, int star, Vec3 quasar, Vec3 position,
-                       float yaw, float pitch, boolean offhand, boolean remote, boolean film, boolean secondSun) {
+                       float yaw, float pitch, boolean offhand, boolean remote, boolean film, boolean secondSun,
+                       boolean educational) {
     public static final RimuPacket<QuasarFx> PACKET = NetApi.packet(Ton618Addition.id("quasar_jets"), QuasarFx.class,
         QuasarFx::write, QuasarFx::read);
 
     public QuasarFx withFilm(boolean film) {
         return new QuasarFx(this.caster, this.casterId, this.castGameTime, this.mark, this.star, this.quasar,
-            this.position, this.yaw, this.pitch, this.offhand, this.remote, film, this.secondSun);
+            this.position, this.yaw, this.pitch, this.offhand, this.remote, film, this.secondSun, this.educational);
     }
 
     private void write(FriendlyByteBuf buf) {
@@ -49,12 +51,13 @@ public record QuasarFx(UUID caster, int casterId, long castGameTime, Vec3 mark, 
         buf.writeBoolean(this.remote);
         buf.writeBoolean(this.film);
         buf.writeBoolean(this.secondSun);
+        buf.writeBoolean(this.educational);
     }
 
     private static QuasarFx read(FriendlyByteBuf buf) {
         return new QuasarFx(buf.readUUID(), buf.readVarInt(), buf.readLong(), readVec(buf), buf.readVarInt(), readVec(buf),
             readVec(buf), buf.readFloat(), buf.readFloat(), buf.readBoolean(), buf.readBoolean(), buf.readBoolean(),
-            buf.readBoolean());
+            buf.readBoolean(), buf.readBoolean());
     }
 
     // three doubles, not writeVec3: 1.20.1's FriendlyByteBuf has none (the ports share this file)

@@ -1,7 +1,9 @@
 package dev.adamko.ton618addition.client.quasar;
 
+import dev.adamko.ton618addition.ReadingTime;
 import dev.adamko.ton618addition.client.Ton618AdditionClientConfig;
 import dev.adamko.ton618addition.net.QuasarFx;
+import dev.adamko.ton618addition.quasar.QuasarReading;
 import dev.adamko.ton618addition.quasar.QuasarStars;
 import java.util.UUID;
 import javax.annotation.Nullable;
@@ -35,13 +37,26 @@ public final class QuasarCast {
         }
     }
 
-    /** Game ticks since the second press, with the frame's partial tick. */
+    /**
+     * Story ticks of {@code QuasarClock}, with the frame's partial tick: game ticks since the second press, slowed in the
+     * reading windows ({@code QuasarReading}) when the caster had educational mode on, as on the server.
+     */
     public float tick(float partialTick) {
+        return story(this.counted + partialTick);
+    }
+
+    /** Whole story ticks. */
+    public long tick() {
+        return (long) story(this.counted);
+    }
+
+    /** Game ticks since the second press, unslowed (for anything that must follow the real clock, e.g. a soundtrack). */
+    public float realTick(float partialTick) {
         return this.counted + partialTick;
     }
 
-    public long tick() {
-        return this.counted;
+    private float story(float real) {
+        return this.fx.educational() ? ReadingTime.story(QuasarReading.WINDOWS, real) : real;
     }
 
     public QuasarFx fx() {
@@ -114,5 +129,10 @@ public final class QuasarCast {
 
     public boolean educational() {
         return Ton618AdditionClientConfig.educational();
+    }
+
+    /** This strike runs its reading windows slower (its caster had educational mode on; the same for every viewer). */
+    public boolean slowed() {
+        return this.fx.educational();
     }
 }

@@ -3,8 +3,10 @@ package dev.adamko.ton618addition.quasar;
 import cyou.rimuru.rimulib.mc1211.api.NetApi;
 import cyou.rimuru.rimulib.mc1211.api.SkillApi;
 import cyou.rimuru.rimulib.mc1211.skill.SkillHolder;
+import dev.adamko.ton618addition.ReadingTime;
 import dev.adamko.ton618addition.Ton618Addition;
 import dev.adamko.ton618addition.Ton618AdditionConfig;
+import dev.adamko.ton618addition.link.Education;
 import dev.adamko.ton618addition.net.QuasarFx;
 import dev.adamko.ton618addition.net.QuasarLock;
 import dev.adamko.ton618addition.net.QuasarMissing;
@@ -117,8 +119,10 @@ public final class QuasarJets {
             this.random = RandomSource.create(fx.castGameTime());
         }
 
+        /** Story ticks of {@link QuasarClock} (slower in the reading windows when the caster had educational mode on). */
         long tick(MinecraftServer server) {
-            return server.overworld().getGameTime() - this.fx.castGameTime();
+            long real = server.overworld().getGameTime() - this.fx.castGameTime();
+            return this.fx.educational() ? (long) ReadingTime.story(QuasarReading.WINDOWS, real) : real;
         }
     }
 
@@ -185,7 +189,7 @@ public final class QuasarJets {
             && player.getOffhandItem().getItem() instanceof SkillHolder;
         QuasarFx fx = new QuasarFx(player.getUUID(), player.getId(), now, mark, lock.star(),
             QuasarStars.quasarDirection(player.getYRot()), player.position(), player.getYRot(), player.getXRot(), offhand,
-            skill.onRemote(), true, Ton618AdditionConfig.quasarSecondSun());
+            skill.onRemote(), true, Ton618AdditionConfig.quasarSecondSun(), Education.on(player));
         unlock(player);
         running = new Running(fx, picked);
         QuasarSky sky = QuasarSky.of(player.server);

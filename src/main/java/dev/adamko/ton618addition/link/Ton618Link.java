@@ -9,6 +9,7 @@ import dev.adamko.ton618addition.Ton618Addition;
 import dev.adamko.ton618addition.lastlight.LastLight;
 import dev.adamko.ton618addition.lastlight.LastLightInfo;
 import dev.adamko.ton618addition.lastlight.LastLightSkill;
+import dev.adamko.ton618addition.net.EducationChoice;
 import dev.adamko.ton618addition.net.LastLightEnd;
 import dev.adamko.ton618addition.net.LastLightFx;
 import dev.adamko.ton618addition.net.QuasarFx;
@@ -87,6 +88,12 @@ public final class Ton618Link {
         NetApi.toClient(QuasarFx.PACKET);
         NetApi.toClient(QuasarLock.PACKET);
         NetApi.toClient(QuasarMissing.PACKET);
+        // each player's educational mode, for the reading windows of the strikes they cast
+        NetApi.toServer(EducationChoice.PACKET);
+        NetApi.receive(EducationChoice.PACKET, (choice, context) -> {
+            ServerPlayer player = context.player();
+            context.server().execute(() -> Education.set(player.getUUID(), choice.on()));
+        });
         boolean quasar = ss21Installed();
         SkillApi.whenRegistered(TON618, set -> {
             // TON 618's one set, ton618:ton_618, held by its item
