@@ -639,7 +639,9 @@ ports need no P2 hook). Details and "To test in the game": `previz/quasar-jets/H
 Fable's open proposals (Adam picks): **P3** positioned world sounds for the jet, landing, lobe, pop, crystals (server,
 for everyone; the film then drops its own copies), **P4** a getter for the missing star's day so the film can say
 "back in 3 nights". Known limits: the caster isn't posed in shot 8; films off (J) = world effects only; the last
-"MISSING" text is 1.3 s (the ending could run ~2 s longer, to ~995 ticks, Adam's call).
+"MISSING" text is on ~2.6 s: **the ending is 2 s longer** (Adam's pick, 2026-11-16): the film ends at tick 996
+(`JetScript.END`; `QuasarClock.END` stays 960, no world effect moved). It fits because `QuasarClient` keeps the strike
+until `QuasarClock.END + 40` = 1000: never shorten that without bringing the film's END down too. Test jar rebuilt in place.
 Earlier: READY for Part 2 when TA-02 was built on `main` (1.1.0, `63a6add`) with a placeholder film by Opus.
 
 - **The film's own files (Fable's alone; write only here):**
