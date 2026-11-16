@@ -630,8 +630,17 @@ apart, told to Adam.
 
 ## 7b. For Fable: TA-02's film (Quasar Jets)
 
-**Status 2026-11-16: READY for Part 2.** TA-02 is built on `main` (1.1.0, `63a6add`) with a placeholder film by Opus;
-the previz v1 is approved (`previz/quasar-jets/`, its `NOTES.md` is the plan).
+**Status 2026-11-16: the real film is BUILT by Fable, not seen in a game** (replaced Opus's placeholder; committed by
+Opus). `client/quasarfilm/`: `QuasarJetsFilm` + `JetScript` (timings; captions/labels retimed longer, key ticks kept),
+`JetCamera` (framing), `JetSpace`, `JetHud`, `JetGl`, `JetSound`, `JetSynth` (soundtrack in code: no `sounds.json`, no
+sound files or textures); `shaders/quasarfilm/`. Everything is drawn in the HUD pass (no in-world drawing: Fabric
+ports need no P2 hook). Details and "To test in the game": `previz/quasar-jets/HANDOVER.md` "Part 2". Test jar:
+`..\test builds\2026-11-16 TA-02 film\TON 618 Addition 1.1.0 TA-02 film TEST [NeoForge 1.21.1].jar` (+ SS-21 1.8.0).
+Fable's open proposals (Adam picks): **P3** positioned world sounds for the jet, landing, lobe, pop, crystals (server,
+for everyone; the film then drops its own copies), **P4** a getter for the missing star's day so the film can say
+"back in 3 nights". Known limits: the caster isn't posed in shot 8; films off (J) = world effects only; the last
+"MISSING" text is 1.3 s (the ending could run ~2 s longer, to ~995 ticks, Adam's call).
+Earlier: READY for Part 2 when TA-02 was built on `main` (1.1.0, `63a6add`) with a placeholder film by Opus.
 
 - **The film's own files (Fable's alone; write only here):**
   - Java package `dev.adamko.ton618addition.client.quasarfilm` (`src/main/java/dev/adamko/ton618addition/client/quasarfilm/`).
