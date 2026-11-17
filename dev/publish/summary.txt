@@ -1,1 +1,1 @@
-TON 618 Addition, an unofficial addon for TON 618: adds TA-01 Last Light. After TON 618 devours the world, fast-forward a googol of years until TON618 evaporates by Hawking radiation, and its light brings the world back. Needs RimuLib.
+TON 618 Addition, an unofficial addon for TON 618: TA-01 Last Light (TON618 evaporates by Hawking radiation and the world comes back) and TA-02 Quasar Jets (feed a star to TON618, its quasar jet hits the Earth). Needs RimuLib.

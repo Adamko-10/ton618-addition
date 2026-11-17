@@ -1,6 +1,6 @@
 # TON 618 Addition
 
-An **unofficial**, fan-made addon for **[TON 618](https://www.curseforge.com/minecraft/mc-mods/ton618)** by rimuru\_dev. It adds **TA-01 · Last Light**: after TON 618 has devoured the world, fast-forward time by a googol of years until TON618 evaporates by **Hawking radiation**, and its last light brings the world back.
+An **unofficial**, fan-made addon for **[TON 618](https://www.curseforge.com/minecraft/mc-mods/ton618)** by rimuru\_dev. It adds two skills: **TA-01 · Last Light**: after TON 618 has devoured the world, fast-forward time by a googol of years until TON618 evaporates by **Hawking radiation**, and its last light brings the world back; and **TA-02 · Quasar Jets** (new in 1.1.0, with SS-21 Quasar): feed a star to TON618 and it fires a quasar jet at the Earth.
 
 ### My discord server is now open! join for leaks on upcoming updates and projects!
 
@@ -14,7 +14,9 @@ An **unofficial**, fan-made addon for **[TON 618](https://www.curseforge.com/min
 
 ## ⚠️ Compatibility — please read
 
-Version **1.0.0** works with **TON 618 1.1.0** and needs **RimuLib 1.2.3** or newer (TON 618 needs it too).
+Version **1.1.0** works with **TON 618 1.1.0** and needs **RimuLib 1.2.3** or newer (TON 618 needs it too). **TA-02 · Quasar Jets** also needs **[The Shooting Star: SS-21 Quasar](https://www.curseforge.com/minecraft/mc-addons/the-shooting-star-addition-ss-21-quasar)**; without it, TA-02 stays hidden.
+
+**1.1.0 is out for NeoForge 1.21.1 first.** The other builds below are still **1.0.0** (Last Light only) and get 1.1.0 in a later update.
 
 ### Available builds
 
@@ -32,7 +34,7 @@ The Fabric builds also need **Fabric API**. Install it on the **server and every
 
 With **[The Shooting Star \[Demo\]](https://www.curseforge.com/minecraft/mc-mods/the-shooting-star-demo)** installed (optional), Last Light is on the Stellar Remote too.
 
-**Photosensitivity warning:** Last Light ends in a full-screen white flash.
+**Photosensitivity warning:** Last Light ends in a full-screen white flash, and TA-02's film and landing have bright flashes.
 
 ## TA-01 · Last Light
 
@@ -52,9 +54,29 @@ Then time lets go. A wave of light rolls out from you, and a film carries you th
 *   **Its own film** (skippable with RimuLib's film key, **J**), with its title card, **TA-01 · LAST LIGHT**, and its own soundtrack. Everyone in the dark sees the whole film and comes back with you. With films switched off, a small card shows the countdown instead.
 *   Its own key (**;** on TON 618, **'** on the Stellar Remote), menu card and cooldown.
 
+## TA-02 · Quasar Jets
+
+**Only with SS-21 Quasar installed.** At **night**, hold **TON 618** (or the Stellar Remote) with **TA-02** picked: eight named stars appear in the sky, each with its name: **Barnard's Star**, **Wolf 359**, **Alpha Centauri A**, **Tau Ceti**, **Rigel**, **Spica**, **Betelgeuse** and **Antares**.
+
+1.  **Look at a star and cast** to lock it.
+2.  **Aim at the ground and cast again** (far enough away: up to 66 blocks for the biggest stars).
+
+Then the film: the remote **fast-forwards the star's own time** while a star engine drives it across the galaxy (its clock races through years while only seconds pass on Earth). TON618 tears it apart, lights up as a **quasar**, and turns one of its jets towards the Earth.
+
+*   **A second sun**: the night turns to day for everyone in the world.
+*   **The jet** sweeps down from the sky, carrying mobs and items along.
+*   **The landing**: a huge blast. A crater up to **60 blocks wide** (by the star's type: red dwarf, Sun-like, blue giant, red supergiant), debris flung out, trees flattened and fires round the rim.
+*   **The radio lobe**: a bubble of plasma swells over the crater, hurts what is inside and pops.
+*   **The star is missing** from the sky for a few nights afterwards.
+*   **Its own film** (skippable with **J**) and its own sounds.
+
+### Frozen Light
+
+The crystals left in the crater, one kind per star type (red dwarf, Sun-like, blue giant, red supergiant), glowing in the star's colour. Minable with a pickaxe.
+
 ## Educational mode
 
-Off by default. Switch it on in the H menu (**\\**): small labels in the film point at the real physics behind each moment (Hawking radiation, the eras of the universe, why smaller means hotter, the information paradox).
+Off by default. Switch it on in the H menu (**\\**): small labels in the films point at the real physics behind each moment (Hawking radiation, the eras of the universe, why smaller means hotter, quasars and their jets). It also gives you **more time to read**: in a strike cast with it on, the parts with text slow down for everyone watching.
 
 ## The H menu
 
@@ -62,13 +84,13 @@ A small **TON 618 Addition** panel in the top right corner of the H menu holds y
 
 ## More
 
-*   **Shader packs** (Iris): the film's space scene and words show; the two waves of light on the ground may not.
+*   **Shader packs** (Iris): the films' space scenes and words show, and TA-02's effects in the world are drawn over the shader pack's picture (tested with Complementary Reimagined). Last Light's two waves of light on the ground may not show.
 *   **TON 618's dark** hides the game's HUD on most versions; this addon puts back RimuLib's H menu there, so Last Light can be picked.
 *   **Known issue, Forge and NeoForge 1.20.1**: if the game closes with a crash in Windows' `d3d11.dll` and no Minecraft crash report, it comes from the graphics side, not from this addon (it was seen with the Medal screen recorder running). Close screen recorders and overlays, or set `earlyWindowControl = false` in `config/fml.toml`.
 
 ## Settings
 
-*   `config/ton618_addition-common.toml` (the server's): Last Light on or off, **who can cast it** (everyone, or operators only: it brings the world back for everyone, which TON 618 leaves to operators with `/ton618 restore`), and whether the world comes back on a morning.
+*   `config/ton618_addition-common.toml` (the server's): Last Light on or off, **who can cast it** (everyone, or operators only: it brings the world back for everyone, which TON 618 leaves to operators with `/ton618 restore`), and whether the world comes back on a morning; for TA-02: on or off, who can cast it, terrain changes, the second sun, carrying players, the most things carried, and how many nights a star stays missing.
 *   `config/ton618_addition-client.toml` (each player's own): educational mode (or use the H menu's switch). On NeoForge 1.21.1 both files are also under Mods → TON 618 Addition → Config.
 
 ## Will it work with future versions of TON 618?
@@ -80,7 +102,7 @@ It joins TON 618 through RimuLib's official addon API and TON 618's own `/ton618
 
 ## Plans
 
-This is version **1.0.0**. Planned: real music for the film, and **TA-02 · Quasar Jets** (with SS-21 Quasar installed). Comments, bug reports and ideas are very welcome!
+This is version **1.1.0**. Planned: 1.1.0 for the other loaders, and real music for the films. Comments, bug reports and ideas are very welcome!
 
 ## Credits
 
