@@ -5,18 +5,66 @@ Handoff notes for every Claude session in this folder (`C:\Users\User\Desktop\to
 Started 2026-11-13 by an Opus 5.5 session (xhigh) that was started from Adam's SA Series session. **Read `BRIEF.md`
 first** (Adam's brief, his own words at its end), then this file. Fable's part: `prompts\FABLE-PREVIZ-AND-FILM-PROMPT.md`.
 
-### >>> RESUME HERE (2026-11-17 ~20:10, Adam's PC): the named stars under the clouds (built, not tested) <<<
+### >>> NEXT UPDATE (after 1.1.0): Adam's list, 2026-11-17 (write-down, not started) <<<
 
-- **Adam (2026-11-17)**: "make them display under clouds but the text above clouds if u know what i mean": the named
-  stars were drawn after the clouds on purpose (so a cloud never hid the star being locked); his own clouds are
-  Complementary's (his vanilla `renderClouds` is off). **Built, uncommitted**: `QuasarRender.render` draws `sky()` and
-  `stars()` at `AFTER_SKY` (without a pack: our shader, no depth; with one: `QuasarAtlas.PACK_SKY`, the eyes type with no
-  depth test, as the SA Series' `HalleySky` draws its pack sky), so the land and the clouds draw over them; the names
-  are the HUD's (`QuasarReticle`), on top. `world()` stays at AFTER_WEATHER / AFTER_PARTICLES. **Not tested: his game
-  was open.** Test: `bash dev/test/clouds.sh` (vanilla clouds on in the harness for the no-pack run; then look at
-  `sky.png`/`locked.png`: in the pack run the dark diagonal shapes are Complementary's clouds, and Tau Ceti/Antares sat
-  on them before). Risk: a pack that recomputes sky pixels could wipe stars drawn with the sky; if so, keep them at
-  AFTER_PARTICLES for packs. Then rebuild the jar into `..\releases\1.1.0\jars\` and his instance (`-LiteralPath`).
+Adam, 2026-11-17 (with a screenshot of TA-02 in third person, no film, Complementary on): "for next update write this
+down". In his words, then what it means here:
+1. **A power slider for the explosion**: "lets add a slider to select the power of the explosion just like the shooting
+   star addition and the original shooting star". TA-02's Power slider in RimuLib's H menu (as the SA Series' skills:
+   `Power(min, max, initial, factor, blocks)`, warning above some value), scaling the landing blast (crater radius and
+   depth, damage, debris, the visuals). Decide the range with him (e.g. 0.1x to 10x of today's 5x size).
+2. **Better sounds in both films**: "lets also improve sfx for both cutscenes" (TA-01 Last Light's and TA-02's films;
+   the Sonniss recipe engine, `art/sonniss_sounds.sh`; ask him which moments sound wrong first).
+3. **A HUD for third person without the film**: "lets also add a ui for 3rd person no cutscene ... make it similar to
+   shooting star addition but make it make sense so adjust it accordingly yk". Like the SA Series' strike overlays
+   (Halley/Luna/Proxima: a top-left readout, phase captions, a countdown/descent bar, the target), but saying what
+   TA-02 is doing (the star's flight and its clock racing, TON618 feeding, the jet coming in, time to landing,
+   distance to the mark, the lobe and its pop). Show him a mock-up first.
+4. **The second sun showing over mountains/blocks** in third person without the film ("lets make this not display
+   over mountains/blocks (its the "second sun" in no cutscene 3rd person)"): with a shader pack the sky's things are
+   drawn after the particles at 100 blocks, so land further away than that didn't hide them. **Done already in 1.1.0
+   (`6b14bcb`)**: with a pack a ray from the eye fades TON618's point of light and the second sun out when land is in
+   the way (without a pack the land covers them anyway). Check in his game; the far part of the jet can still show
+   over far land with a pack.
+5. (Not his ask, a known limit) **With a shader pack the named stars show over the pack's clouds**: drawn with the sky
+   they were wiped by Complementary's sky (tested), so they stay after the particles. Getting under a pack's clouds
+   would mean drawing them before the pack's deferred passes with depth: not tried.
+Also waiting from before: the ports of 1.1.0 to the other six loaders (after his OK on 1.1.0), real music for Quasar
+Jets (written down 2026-11-14), Codex's test findings (2026-11-17 "its fixes go to the next update").
+
+### >>> RESUME HERE (2026-11-17 ~21:45, Adam's PC): 1.1.0 final (5x blast, stars under clouds); release prompt for ChatGPT <<<
+
+- **Adam (2026-11-17)**: "make them display under clouds but the text above clouds", then "once youre done just make
+  the explosion like 5x larger ... So for now finish that up and lets write a prompt for chatgpt to do everything with
+  desc and changelog and everything inlcuded and then we plan". **Done, `6b14bcb`, harness-tested**:
+  - **Stars under the clouds**: without a pack `sky()` and `stars()` are drawn at `AFTER_SKY` (the land and the game's
+    clouds cover them; the names are the HUD's). With a pack (Complementary) stars drawn with the sky were **wiped by the
+    pack's sky** (`..\test builds\2026-11-17 stars under clouds\pack\sky.png`), so with one everything stays at
+    `AFTER_PARTICLES` (stars over the pack's clouds, item 5 of the next update's list) and `QuasarRender.quasarSeen`
+    (a ray from the eye, up to the render distance) hides TON618's point and the second sun behind land.
+  - **5x blast**: `QuasarStars.Type` blast 100/150/225/300 (craters 200 to 600 blocks across), depth 20/30/44/60,
+    debris 90/135/195/270; `QuasarJets.RING` 1.25; the safe distance kept as before via `QuasarStars.safeDistance`
+    (max(lobe, blast/5) + 6 = 26 to 66; also the reticle's "too close"); the 5 x 5 columns under the caster are kept;
+    the shock ring to 3 radii, the dust wall to 2.1, the flash up to 900; particle counts capped as before;
+    `JetCamera`'s wave timing matched (its camera, capped at 106 blocks off, is now inside the blast: the fireball fills
+    the screen for a moment; not looked at in the film). **The crater**: left to RimuLib (`start()` = linger) a
+    300-radius crater wasn't cut at the mark at all within 6 s; now `cutCrater` ticks the lazy cut from the middle out
+    with the shock wave for 2 s, then `handOver` gives the rest to RimuLib (also when the strike ends). Tested: cut from
+    the middle by LANDS+65, a scorched 600-block crater by +165 (`..\test builds\2026-11-17 explosion 5x crater\`).
+    **Lag**: the debris took 1.5 s (fall() updated every neighbour: bamboo/plant chains): now its place is emptied with
+    UPDATE_CLIENTS | UPDATE_KNOWN_SHAPE first: 0.29 s. The log line "the landing blast (N blocks across): hits, debris,
+    the crater set up" times it. A "Can't keep up" of ~2 s still comes over the next seconds while RimuLib cuts (the
+    harness runs the client on the same PC).
+  - Harness: `castQuasar` loads the target's chunk first (press 2 was refused twice: height read as -64).
+  - Jar `..\releases\1.1.0\jars\TON 618 Addition 1.1.0 [NeoForge 1.21.1].jar` (+ `..\test builds\2026-11-17 TON 618
+    Addition 1.1.0 5x blast\`), **in his instance** (the marker build renamed `... (marker and shaders).jar.disabled`).
+  - **The release prompt for ChatGPT/Codex**: `..\releases\1.1.0\RELEASE-PROMPT.md`, made by
+    `node dev/publish/make-release-prompt.js 1.1.0` from `dev/publish/release-prompt.template.md` (fills the head
+    commit, the jar's SHA-256, and the changelog, description and summary word for word). Remake it after any change.
+    Part A: push `main` only, `gh release create v1.1.0` (Latest). Part B: the CurseForge file (NeoForge 1.21.1, Java
+    21, Client + Server, Markdown changelog, relations TON 618 + RimuLib required, The Shooting Star [Demo] + SS-21
+    Quasar optional), the description (his links at the top kept as live), the summary, the Source link.
+  - The description's Plans line now names the next update's items.
 
 ### >>> 2026-11-17 ~19:45 (Adam's PC): shaders done properly + landing marker built; 1.1.0 jar ready <<<
 
