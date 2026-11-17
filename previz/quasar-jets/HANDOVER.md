@@ -338,3 +338,18 @@ Night, overworld, SS-21 Quasar installed, TA-02 picked on TON 618's item or the 
 - `QuasarRender` uses `ViewportEvent.ComputeCameraAngles` (the shake) and a client tick: Fabric needs a camera mixin
   or drops the shake for players without the film.
 - `QuasarReticle` and `JetHud` use RimuLib's `UiApi` as Last Light's `FilmHud` does.
+
+## Round 2 (2026-11-17, from 01:20): the impact at three times the size
+
+Adam: "the impact is still super underwhelming, make it actually destructive". Opus tripled the crater (`blast` 20 / 30
+/ 45 / 60, cut by RimuLib's carver over some ticks) and added a blast ring. Fable's part, in progress (resume here if
+the PC was shut down): (1) shot 9's camera stood above the clouds: distance now 2 x blast (38 to 150 blocks), height a
+fifth of that, never higher than 12 blocks under the cloud layer; the same cap on shots 10a and 10b; (2) the dust
+strips capped in height (they stood like fog walls), the shock ring runs to 6 x blast; (3) the lobe is drawn as a
+whole ball that sits in the crater (the crater is as deep as the lobe is wide); (4) the ground preview follows
+`QuasarJets.groundBelow`; (5) test jar `... TA-02 impact TEST ...`.
+
+**Round 2 finished by Opus (2026-11-17 ~17:00)**: Fable stopped for usage credits after the PC went off mid-round; its
+steps 1-4 were all in the code and build. Checked in a harness run (Antares, 110 blocks out): the impact shot sits
+under the clouds with the fireball filling the frame (`quasar_0812`), the next shot looks from the caster across the
+scorched, burning ground (`quasar_0830`). Test jar `..	est builds6-11-17 TA-02 impact`.

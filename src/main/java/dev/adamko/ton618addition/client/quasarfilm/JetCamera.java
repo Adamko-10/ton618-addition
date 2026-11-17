@@ -196,7 +196,9 @@ final class JetCamera {
         // enough back for the whole landing blast (the crater, the fireball over it, the dust racing out)
         QuasarStars.Type type = cast.star().type();
         float blast = (float) type.blast;
-        float away = Math.max(27F, blast * 2.4F);
+        // (the craters are three times the size since 2026-11-17: about two crater radii off, 38 to 150 blocks, and
+        // never up in the clouds)
+        float away = Mth.clamp(blast * 1.42F, 27F, 106F);
         float u = ss(752F, 800F, t);
         float v = ss(806F, 830F, t);
         if (sweepFrom == null) {
@@ -207,9 +209,9 @@ final class JetCamera {
             Vec3 wayIn = mark.add(cast.quasarDirection().scale(34.0)).add(0.0, 1.0, 0.0);
             Vec3 fallback = null;
             search:
-            for (double high : new double[] {1.0, 1.7, 2.6, 3.8, 5.2}) {
+            for (double high : new double[] {1.0, 1.5, 2.1, 2.8}) {
                 for (double round : new double[] {0.0, 20.0, -20.0, 40.0, -40.0}) {
-                    Vec3 spot = lifted(mark.add(turned(base, round)).add(0.0, away * 0.3 * high, 0.0), 3.0);
+                    Vec3 spot = capped(mark.add(turned(base, round)).add(0.0, away * 0.3 * high, 0.0), 3.0);
                     if (clear(spot, seen)) {
                         if (clear(spot, wayIn)) {
                             sweepFrom = spot;
@@ -222,7 +224,7 @@ final class JetCamera {
                 }
             }
             if (sweepFrom == null) {
-                sweepFrom = fallback != null ? fallback : lifted(mark.add(base).add(0.0, away * 0.3 * 5.2, 0.0), 3.0);
+                sweepFrom = fallback != null ? fallback : capped(mark.add(base).add(0.0, away * 0.3 * 2.8, 0.0), 3.0);
             }
         }
         // easing in a little toward the mark after the landing
@@ -230,8 +232,8 @@ final class JetCamera {
         Vec3 dir = at(mark, fw, rt, lerp(95F, 4F, u), 0.0, lerp(15F, 2F + blast * 0.12F, u)).subtract(pos).normalize();
         float jet = JetScript.jet(type);
         // the landing: one hard kick that dies away, and a second when the shock wave reaches the camera (the wave's
-        // front is blast x (1 + 7 x easeOut(b / 32)) from the mark, as QuasarRender draws it)
-        float reach = ((float) pos.distanceTo(mark) / blast - 1F) / 7F;
+        // front is blast x (1 + 5 x easeOut(b / 32)) from the mark, as QuasarRender draws it)
+        float reach = ((float) pos.distanceTo(mark) / blast - 1F) / 5F;
         float waveAt = reach >= 1F ? Float.MAX_VALUE : 795F + 32F * (1F - (float) Math.cbrt(1F - Math.max(0F, reach)));
         float shake = 0.004F * lin(760F, 795F, t) * jet + 0.05F * Math.min(1.3F, 0.6F + blast / 20F) * kick(t, 795F, 8F)
             + 0.02F * kick(t, waveAt, 6F) + 0.003F * lin(795F, 800F, t);
@@ -268,7 +270,7 @@ final class JetCamera {
             for (double high : new double[] {1.0, 1.8, 2.8, 4.0, 5.5}) {
                 for (double side : new double[] {3.5, -9.0, 14.0, -20.0, 26.0}) {
                     spot = at(mark, fw, rt, -away, side, height * high);
-                    spot = lifted(new Vec3(spot.x, Math.max(spot.y, feet.y + 3.2), spot.z), 2.0);
+                    spot = capped(new Vec3(spot.x, Math.max(spot.y, feet.y + 3.2), spot.z), 2.0);
                     if (clear(spot, seen)) {
                         break search;
                     }
@@ -309,7 +311,7 @@ final class JetCamera {
             search:
             for (double high : new double[] {0.8, 1.2, 1.7, 2.4}) {
                 for (double round : new double[] {0.0, 35.0, -35.0, 70.0, -70.0, 110.0, -110.0}) {
-                    spot = lifted(mark.add(turned(base, round)).add(0.0, lobe * high, 0.0), 3.0);
+                    spot = capped(mark.add(turned(base, round)).add(0.0, lobe * high, 0.0), 3.0);
                     if (clear(spot, seen)) {
                         break search;
                     }
@@ -342,6 +344,20 @@ final class JetCamera {
         int ground = level.getHeight(Heightmap.Types.MOTION_BLOCKING, Mth.floor(pos.x), Mth.floor(pos.z));
         // an unloaded column says "the bottom of the world": then the shot's own height stands
         return ground > level.getMinBuildHeight() && pos.y < ground + clear ? new Vec3(pos.x, ground + clear, pos.z) : pos;
+    }
+
+    /**
+     * {@code pos} for a camera: no higher than 12 blocks under the cloud layer (a shot from above the clouds shows
+     * clouds), and at least {@code clear} blocks over the ground.
+     */
+    private static Vec3 capped(Vec3 pos, double clear) {
+        ClientLevel level = Minecraft.getInstance().level;
+        if (level == null) {
+            return pos;
+        }
+        float clouds = level.effects().getCloudHeight();
+        Vec3 under = Float.isNaN(clouds) ? pos : new Vec3(pos.x, Math.min(pos.y, clouds - 12.0), pos.z);
+        return lifted(under, clear);
     }
 
     /** From looking along {@code from} to looking along {@code to}, {@code u} of the way round (both unit vectors). */

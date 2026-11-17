@@ -158,10 +158,13 @@ vec4 dome() {
     float n = ringFbm(uv.x + T * 0.0016, yy - T * 0.035, cells);
     float n2 = ringFbm(uv.x - T * 0.0023, yy * 1.7 + T * 0.02, cells * 2.0);
     // threads of lightning crawling over its skin
-    float arcs = pow(1.0 - abs(2.0 * ringFbm(uv.x + T * 0.004, yy * 0.8 + T * 0.05, cells) - 1.0), 14.0);
+    float top = smoothstep(0.78, 1.0, uv.y);
+    n = mix(n, 0.5, top);
+    n2 = mix(n2, 0.5, top);
+    float arcs = pow(1.0 - abs(2.0 * ringFbm(uv.x + T * 0.004, yy * 0.8 + T * 0.05, cells) - 1.0), 14.0) * (1.0 - top);
     // (the threads come and go in patches, not all over it at once)
     arcs *= smoothstep(0.45, 0.7, n2);
-    float foot = exp(-uv.y * 6.0);
+    float foot = exp(-uv.y * 6.0) * 0.5;
     float white = Param.w;
     vec3 tint = mix(color.rgb, vec3(1.0), white);
     float a = Param.y;
@@ -202,6 +205,9 @@ vec4 fireball() {
     float yy = uv.y * R * 0.22;
     float n = ringFbm(uv.x, yy - T * 0.07 - age * 2.0, cells);
     float n2 = ringFbm(uv.x + 0.3, yy * 2.2 - T * 0.03, cells * 2.0);
+    float top = smoothstep(0.78, 1.0, uv.y);
+    n = mix(n, 0.5, top);
+    n2 = mix(n2, 0.45, top);
     // it cools as it ages: white, the star's colour, orange, then smoke
     float heat = clamp(1.2 - age * 2.2 + (n - 0.5) * 1.1 + (f - 0.6) * 0.55, 0.0, 1.0);
     vec3 hot = mix(vec3(1.0, 0.36, 0.06), mix(color.rgb, vec3(1.0), 0.75), smoothstep(0.45, 1.0, heat));

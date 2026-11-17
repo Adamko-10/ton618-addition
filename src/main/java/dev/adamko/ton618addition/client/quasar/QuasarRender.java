@@ -10,11 +10,14 @@ import javax.annotation.Nullable;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.tags.BlockTags;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
@@ -50,6 +53,11 @@ final class QuasarRender {
     private static final float[] WHITE = {1f, 1f, 1f};
     private static final float[] QUASAR = {0.75f, 0.86f, 1f};
     private static final float[] DUST = {0.56f, 0.5f, 0.43f};
+    /**
+     * How far under its middle the lobe's skin reaches: almost a whole ball. The landing crater is about as deep as the
+     * lobe is wide (since 2026-11-17), so the lobe sits in it; the land hides whatever part is under the ground.
+     */
+    private static final double BALL = -1.45;
 
     static final Matrix4f skyView = new Matrix4f();
     static final Matrix4f skyProj = new Matrix4f();
@@ -262,28 +270,29 @@ final class QuasarRender {
         if (b0 >= 0f && b0 < 16f) {
             float u = 1f - b0 / 16f;
             BufferBuilder b = QuasarGl.begin();
-            QuasarGl.billboard(b, new Vector3f(mark).add(0f, blast * 0.3f, 0f), right, up, blast * 8f, pale, u * u);
+            QuasarGl.billboard(b, new Vector3f(mark).add(0f, blast * 0.3f, 0f), right, up, Math.min(blast * 8f, 320f), pale, u * u);
             QuasarGl.draw(b, view, proj, QuasarGl.GLOW, 14f, 0.6f, 0f, 0f);
         }
         if (b0 >= 0f && b0 < 32f) {
             float u = b0 / 32f;
-            float r = blast * (1f + 7f * easeOut(u));
+            float r = blast * (1f + 5f * easeOut(u));
             BufferBuilder b = QuasarGl.begin();
-            QuasarGl.ring(b, new Vector3f(mark).add(0f, 0.35f, 0f), r * 0.7f, r, pale, 1f);
+            QuasarGl.ring(b, new Vector3f(mark).add(0f, 0.35f, 0f), r * 0.78f, r, pale, 1f);
             QuasarGl.draw(b, view, proj, QuasarGl.SHOCK, t, (float) Math.pow(1f - u, 1.3) * 1.2f, 24f, 0f);
         }
         if (b0 >= 0f && b0 < 46f) {
             float u = b0 / 46f;
             float r = blast * (0.9f + 3.8f * easeOut(Math.min(1f, b0 / 34f)));
             BufferBuilder b = QuasarGl.begin();
-            QuasarGl.wall(b, new Vector3f(mark).add(0f, -0.5f, 0f), r, blast * (0.16f + 0.26f * u), mix(DUST, col, 0.15f), 1f);
+            // (never taller than a tree, however big the crater: a tall one stands like a wall of fog)
+            QuasarGl.wall(b, new Vector3f(mark).add(0f, -0.5f, 0f), r, Math.min(blast * (0.16f + 0.26f * u), 5f + 9f * u), mix(DUST, col, 0.15f), 1f);
             QuasarGl.draw(b, view, proj, QuasarGl.DUST, t, 0.5f * (1f - u) * Math.min(1f, b0 / 3f), Math.max(24f, (float) Math.floor(r * 0.7f)), 0f);
         }
         // the dust hanging over the crater until the lobe blows it away
         if (b0 >= 6f && t < QuasarClock.LOBE + 12) {
-            float shown = 0.3f * QuasarClock.ramp(b0, 6f, 14f) * (1f - QuasarClock.ramp(t, QuasarClock.LOBE - 4, QuasarClock.LOBE + 12));
+            float shown = 0.22f * QuasarClock.ramp(b0, 6f, 14f) * (1f - QuasarClock.ramp(t, QuasarClock.LOBE - 4, QuasarClock.LOBE + 12));
             BufferBuilder b = QuasarGl.begin();
-            QuasarGl.wall(b, new Vector3f(mark).add(0f, -1f, 0f), blast * 1.15f, blast * 0.9f, mix(DUST, col, 0.1f), 1f);
+            QuasarGl.wall(b, new Vector3f(mark).add(0f, -1f, 0f), blast * 1.15f, Math.min(blast * 0.9f, 14f), mix(DUST, col, 0.1f), 1f);
             QuasarGl.draw(b, view, proj, QuasarGl.DUST, t * 0.6f, shown, Math.max(20f, (float) Math.floor(blast * 0.9f)), 0f);
         }
         if (b0 >= 0f && b0 < 44f) {
@@ -334,7 +343,7 @@ final class QuasarRender {
             QuasarGl.billboard(g, new Vector3f(mark).add(0f, r * 0.3f, 0f), right, up, r * 1.35f, col, 0.24f);
             QuasarGl.draw(g, view, proj, QuasarGl.GLOW, 3.5f, 0.3f, 0f, 0f);
             BufferBuilder b = QuasarGl.begin();
-            QuasarGl.dome(b, mark, r, col);
+            QuasarGl.dome(b, mark, r, col, BALL);
             QuasarGl.draw(b, view, proj, QuasarGl.DOME, t, 0.95f, r, 0f);
         }
         float p0 = t - QuasarClock.POP;
@@ -342,7 +351,7 @@ final class QuasarRender {
             float u = p0 / 7f;
             float r = lobeRadius * (1f + 0.35f * u);
             BufferBuilder b = QuasarGl.begin();
-            QuasarGl.dome(b, mark, r, col);
+            QuasarGl.dome(b, mark, r, col, BALL);
             QuasarGl.draw(b, view, proj, QuasarGl.DOME, t, 1.4f * (1f - u), r, Math.min(1f, p0 / 3f));
         }
         if (p0 >= 0f && p0 < 14f) {
@@ -381,10 +390,20 @@ final class QuasarRender {
         if (!(hit instanceof BlockHitResult block) || hit.getType() != HitResult.Type.BLOCK) {
             return;
         }
-        Vec3 at = new Vec3(block.getBlockPos().getX() + 0.5, block.getBlockPos().getY() + 1.0, block.getBlockPos().getZ() + 0.5);
+        // as the server's second press: down through trees and plants to the ground (QuasarJets.groundBelow)
+        BlockPos.MutableBlockPos ground = block.getBlockPos().mutable();
+        while (mc.level != null && ground.getY() > mc.level.getMinBuildHeight()) {
+            BlockState state = mc.level.getBlockState(ground);
+            if (state.isAir() || state.is(BlockTags.LOGS) || state.is(BlockTags.LEAVES) || state.canBeReplaced() && state.getFluidState().isEmpty()) {
+                ground.move(0, -1, 0);
+            } else {
+                break;
+            }
+        }
+        Vec3 at = new Vec3(ground.getX() + 0.5, ground.getY() + 1.0, ground.getZ() + 0.5);
         aimedMark = at;
         QuasarStars.Type type = QuasarStars.ALL.get(locked).type();
-        boolean tooClose = at.distanceTo(mc.player.position()) < type.lobe + 4.0;
+        boolean tooClose = at.distanceTo(mc.player.position()) < tooClose(type);
         float ticks = (mc.level == null ? 0L : mc.level.getGameTime() % 24000L) + partial;
         QuasarGl.light(true);
         BufferBuilder b = QuasarGl.begin();
@@ -392,6 +411,11 @@ final class QuasarRender {
             tooClose ? new float[]{1f, 0.25f, 0.2f} : QuasarGl.rgb(type.color), 1f);
         QuasarGl.draw(b, view, proj, QuasarGl.MARK, ticks, tooClose ? 0.4f : 0.6f, 0f, 0f);
         QuasarGl.end();
+    }
+
+    /** Nearer than this the server refuses the second press (QuasarJets.cast: the bigger of lobe and crater, plus 6). */
+    static double tooClose(QuasarStars.Type type) {
+        return Math.max(type.lobe, type.blast) + 6.0;
     }
 
     // ---- the game's own particles: smoke, sparks and embers for the blast, the standing jet, the lobe and its pop --------

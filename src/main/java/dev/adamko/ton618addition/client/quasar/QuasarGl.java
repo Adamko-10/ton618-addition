@@ -151,9 +151,16 @@ public final class QuasarGl {
      * faces the eye (1 seen flat on, 0 at the dome's edge), which is what gives it a rim.
      */
     static void dome(BufferBuilder b, Vector3f c, float r, float[] rgb) {
-        int rings = 14;
+        dome(b, c, r, rgb, -0.45);
+    }
+
+    /**
+     * A dome whose skin starts {@code low} radians under the level of {@code c} (-0.45: a little under the ground;
+     * near a quarter turn down: almost a whole ball, for one that sits in a crater).
+     */
+    static void dome(BufferBuilder b, Vector3f c, float r, float[] rgb, double low) {
+        int rings = 18;
         int segs = 40;
-        double low = -0.45;
         double span = Math.PI * 0.5 - low;
         for (int i = 0; i < rings; i++) {
             double p0 = low + span * i / rings;
@@ -172,8 +179,8 @@ public final class QuasarGl {
      * radius as {@code clock} runs (a fireball, not a bowl turned over).
      */
     static void blob(BufferBuilder b, Vector3f c, float r, float[] rgb, float clock, float lumps) {
-        int rings = 14;
-        int segs = 40;
+        int rings = 18;
+        int segs = 56;
         double low = -0.45;
         double span = Math.PI * 0.5 - low;
         for (int i = 0; i < rings; i++) {
@@ -254,7 +261,7 @@ public final class QuasarGl {
         float z = c.z + nz * r;
         float away = (float) Math.sqrt(x * x + y * y + z * z);
         float facing = away < 1.0e-4f ? 1f : Math.abs(nx * x + ny * y + nz * z) / away;
-        vertex(b, x, y, z, j / (float) segs, (float) Math.max(0.0, polar / (Math.PI * 0.5)), rgb, facing);
+        vertex(b, x, y, z, j / (float) segs, (float) (Math.abs(polar) / (Math.PI * 0.5)), rgb, facing);
     }
 
     /** A flat ring on the ground round {@code c}: uv.x 0 at {@code inner} to 1 at {@code outer}, uv.y 0-1 round it. */

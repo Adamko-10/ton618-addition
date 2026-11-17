@@ -188,7 +188,7 @@ final class QuasarReticle {
             detail = "aim at the ground and cast again";
         } else {
             double away = aimed.distanceTo(mc.player.position());
-            double safe = s.type().lobe + 4.0;
+            double safe = QuasarRender.tooClose(s.type());
             if (away < safe) {
                 detail = "too close: aim at least " + (int) Math.ceil(safe) + " blocks away";
                 detailRgb = WARN;
