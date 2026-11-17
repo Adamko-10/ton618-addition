@@ -40,6 +40,18 @@ today's size, warning above 2x**), the third-person HUD (**a mock-up for him fir
 the scale reveal (A), "prolly dad's plan" (Fable via his dad's Claude Max: write it one self-contained prompt then),
 "lets leave that for later". He asked whether 1.1.0 needs the Quasar addon: no, it's optional (without SS-21 Quasar
 TA-02 stays hidden, Last Light works; CurseForge lists it optional).
+**The ports (Adam, 2026-11-17 ~23:05, asked "did you port the 1.1.0 to other mod loaders": no, NeoForge only, on
+purpose)**: his pick, **after 1.1.1**: one porting round for all six with 1.1.0 + 1.1.1. ChatGPT's release: GitHub
+`v1.1.0` published 2026-11-17 21:43 UTC at `45d8f29` (Latest; asset = the 1,615,938-byte jar with every fix); `main`
+pushed to `45d8f29`; CurseForge part not reported yet.
+**1.1.1 progress (2026-11-17 ~23:10, uncommitted on main, not pushed)**: the explosion (`quasar_world.fsh` modes 10
+SPLASH and 11 ARC, the fireball recoloured into a plasma ball with field threads; `QuasarRender`: a blue-white flash,
+the plasma splash, 5-12 magnetic arcs from the crater (seeded by the mark), a white condensation ring, electric sparks
+and end-rod particles; from inside the plasma ball its glow over the screen instead (`insidePlasma`, `QuasarReticle`);
+the atlas 6 x 5 with SPLASH/ARC tiles) and the impact sound (`quasar_impact_near` / `_far` replace the three old ones:
+an electric impact core (Sonniss #151), a zap (#160), trailer booms, arcs, a buzz tail; each player gets a mix by
+distance, pitched by the star, delayed by the speed of sound (17.15 blocks a tick, up to 3 s) unless they get the film;
+`QuasarJets.impactSound`/`booms`). Harness: `marker-shaders.sh` takes `EXTRA="-Dton618test.star=0 ...distance=200"`.
 
 Adam, 2026-11-17 (with a screenshot of TA-02 in third person, no film, Complementary on): "for next update write this
 down". In his words, then what it means here:
