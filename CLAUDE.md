@@ -71,8 +71,15 @@ distance, pitched by the star, delayed by the speed of sound (17.15 blocks a tic
   Quasar Jets**. Proposed for 1.2.0's scale reveal (told him): a pull-back ladder Earth -> Sun -> Solar System -> Sgr A*
   -> TON 618's horizon filling the screen (27 Solar Systems across), cards "TON 618" / "40 BILLION SUNS" / "LIGHT
   NEEDS 9 DAYS TO CROSS IT", more facts in educational mode.
-- **Left for 1.1.1**: the HUD mock-up (his pick: show it first), the rest of the sound overhaul (both films, ask him
-  which moments), his test; the description's "without it, TA-02 stays hidden" -> "locked" and a 1.1.1 changelog
+- **The third-person HUD, done (`3056700`)**: mock-up shown inline (a top-left panel, a phase bar, a jet-inbound
+  countdown, three moments); Adam (clickable): "Build it like this", "Everyone near". `client/quasar/QuasarHud`
+  (RenderGuiEvent.Post, RimuLib's overlay like `QuasarReticle`): for anyone within 2000 blocks of the mark (or the
+  caster) without the film; the panel's rows change by phase (`rows`); the phase bar sits at the top beside the panel
+  (at the bottom the hotbar hid it); "JET INBOUND" + countdown on a plate (the second sun's sky is bright); the
+  educational line when the player's or the caster's educational mode is on. Harness shots `..\test builds\2026-11-17
+  1.1.1 hud 2\`. Jar `TON 618 Addition 1.1.1 HUD TEST` in his instance (the sliders TEST renamed `.disabled`). The
+  film's caption still says "66 billion Suns" (`JetScript`): check the facts (40 billion) in 1.2.0.
+- **Left for 1.1.1**: the rest of the sound overhaul (both films, ask him which moments), his test; the description's "without it, TA-02 stays hidden" -> "locked" and a 1.1.1 changelog
   (Power/Damage sliders with ∞ = kill by default, the new blast and impact, locked TA-02) at release.
 
 Adam, 2026-11-17 (with a screenshot of TA-02 in third person, no film, Complementary on): "for next update write this
