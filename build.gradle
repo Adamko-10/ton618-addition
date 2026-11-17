@@ -122,10 +122,15 @@ var copyRunMods = tasks.register('copyRunMods', Sync) {
 }
 // The test run's mods; with -Pshaders also the jars in libs/shaders (Iris and Sodium, to check the effects with a shader
 // pack; the pack itself goes in run/clienttest/shaderpacks and is switched on in run/clienttest/config/iris.properties).
+// With -Pinstance, the jars in libs/instance instead: a copy of Adam's game instance's other mods, to reproduce what
+// only shows in his game.
 var shaderMods = fileTree(dir: 'libs/shaders', include: '*.jar')
+var instanceMods = fileTree(dir: 'libs/instance', include: '*.jar')
 var copyTestMods = tasks.register('copyTestMods', Sync) {
     from rimulib, ton618, extraMods
-    if (project.hasProperty('shaders')) {
+    if (project.hasProperty('instance')) {
+        from instanceMods
+    } else if (project.hasProperty('shaders')) {
         from shaderMods
     }
     into layout.projectDirectory.dir('run/clienttest/mods')

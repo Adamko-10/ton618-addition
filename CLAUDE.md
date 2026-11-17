@@ -5,6 +5,25 @@ Handoff notes for every Claude session in this folder (`C:\Users\User\Desktop\to
 Started 2026-11-13 by an Opus 5.5 session (xhigh) that was started from Adam's SA Series session. **Read `BRIEF.md`
 first** (Adam's brief, his own words at its end), then this file. Fable's part: `prompts\FABLE-PREVIZ-AND-FILM-PROMPT.md`.
 
+### >>> RESUME HERE (2026-11-17 ~19:15, Adam's PC): before 1.1.0: real shader-pack support and a landing marker <<<
+
+- **Shaders, round 1 (`b1ed557`)**: with Iris on, every TA-02 world effect was painted over by the pack; now they are
+  drawn late (before the HUD, over the land, no depth). Visible, but Adam: "i want the mod to be compatible with
+  shaders, so when your shaders are on by pressing K, you can see stuff like the stars in the sky without them looking
+  out of place". **His pick: do it properly before the release** (clickable): like the SA Series (`GlowAtlas`: the
+  shapes painted into a texture, drawn with Minecraft's glowing-eyes render type, which every pack draws: hidden
+  behind land, fogged, the pack's bloom).
+- **"The stars are invisible with and without shaders"**: not a bug. Reproduced with his exact 31 mods and his own
+  settings (`-Pinstance`: `libs/instance/` = copies of his other mods; his `config/` and `options.txt` copied into
+  `run/clienttest/`): the stars and the lock box show. His test world was new (morning) and it was day; at
+  `/time set midnight` they show (Adam: "ok u right yes"). TON 618's own item is invisible with shaders: TON 618's
+  renderer, not ours; he said leave it (no report). The test game closing itself looked like a crash to him (it isn't:
+  "Stopping!", no crash report).
+- **New (Adam, 2026-11-17)**: "can we add one of those 3rd person things where it shows where the thing will land in
+  a cool way just like railgun and halley and luna etc": a landing marker on the ground at the mark, from the second
+  press to the landing, visible in third person and to everyone near.
+- Release 1.1.0 (NeoForge first) waits for both. Then his OK to publish.
+
 ### >>> RESUME HERE (2026-11-17 ~18:00, Adam's PC): releasing 1.1.0 on NeoForge; shader test first <<<
 
 - **Adam (2026-11-17)**: "i tested it looks betetr, its good enough now ... the mod got approved [1.0.0 on CurseForge], lets
