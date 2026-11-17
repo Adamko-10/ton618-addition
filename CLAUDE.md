@@ -89,8 +89,7 @@ distance, pitched by the star, delayed by the speed of sound (17.15 blocks a tic
   distance; `dev/test/limits.sh` now uses Alpha Centauri A); the debris thrown 40 a tick (not yet measured: his game
   opened); the film's card "about 40 billion Suns"; `dev/publish/changelog-1.1.1.md` + the description for 1.1.1.
   Jar `..\test builds\2026-11-18 TON 618 Addition 1.1.1 limits\TON 618 Addition 1.1.1 limits TEST [NeoForge
-  1.21.1].jar`, **not yet in his instance** (his game was open at 00:13): swap it in when it's closed (the HUD TEST
-  there -> `.disabled`).
+  1.21.1].jar`, **in his instance** since 00:20 (the HUD TEST there renamed `.disabled`).
 - **Left for 1.1.1**: his test round; then release (NeoForge first: a remade release prompt for 1.1.1, as 1.1.0's);
   then the ports of everything to the six loaders. the description's "without it, TA-02 stays hidden" -> "locked" and a 1.1.1 changelog
   (Power/Damage sliders with ∞ = kill by default, the new blast and impact, locked TA-02) at release.
