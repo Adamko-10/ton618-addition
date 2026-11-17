@@ -5,6 +5,7 @@ import com.mojang.blaze3d.platform.GlConst;
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.BufferBuilder;
+import com.mojang.blaze3d.vertex.BufferUploader;
 import com.mojang.blaze3d.vertex.ByteBufferBuilder;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.MeshData;
@@ -16,6 +17,7 @@ import dev.adamko.ton618addition.Ton618Addition;
 import java.nio.ByteBuffer;
 import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.ShaderInstance;
@@ -24,6 +26,7 @@ import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
 import org.joml.Matrix4f;
+import org.joml.Vector3f;
 
 /**
  * TA-02's world effects with a shader pack on (Iris). A pack draws the level again in its own passes and shows nothing
@@ -36,11 +39,18 @@ import org.joml.Matrix4f;
  * <p>{@link QuasarGl#draw} sends each mesh here instead of drawing it ({@link #emit}): its uv is moved into the tile of
  * its material and variant, its colour times its alpha times the material's strength becomes the vertex colour. Light
  * is only added this way: smoke and the lobe's skin don't darken what is behind them as they do without a pack.
+ *
+ * <p><b>The sky's things</b> (the named stars, TON618's light, the second sun, the far jet) are drawn from inside the
+ * game's own sky drawing instead ({@link #drawSky}, from {@code LevelRendererMixin}), with the game's textured sky shader,
+ * which a pack swaps for its own sky program there, as for the sun and the moon: the pack keeps them in its sky, and its
+ * clouds and the land are drawn over them (Adam, 2026-11-17: "do whatever would make the stars go behind clouds with and
+ * without shaders"). Drawn anywhere else, a pack paints its sky over them. Complementary's sky program squares what it
+ * is given, so those looks are painted as their square roots ({@code *_SKY} tiles, {@code Bake} 2).
  */
 final class QuasarAtlas {
     private static final int TILE = 192;
     private static final int COLUMNS = 6;
-    private static final int ROWS = 3;
+    private static final int ROWS = 4;
     /** Half a texel, in tiles: keeps every lookup inside its own tile. */
     private static final float INSET = 0.5F / TILE;
     private static final ResourceLocation LOCATION = Ton618Addition.id("quasar_atlas");
@@ -60,7 +70,13 @@ final class QuasarAtlas {
     private static final float[][] GLOWS = {{2.2f, 0.2f}, {14f, 0.6f}, {40f, 0.45f}, {30f, 0.5f}, {3.5f, 0.3f}, {10f, 0.6f},
         {6f, 0.5f}};
     private static final int GLOW0 = 11;
-    private static final int TILES = GLOW0 + GLOWS.length;
+    /** The sky's looks, painted as square roots (see the class comment); right after the 7 glows (11 to 17). */
+    private static final int STAR_SKY = 18;
+    private static final int STAR_LOCKED_SKY = 19;
+    private static final int SUN_SKY = 20;
+    private static final int GLOW_SKY = 21;
+    private static final int BEAM_SKY = 22;
+    private static final int TILES = 23;
 
     @Nullable
     private static TextureTarget target;
@@ -68,6 +84,10 @@ final class QuasarAtlas {
     @Nullable
     private static VertexBuffer quad;
     private static final ByteBufferBuilder PACK_BYTES = new ByteBufferBuilder(1 << 18);
+    private static final ByteBufferBuilder SKY_BYTES = new ByteBufferBuilder(1 << 16);
+    /** While the sky's things are gathered ({@link #drawSky}): the sky's camera turn, put into each corner. */
+    @Nullable
+    private static Matrix4f skyPose;
 
     /** The effects' quads from the painted looks: glowing-eyes, added, hidden by what stands in front, no fog of ours. */
     static final RenderType PACK = Types.pack("ton618_addition_pack_glow", true);
@@ -117,17 +137,17 @@ final class QuasarAtlas {
         RenderSystem.disableCull();
         Matrix4f proj = new Matrix4f().setOrtho(0f, COLUMNS, 0f, ROWS, -1f, 1f);
         Matrix4f view = new Matrix4f();
-        program.safeGetUniform("Bake").set(1f);
         try {
             for (int i = 0; i < TILES; i++) {
                 // the glows never change: painted once
-                if (!all && i >= GLOW0) {
+                if (!all && (i >= GLOW0 && i < STAR_SKY || i == GLOW_SKY)) {
                     continue;
                 }
+                program.safeGetUniform("Bake").set(i >= STAR_SKY ? 2f : 1f);
                 switch (i) {
-                    case STAR -> tile(program, view, proj, i, QuasarGl.STAR, true, seconds, 0f, 0f, 0.3f, 0f);
-                    case STAR_LOCKED -> tile(program, view, proj, i, QuasarGl.STAR, true, seconds, 0f, 1f, 0.3f, 0f);
-                    case SUN -> tile(program, view, proj, i, QuasarGl.SUN, true, seconds, 0f, 0f, 0f, 0f);
+                    case STAR, STAR_SKY -> tile(program, view, proj, i, QuasarGl.STAR, true, seconds, 0f, 0f, 0.3f, 0f);
+                    case STAR_LOCKED, STAR_LOCKED_SKY -> tile(program, view, proj, i, QuasarGl.STAR, true, seconds, 0f, 1f, 0.3f, 0f);
+                    case SUN, SUN_SKY -> tile(program, view, proj, i, QuasarGl.SUN, true, seconds, 0f, 0f, 0f, 0f);
                     case MARK -> tile(program, view, proj, i, QuasarGl.MARK, true, t, 1f, markPulse, 0f, 0f);
                     case SHOCK_24 -> tile(program, view, proj, i, QuasarGl.SHOCK, false, t, 1f, 24f, 0f, 0f);
                     case SHOCK_28 -> tile(program, view, proj, i, QuasarGl.SHOCK, false, t, 1f, 28f, 0f, 0f);
@@ -136,7 +156,8 @@ final class QuasarAtlas {
                     case DOME -> tile(program, view, proj, i, QuasarGl.DOME, false, t, 1f, Math.max(4f, domeRadius), domeWhite, 0f);
                     case FIREBALL -> tile(program, view, proj, i, QuasarGl.FIREBALL, false, t, fireAge, Math.max(4f, fireRadius), 1f, 0f);
                     // no head and no far end: the glows at its ends and a fade along it stand in for them (see emit)
-                    case BEAM -> tile(program, view, proj, i, QuasarGl.BEAM, true, t, -1.0e9f, 0.13f, 1.0e9f, 0f);
+                    case BEAM, BEAM_SKY -> tile(program, view, proj, i, QuasarGl.BEAM, true, t, -1.0e9f, 0.13f, 1.0e9f, 0f);
+                    case GLOW_SKY -> tile(program, view, proj, i, QuasarGl.GLOW, true, GLOWS[0][0], GLOWS[0][1], 0f, 0f, 0f);
                     default -> {
                         float[] g = GLOWS[i - GLOW0];
                         tile(program, view, proj, i, QuasarGl.GLOW, true, g[0], g[1], 0f, 0f, 0f);
@@ -182,13 +203,49 @@ final class QuasarAtlas {
         VertexBuffer.unbind();
     }
 
+    // ---- drawing the sky's things inside the game's sky -----------------------------------------------------------------
+
+    /**
+     * Gathers what {@code draws} draws (camera-relative, through {@link QuasarGl#packing}) and draws it now, inside the
+     * game's sky drawing, with the game's textured sky shader (a pack's sky program), added like the sun. {@code pose}:
+     * the sky's camera turn (the game puts it into each corner too).
+     */
+    static void drawSky(Matrix4f pose, Runnable draws) {
+        BufferBuilder out = new BufferBuilder(SKY_BYTES, VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX_COLOR);
+        QuasarGl.packing = out;
+        skyPose = pose;
+        try {
+            draws.run();
+        } finally {
+            QuasarGl.packing = null;
+            skyPose = null;
+        }
+        MeshData mesh = out.build();
+        if (mesh == null) {
+            return;
+        }
+        float[] colour = RenderSystem.getShaderColor().clone();
+        RenderSystem.setShader(GameRenderer::getPositionTexColorShader);
+        RenderSystem.setShaderTexture(0, LOCATION);
+        RenderSystem.setShaderColor(1f, 1f, 1f, 1f);
+        RenderSystem.enableBlend();
+        RenderSystem.blendFuncSeparate(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE, GlStateManager.SourceFactor.ONE,
+            GlStateManager.DestFactor.ZERO);
+        RenderSystem.depthMask(false);
+        BufferUploader.drawWithShader(mesh);
+        RenderSystem.setShaderColor(colour[0], colour[1], colour[2], colour[3]);
+    }
+
     // ---- drawing from the painted looks -------------------------------------------------------------------------------
 
     /**
      * Writes {@code mesh} (POSITION_TEX_COLOR quads, as {@link QuasarGl} builds them) into {@code out} as entity vertices
-     * on this texture, for material {@code mode} with the parameters its draw call was given.
+     * on this texture, for material {@code mode} with the parameters its draw call was given. Inside the sky
+     * ({@link #drawSky}) the sky's tiles are used, the corners turned by the sky's pose and the colour square-rooted.
      */
     static void emit(MeshData mesh, VertexConsumer out, int mode, float p0, float p1, float p2, float p3) {
+        Matrix4f pose = skyPose;
+        boolean sky = pose != null;
         int tile;
         // the uv runs -1..1 over the material (else 0..1)
         boolean centred = true;
@@ -197,10 +254,10 @@ final class QuasarAtlas {
         float whiten = 0f;
         switch (mode) {
             case QuasarGl.STAR -> {
-                tile = p2 > 0.5f ? STAR_LOCKED : STAR;
+                tile = p2 > 0.5f ? sky ? STAR_LOCKED_SKY : STAR_LOCKED : sky ? STAR_SKY : STAR;
                 whiten = 0.35f;
             }
-            case QuasarGl.SUN -> tile = SUN;
+            case QuasarGl.SUN -> tile = sky ? SUN_SKY : SUN;
             case QuasarGl.MARK -> {
                 tile = MARK;
                 strength = p1;
@@ -228,7 +285,7 @@ final class QuasarAtlas {
                 strength = p3;
             }
             case QuasarGl.BEAM -> {
-                tile = BEAM;
+                tile = sky ? BEAM_SKY : BEAM;
                 whiten = 0.4f;
             }
             default -> {
@@ -241,7 +298,7 @@ final class QuasarAtlas {
                         best = i;
                     }
                 }
-                tile = GLOW0 + best;
+                tile = sky ? GLOW_SKY : GLOW0 + best;
             }
         }
         float tx = tile % COLUMNS;
@@ -249,6 +306,7 @@ final class QuasarAtlas {
         ByteBuffer data = mesh.vertexBuffer();
         int count = mesh.drawState().vertexCount();
         int stride = DefaultVertexFormat.POSITION_TEX_COLOR.getVertexSize();
+        Vector3f corner = new Vector3f();
         for (int i = 0; i < count; i++) {
             int o = i * stride;
             float x = data.getFloat(o);
@@ -290,11 +348,21 @@ final class QuasarAtlas {
             }
             lu = Math.max(0f, Math.min(1f, lu));
             lv = Math.max(0f, Math.min(1f, lv));
-            r += (1f - r) * whiten;
-            g += (1f - g) * whiten;
-            bl += (1f - bl) * whiten;
+            r = Math.min(1f, (r + (1f - r) * whiten) * k);
+            g = Math.min(1f, (g + (1f - g) * whiten) * k);
+            bl = Math.min(1f, (bl + (1f - bl) * whiten) * k);
+            if (sky) {
+                // the pack's sky program squares the colour: give it the square root
+                r = (float) Math.sqrt(r);
+                g = (float) Math.sqrt(g);
+                bl = (float) Math.sqrt(bl);
+                pose.transformPosition(x, y, z, corner);
+                x = corner.x;
+                y = corner.y;
+                z = corner.z;
+            }
             out.addVertex(x, y, z)
-                .setColor(Math.min(1f, r * k), Math.min(1f, g * k), Math.min(1f, bl * k), 1f)
+                .setColor(r, g, bl, 1f)
                 .setUv((tx + INSET + lu * (1f - 2f * INSET)) / COLUMNS, (ty + INSET + lv * (1f - 2f * INSET)) / ROWS)
                 .setOverlay(OverlayTexture.NO_OVERLAY)
                 .setLight(LightTexture.FULL_BRIGHT)

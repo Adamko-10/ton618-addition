@@ -86,7 +86,7 @@ A small **TON 618 Addition** panel in the top right corner of the H menu holds y
 
 ## More
 
-*   **Shader packs** (Iris): the films' space scenes and words show, and TA-02's stars, jet, blast and landing marker are drawn the way the shader pack draws its own glowing things, so they sit in the world (tested with Complementary Reimagined). Last Light's two waves of light on the ground may not show.
+*   **Shader packs** (Iris): the films' space scenes and words show, and TA-02's stars, jet, blast and landing marker are drawn the way the shader pack draws its own glowing things, so they sit in the world, and the named stars sit behind the clouds (tested with Complementary Reimagined). Last Light's two waves of light on the ground may not show.
 *   **TON 618's dark** hides the game's HUD on most versions; this addon puts back RimuLib's H menu there, so Last Light can be picked.
 *   **Known issue, Forge and NeoForge 1.20.1**: if the game closes with a crash in Windows' `d3d11.dll` and no Minecraft crash report, it comes from the graphics side, not from this addon (it was seen with the Medal screen recorder running). Close screen recorders and overlays, or set `earlyWindowControl = false` in `config/fml.toml`.
 

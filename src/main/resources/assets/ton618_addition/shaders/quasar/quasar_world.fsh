@@ -19,7 +19,8 @@
 //    0-1, its radius in blocks, how strong)
 //  8 the mark on the ground (uv -1..1 on a flat quad; Color; Param: ticks, how strong, the first pulse 0-1)
 //  9 a round glow with a hot middle (uv -1..1; Color; Param.x how tight the middle is, Param.y how much wide haze)
-// Bake 1: painted onto a texture for a shader pack (client/quasar/QuasarAtlas), see the end of main.
+// Bake 1: painted onto a texture for a shader pack (client/quasar/QuasarAtlas), see the end of main; 2: the same, as
+// its square root (for the pack's sky program, which squares it).
 uniform float Mode;
 uniform float Bake;
 uniform vec4 Param;
@@ -268,6 +269,10 @@ void main() {
         // the light alone, softly clipped into 0..1 (a texture can't hold more), and an alpha of 1 wherever there is
         // any: shader packs throw away what is nearly see-through
         vec3 c = max(fragColor.rgb, vec3(0.0));
-        fragColor = vec4(1.0 - exp(-c * 1.25), clamp(max(c.r, max(c.g, c.b)) * 50.0, 0.0, 1.0));
+        vec3 baked = 1.0 - exp(-c * 1.25);
+        if (Bake > 1.5) {
+            baked = sqrt(baked);
+        }
+        fragColor = vec4(baked, clamp(max(c.r, max(c.g, c.b)) * 50.0, 0.0, 1.0));
     }
 }

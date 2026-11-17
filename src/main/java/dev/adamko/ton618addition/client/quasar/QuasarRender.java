@@ -74,8 +74,6 @@ public final class QuasarRender {
     /** How much of each named star is seen (0 behind land, 1 in the open), eased; and when the last frame was. */
     private static final float[] SEEN = new float[QuasarStars.ALL.size()];
     private static long starsFrame;
-    private static float quasarOpen = 1f;
-    private static long quasarFrame;
     private static boolean failed;
     @Nullable
     private static QuasarCast particlesFor;
@@ -109,11 +107,11 @@ public final class QuasarRender {
             // shader draws in the level's stages (Adam, 2026-11-17: "when your shaders are on ... you can see stuff like
             // the stars in the sky without them looking out of place"): then everything is drawn after the particles,
             // from the looks painted before the frame (QuasarAtlas), as the SA Series does it.
-            // Without a pack the sky's things (the named stars too) are drawn with the sky, so the land and the clouds
-            // are drawn over them; their names are the HUD's, over everything (Adam, 2026-11-17: "make them display under
-            // clouds but the text above clouds"). A pack paints its own sky over anything drawn with the sky (tested with
-            // Complementary: the stars were gone), so with one they stay after the particles, over the pack's clouds, and
-            // a ray from the eye hides the second sun when land stands in its way.
+            // The sky's things (the named stars too) are drawn with the sky, so the land and the clouds are drawn over
+            // them; their names are the HUD's, over everything (Adam, 2026-11-17: "make them display under clouds but the
+            // text above clouds", then "with and without shaders"). Without a pack: right after the sky, with our shader.
+            // With one: from inside the game's sky drawing (skyPass), the only place a pack keeps them in its sky (drawn
+            // right after it, as first tried, Complementary painted its sky over them).
             boolean pack = QuasarGl.shaderPack();
             RenderLevelStageEvent.Stage stage = event.getStage();
             if (stage == RenderLevelStageEvent.Stage.AFTER_SKY) {
@@ -129,11 +127,7 @@ public final class QuasarRender {
                 world(Frame.of(event), mc);
             } else if (stage == RenderLevelStageEvent.Stage.AFTER_PARTICLES && pack && QuasarGl.ready() && QuasarAtlas.ready()) {
                 Frame frame = Frame.of(event);
-                packed(QuasarAtlas.PACK, () -> {
-                    sky(frame, level);
-                    stars(frame, level);
-                    world(frame, mc);
-                });
+                packed(QuasarAtlas.PACK, () -> world(frame, mc));
             }
         } catch (RuntimeException broken) {
             // a strike whose light can't be drawn mustn't take the game down
@@ -142,6 +136,32 @@ public final class QuasarRender {
             Ton618Addition.LOG.error("The Quasar Jets world effects stopped drawing", broken);
             Tesselator.getInstance().clear();
             QuasarGl.end();
+        }
+    }
+
+    /**
+     * With a shader pack on, from inside the game's sky drawing ({@code LevelRendererMixin}): the sky's things, drawn
+     * there so the pack keeps them in its sky (its clouds and the land are drawn over them). {@code pose}: the sky's
+     * camera turn.
+     */
+    public static void skyPass(Matrix4f pose, float partial, Camera camera) {
+        Minecraft mc = Minecraft.getInstance();
+        ClientLevel level = mc.level;
+        if (failed || level == null || level.dimension() != Level.OVERWORLD || !QuasarGl.ready() || !QuasarAtlas.ready()
+            || !QuasarGl.shaderPack()) {
+            return;
+        }
+        try {
+            Frame frame = new Frame(partial, camera, new Matrix4f(pose), new Matrix4f());
+            QuasarAtlas.drawSky(frame.view(), () -> {
+                sky(frame, level);
+                stars(frame, level);
+            });
+        } catch (RuntimeException broken) {
+            failed = true;
+            QuasarGl.packing = null;
+            Ton618Addition.LOG.error("The Quasar Jets sky stopped drawing (shader pack)", broken);
+            Tesselator.getInstance().clear();
         }
     }
 
@@ -269,50 +289,35 @@ public final class QuasarRender {
 
         if (cast != null) {
             Vector3f at = toVector(cast.quasarDirection()).mul(SKY);
-            // (with a shader pack these are drawn after the land, a hundred blocks out: land further off that stands in
-            // the way hides them by a ray from the eye; Adam, 2026-11-17: "make this not display over mountains/blocks")
-            float open = QuasarGl.packing != null ? quasarSeen(level, camera.getPosition(), cast.quasarDirection()) : 1f;
             // TON618, fed: a new point of light where there was none, growing as the jets come on
             if (t >= QuasarClock.IGNITE && t < QuasarClock.NIGHT + 30 && sun < 0.6f) {
                 float lit = (0.35f * QuasarClock.ramp(t, QuasarClock.IGNITE, QuasarClock.IGNITE + 30)
                     + 0.65f * QuasarClock.ramp(t, QuasarClock.JETS, QuasarClock.DAY)) * (1f - QuasarClock.ramp(t, QuasarClock.NIGHT, QuasarClock.NIGHT + 30));
                 float half = 8f + 12f * QuasarClock.ramp(t, QuasarClock.JETS, QuasarClock.DAY);
                 BufferBuilder b = QuasarGl.begin();
-                QuasarGl.billboard(b, at, right, up, half, QUASAR, lit * (1f - sun) * open);
+                QuasarGl.billboard(b, at, right, up, half, QUASAR, lit * (1f - sun));
                 QuasarGl.draw(b, view, proj, QuasarGl.STAR, seconds, 6.18f, 0f, 0.35f);
             }
             // the second sun: TON618 blazing as a quasar, low in the sky
             if (sun > 0.01f) {
                 float flare = 1f + 0.9f * (float) Math.exp(-Math.max(0f, t - QuasarClock.DAY) / 10f);
                 BufferBuilder b = QuasarGl.begin();
-                QuasarGl.billboard(b, at, right, up, 95f, new float[]{0.4f, 0.58f, 1f}, 0.14f * sun * open);
+                QuasarGl.billboard(b, at, right, up, 95f, new float[]{0.4f, 0.58f, 1f}, 0.14f * sun);
                 QuasarGl.draw(b, view, proj, QuasarGl.GLOW, 2.2f, 0.2f, 0f, 0f);
                 b = QuasarGl.begin();
-                QuasarGl.billboard(b, at, right, up, 58f * flare, WHITE, Math.min(1f, sun * 1.15f) * open);
+                QuasarGl.billboard(b, at, right, up, 58f * flare, WHITE, Math.min(1f, sun * 1.15f));
                 QuasarGl.draw(b, view, proj, QuasarGl.SUN, seconds, 0f, 0f, 0f);
             }
         }
         QuasarGl.end();
     }
 
-    /** How much of TON618 (the point of light, the second sun) is in the open, eased over a few frames. */
-    private static float quasarSeen(ClientLevel level, Vec3 eye, Vec3 direction) {
-        long now = System.nanoTime();
-        float dt = Math.min(0.1f, (now - quasarFrame) / 1.0e9f);
-        quasarFrame = now;
-        double reach = Math.min(320.0, Minecraft.getInstance().options.getEffectiveRenderDistance() * 16.0);
-        boolean clear = level.clip(new ClipContext(eye, eye.add(direction.scale(reach)), ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE,
-            CollisionContext.empty())).getType() == HitResult.Type.MISS;
-        quasarOpen += ((clear ? 1f : 0f) - quasarOpen) * Math.min(1f, dt * 10f);
-        return quasarOpen;
-    }
-
     /**
      * Our 8 named stars: only while holding TON 618's item or the Stellar Remote with TA-02 picked (Adam, 2026-11-16).
-     * The one being launched stays (for the film's viewers too) until it leaves the sky. Without a shader pack they are
-     * drawn with the sky, so the land and the game's clouds are drawn over them, while their names stay on top (the
-     * HUD's, {@link QuasarReticle}); with one, over the pack's clouds (see render). A ray from the eye also fades each
-     * one out when land stands in its way.
+     * The one being launched stays (for the film's viewers too) until it leaves the sky. They are drawn with the sky
+     * (see render and skyPass), so the land and the clouds (the game's, or a shader pack's) are drawn over them, while
+     * their names stay on top (the HUD's, {@link QuasarReticle}). A ray from the eye also fades each one out when land
+     * stands in its way.
      */
     private static void stars(Frame frame, ClientLevel level) {
         float partial = frame.partial();
