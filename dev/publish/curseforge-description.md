@@ -59,7 +59,9 @@ Then time lets go. A wave of light rolls out from you, and a film carries you th
 **Only with SS-21 Quasar installed.** At **night**, hold **TON 618** (or the Stellar Remote) with **TA-02** picked: eight named stars appear in the sky, each with its name: **Barnard's Star**, **Wolf 359**, **Alpha Centauri A**, **Tau Ceti**, **Rigel**, **Spica**, **Betelgeuse** and **Antares**.
 
 1.  **Look at a star and cast** to lock it.
-2.  **Aim at the ground and cast again** (far enough away: up to 66 blocks for the biggest stars).
+2.  **Aim at the ground and cast again** (far enough away: up to 66 blocks for the biggest stars). The target on the ground shows where it will land and how big the crater will be (red when you're too close).
+
+Until the jet lands, everyone near sees a **landing marker**: a target as wide as the crater, a pillar of light standing on it, and a ring pulsing faster and faster.
 
 Then the film: the remote **fast-forwards the star's own time** while a star engine drives it across the galaxy (its clock races through years while only seconds pass on Earth). TON618 tears it apart, lights up as a **quasar**, and turns one of its jets towards the Earth.
 
@@ -84,7 +86,7 @@ A small **TON 618 Addition** panel in the top right corner of the H menu holds y
 
 ## More
 
-*   **Shader packs** (Iris): the films' space scenes and words show, and TA-02's effects in the world are drawn over the shader pack's picture (tested with Complementary Reimagined). Last Light's two waves of light on the ground may not show.
+*   **Shader packs** (Iris): the films' space scenes and words show, and TA-02's stars, jet, blast and landing marker are drawn the way the shader pack draws its own glowing things, so they sit in the world (tested with Complementary Reimagined). Last Light's two waves of light on the ground may not show.
 *   **TON 618's dark** hides the game's HUD on most versions; this addon puts back RimuLib's H menu there, so Last Light can be picked.
 *   **Known issue, Forge and NeoForge 1.20.1**: if the game closes with a crash in Windows' `d3d11.dll` and no Minecraft crash report, it comes from the graphics side, not from this addon (it was seen with the Medal screen recorder running). Close screen recorders and overlays, or set `earlyWindowControl = false` in `config/fml.toml`.
 

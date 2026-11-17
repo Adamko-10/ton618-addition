@@ -1,6 +1,7 @@
 package dev.adamko.ton618addition.client.quasar;
 
 import com.mojang.blaze3d.vertex.BufferBuilder;
+import com.mojang.blaze3d.vertex.MeshData;
 import com.mojang.blaze3d.vertex.Tesselator;
 import dev.adamko.ton618addition.Ton618Addition;
 import dev.adamko.ton618addition.client.quasarfilm.QuasarJetsFilm;
@@ -23,6 +24,7 @@ import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
+import net.neoforged.neoforge.client.event.RenderFrameEvent;
 import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
 import net.neoforged.neoforge.client.event.ViewportEvent;
 import net.neoforged.neoforge.common.NeoForge;
@@ -36,14 +38,16 @@ import org.joml.Vector3f;
  *   <li><b>After the sky</b>: our 8 named stars (a hot core, a halo, rays that shimmer; only while the player holds
  *       TON 618's item or the Stellar Remote with TA-02 picked), the star being launched until it leaves, the point of
  *       light that appears where TON618 is once it is fed, and the second sun.</li>
- *   <li><b>After the weather</b>: the ground mark (and, before the second press, where the strike would land), the jet
+ *   <li><b>After the weather</b>: the landing marker (a target as wide as the crater, a pillar of light, a ring running
+ *       out ever faster; before the second press, where the strike would land), the jet
  *       coming in from the horizon, <b>the landing blast</b> (flash, fireball, a shock wave and a wall of dust racing
  *       out over the ground), the jet standing on the ground, the radio lobe and its pop.</li>
  *   <li><b>Each tick</b>: the game's own particles for the blast and the pop (smoke, sparks, embers), and a shake of
  *       the view for players near it who aren't watching the film (the film's camera shakes itself).</li>
  * </ul>
  * Everything is a function of the strike's story tick. Also keeps the frame's sky view and projection for
- * {@link QuasarReticle}.
+ * {@link QuasarReticle}. With a shader pack on, all of it is drawn after the particles from looks painted before the
+ * frame, the way the pack can show it ({@link QuasarAtlas}).
  */
 public final class QuasarRender {
     /** Our sky things are drawn this far from the eye (inside even the shortest render distance's far plane). */
@@ -77,6 +81,7 @@ public final class QuasarRender {
     static {
         NeoForge.EVENT_BUS.addListener(ClientTickEvent.Post.class, event -> particles());
         NeoForge.EVENT_BUS.addListener(ViewportEvent.ComputeCameraAngles.class, QuasarRender::shake);
+        NeoForge.EVENT_BUS.addListener(RenderFrameEvent.Pre.class, QuasarRender::paint);
     }
 
     private QuasarRender() {
@@ -90,17 +95,6 @@ public final class QuasarRender {
         }
     }
 
-    /**
-     * With a shader pack on (Iris), the pack draws the whole level again in its own passes and paints over anything drawn
-     * in the level's stages, so every effect here showed nothing (Adam's question, 2026-11-17: "is it compatible with
-     * shaders"; tested with Complementary). Then the frames are kept and the effects drawn late, after the pack has
-     * finished the picture and before the HUD ({@link #late}, from {@code GameRendererMixin}), over the land (no depth).
-     */
-    @Nullable
-    private static Frame lateSky;
-    @Nullable
-    private static Frame lateWorld;
-
     static void render(RenderLevelStageEvent event) {
         Minecraft mc = Minecraft.getInstance();
         ClientLevel level = mc.level;
@@ -108,62 +102,119 @@ public final class QuasarRender {
             return;
         }
         try {
+            // With a shader pack on (Iris), the pack draws the whole level again in its own passes and shows nothing our
+            // shader draws in the level's stages (Adam, 2026-11-17: "when your shaders are on ... you can see stuff like
+            // the stars in the sky without them looking out of place"): then everything is drawn after the particles,
+            // from the looks painted before the frame (QuasarAtlas), as the SA Series does it.
             boolean pack = QuasarGl.shaderPack();
-            if (event.getStage() == RenderLevelStageEvent.Stage.AFTER_SKY) {
+            RenderLevelStageEvent.Stage stage = event.getStage();
+            if (stage == RenderLevelStageEvent.Stage.AFTER_SKY) {
                 skyView.set(event.getModelViewMatrix());
                 skyProj.set(event.getProjectionMatrix());
                 skyKnown = true;
-                if (pack) {
-                    lateSky = Frame.of(event);
-                } else if (QuasarGl.ready()) {
+                if (!pack && QuasarGl.ready()) {
                     sky(Frame.of(event), level);
                 }
-            } else if (event.getStage() == RenderLevelStageEvent.Stage.AFTER_WEATHER && QuasarGl.ready()) {
-                if (pack) {
-                    lateWorld = Frame.of(event);
-                } else {
-                    Frame frame = Frame.of(event);
+            } else if (stage == RenderLevelStageEvent.Stage.AFTER_WEATHER && !pack && QuasarGl.ready()) {
+                Frame frame = Frame.of(event);
+                stars(frame, level);
+                world(frame, mc);
+            } else if (stage == RenderLevelStageEvent.Stage.AFTER_PARTICLES && pack && QuasarGl.ready() && QuasarAtlas.ready()) {
+                Frame frame = Frame.of(event);
+                BufferBuilder out = QuasarAtlas.packBuilder();
+                QuasarGl.packing = out;
+                try {
+                    sky(frame, level);
                     stars(frame, level);
                     world(frame, mc);
+                } finally {
+                    QuasarGl.packing = null;
+                }
+                MeshData mesh = out.build();
+                if (mesh != null) {
+                    QuasarAtlas.PACK.draw(mesh);
                 }
             }
         } catch (RuntimeException broken) {
             // a strike whose light can't be drawn mustn't take the game down
             failed = true;
+            QuasarGl.packing = null;
             Ton618Addition.LOG.error("The Quasar Jets world effects stopped drawing", broken);
             Tesselator.getInstance().clear();
             QuasarGl.end();
         }
     }
 
-    /** Before the HUD, after a shader pack has finished the frame: the effects kept from this frame's level passes. */
-    public static void late() {
-        Frame sky = lateSky;
-        Frame world = lateWorld;
-        lateSky = null;
-        lateWorld = null;
+    /**
+     * Before each frame, with a shader pack on: the looks painted at this frame's clock while our shader can still run
+     * (the mark's ring, the lobe's size and the fireball's age come from the strike, if there is one).
+     */
+    private static void paint(RenderFrameEvent.Pre event) {
         Minecraft mc = Minecraft.getInstance();
         ClientLevel level = mc.level;
-        if (failed || level == null || level.dimension() != Level.OVERWORLD || !QuasarGl.ready() || sky == null && world == null) {
+        if (failed || level == null || level.dimension() != Level.OVERWORLD || !QuasarGl.ready() || !QuasarGl.shaderPack()) {
             return;
         }
-        QuasarGl.late = true;
+        float partial = event.getPartialTick().getGameTimeDeltaPartialTick(true);
+        QuasarCast cast = QuasarClient.current();
+        if (QuasarAtlas.ready() && cast == null && !QuasarClient.holdingQuasarJets() && QuasarClient.secondSun(partial) <= 0.01f) {
+            return;
+        }
+        float seconds = (level.getGameTime() % 24000L + partial) / 20f;
+        float t;
+        float pulse = 0f;
+        float domeRadius = 4f;
+        float domeWhite = 0f;
+        float fireAge = 0f;
+        float fireRadius = 4f;
+        if (cast == null) {
+            t = level.getGameTime() % 24000L + partial;
+        } else {
+            t = cast.tick(partial);
+            pulse = markPulse(t);
+            QuasarStars.Type type = cast.star().type();
+            float lobe = QuasarClock.lobe(t);
+            float p0 = t - QuasarClock.POP;
+            if (lobe > 0f) {
+                domeRadius = (float) type.lobe * lobe;
+            } else if (p0 >= 0f && p0 < 7f) {
+                domeRadius = (float) type.lobe * (1f + 0.35f * p0 / 7f);
+                domeWhite = Math.min(1f, p0 / 3f);
+            }
+            float b0 = t - QuasarClock.LANDS;
+            if (b0 >= 0f && b0 < 44f) {
+                fireAge = b0 / 44f;
+                fireRadius = (float) type.blast * (0.25f + 0.7f * easeOut(Math.min(1f, b0 / 10f)) + 0.2f * fireAge);
+            }
+        }
         try {
-            if (sky != null) {
-                sky(sky, level);
-            }
-            if (world != null) {
-                stars(world, level);
-                world(world, mc);
-            }
+            QuasarAtlas.paint(t, seconds, pulse, domeRadius, domeWhite, fireAge, fireRadius);
         } catch (RuntimeException broken) {
             failed = true;
             Ton618Addition.LOG.error("The Quasar Jets world effects stopped drawing (shader pack)", broken);
-            Tesselator.getInstance().clear();
-            QuasarGl.end();
-        } finally {
-            QuasarGl.late = false;
         }
+    }
+
+    /**
+     * Where the landing marker's running ring is (0-1 from its middle out, 0 for none): one as the mark is set, then one
+     * every 3 seconds, coming faster and faster until one every 0.8 s as the jet lands. Counted as a phase, so the ring
+     * never jumps when the beat quickens.
+     */
+    static float markPulse(float t) {
+        if (t < 0f || t >= QuasarClock.LANDS) {
+            return 0f;
+        }
+        if (t < 24f) {
+            return Math.max(0.001f, t / 24f);
+        }
+        float from = QuasarClock.SWEEP - 160f;
+        float span = QuasarClock.LANDS - from;
+        double phase = (t - 24f) / 60.0;
+        if (t > from) {
+            double in = t - from;
+            phase += (1.0 / 16.0 - 1.0 / 60.0) * in * in / (2.0 * span);
+        }
+        return Math.max(0.001f, (float) (phase - Math.floor(phase)));
     }
 
     // ---- the sky -------------------------------------------------------------------------------------------------------
@@ -315,12 +366,32 @@ public final class QuasarRender {
         float b0 = t - QuasarClock.LANDS;
         QuasarGl.light(true);
 
-        // the ground mark, until the jet lands on it
+        // ---- the landing marker, until the jet lands on it (Adam, 2026-11-17: "one of those 3rd person things where it
+        // shows where the thing will land in a cool way just like railgun and halley and luna"): a target as wide as the
+        // crater (its outer ring on the crater's edge), a pillar of light standing on its middle, and a ring running
+        // out from the middle, faster and faster as the landing nears. Seen by everyone who sees the strike.
         if (t < QuasarClock.LANDS + 2) {
-            float shown = 0.95f * (1f - QuasarClock.ramp(t, QuasarClock.LANDS - 3, QuasarClock.LANDS + 2));
+            float gone = 1f - QuasarClock.ramp(t, QuasarClock.LANDS - 3, QuasarClock.LANDS + 2);
+            float on = QuasarClock.ramp(t, 0f, 20f);
+            float near = smooth(QuasarClock.SWEEP - 160f, QuasarClock.LANDS, t);
+            float pulse = markPulse(t);
             BufferBuilder b = QuasarGl.begin();
-            QuasarGl.flat(b, new Vector3f(mark).add(0f, 0.08f, 0f), 2.6f + 0.4f * type.size, col, 1f);
-            QuasarGl.draw(b, view, proj, QuasarGl.MARK, t, shown, t < 24f ? t / 24f : 0f, 0f);
+            QuasarGl.flat(b, new Vector3f(mark).add(0f, 0.14f, 0f), blast / 0.86f, col, 1f);
+            QuasarGl.draw(b, view, proj, QuasarGl.MARK, t, (0.5f + 0.5f * near) * on * gone, pulse, 0f);
+            b = QuasarGl.begin();
+            QuasarGl.flat(b, new Vector3f(mark).add(0f, 0.18f, 0f), 2.6f + 0.4f * type.size, col, 1f);
+            QuasarGl.draw(b, view, proj, QuasarGl.MARK, t, 0.95f * gone, pulse, 0f);
+            float pillar = on * gone * (0.55f + 0.45f * near);
+            if (pillar > 0.01f) {
+                float tall = 170f;
+                b = QuasarGl.begin();
+                QuasarGl.band(b, new Vector3f(mark).add(0f, 0.2f, 0f), new Vector3f(0f, 1f, 0f), 0f, tall, 0.45f + 0.3f * type.size, col,
+                    pillar);
+                QuasarGl.draw(b, view, proj, QuasarGl.BEAM, t, 0f, 0.13f, tall, 0f);
+                b = QuasarGl.begin();
+                QuasarGl.billboard(b, new Vector3f(mark).add(0f, 1.2f, 0f), right, up, 4f + 2f * type.size, pale, 0.55f * pillar);
+                QuasarGl.draw(b, view, proj, QuasarGl.GLOW, 6f, 0.5f, 0f, 0f);
+            }
         }
 
         // ---- the landing blast (LANDS): a flash, a shock wave and a wall of dust racing out, a fireball
@@ -462,10 +533,15 @@ public final class QuasarRender {
         QuasarStars.Type type = QuasarStars.ALL.get(locked).type();
         boolean tooClose = at.distanceTo(mc.player.position()) < tooClose(type);
         float ticks = (mc.level == null ? 0L : mc.level.getGameTime() % 24000L) + partial;
+        float[] tint = tooClose ? new float[]{1f, 0.25f, 0.2f} : QuasarGl.rgb(type.color);
+        Vector3f where = new Vector3f((float) (at.x - eye.x), (float) (at.y - eye.y), (float) (at.z - eye.z));
         QuasarGl.light(true);
+        // how wide the crater will be (its outer ring on the crater's edge), and the middle
         BufferBuilder b = QuasarGl.begin();
-        QuasarGl.flat(b, new Vector3f((float) (at.x - eye.x), (float) (at.y - eye.y) + 0.08f, (float) (at.z - eye.z)), 2.6f + 0.4f * type.size,
-            tooClose ? new float[]{1f, 0.25f, 0.2f} : QuasarGl.rgb(type.color), 1f);
+        QuasarGl.flat(b, new Vector3f(where).add(0f, 0.12f, 0f), (float) type.blast / 0.86f, tint, 1f);
+        QuasarGl.draw(b, view, proj, QuasarGl.MARK, ticks, tooClose ? 0.25f : 0.3f, 0f, 0f);
+        b = QuasarGl.begin();
+        QuasarGl.flat(b, new Vector3f(where).add(0f, 0.16f, 0f), 2.6f + 0.4f * type.size, tint, 1f);
         QuasarGl.draw(b, view, proj, QuasarGl.MARK, ticks, tooClose ? 0.4f : 0.6f, 0f, 0f);
         QuasarGl.end();
     }

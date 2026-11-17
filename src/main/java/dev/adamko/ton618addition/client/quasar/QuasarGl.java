@@ -65,8 +65,12 @@ public final class QuasarGl {
         }
     }
 
-    /** Drawing after a shader pack has finished the frame ({@code QuasarRender.late}): no depth test. */
-    static boolean late;
+    /**
+     * With a shader pack on: where the effects' quads go instead of being drawn ({@link QuasarAtlas#emit}), drawn all at
+     * once from the painted looks by {@code QuasarRender}. Null without a pack.
+     */
+    @Nullable
+    static BufferBuilder packing;
     private static java.lang.reflect.Method irisInUse;
     private static Object iris;
     private static boolean irisLooked;
@@ -95,6 +99,11 @@ public final class QuasarGl {
 
     static boolean ready() {
         return shader != null;
+    }
+
+    @Nullable
+    static ShaderInstance program() {
+        return shader;
     }
 
     static BufferBuilder begin() {
@@ -349,6 +358,11 @@ public final class QuasarGl {
         if (mesh == null) {
             return;
         }
+        if (packing != null) {
+            QuasarAtlas.emit(mesh, packing, mode, p0, p1, p2, p3);
+            mesh.close();
+            return;
+        }
         if (program == null) {
             mesh.close();
             return;
@@ -374,10 +388,13 @@ public final class QuasarGl {
      * {@code depth} is false, writing no depth, both faces drawn.
      */
     static void light(boolean depth) {
+        if (packing != null) {
+            // (the pack's render type sets everything)
+            return;
+        }
         RenderSystem.enableBlend();
         RenderSystem.blendFunc(GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA);
-        // drawn late over a shader pack's finished picture: its depth isn't the level's, so none
-        if (depth && !late) {
+        if (depth) {
             RenderSystem.enableDepthTest();
         } else {
             RenderSystem.disableDepthTest();
@@ -387,6 +404,9 @@ public final class QuasarGl {
     }
 
     static void end() {
+        if (packing != null) {
+            return;
+        }
         RenderSystem.depthMask(true);
         RenderSystem.enableDepthTest();
         RenderSystem.enableCull();
