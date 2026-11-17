@@ -48,6 +48,9 @@ public final class QuasarClient {
         NeoForge.EVENT_BUS.addListener(RenderLevelStageEvent.class, QuasarRender::render);
         NeoForge.EVENT_BUS.addListener(RenderGuiEvent.Post.class, event -> QuasarReticle.draw(event.getGuiGraphics(),
             event.getPartialTick().getGameTimeDeltaPartialTick(true)));
+        // the readout for whoever watches a strike without its film
+        NeoForge.EVENT_BUS.addListener(RenderGuiEvent.Post.class, event -> QuasarHud.draw(event.getGuiGraphics(),
+            event.getPartialTick().getGameTimeDeltaPartialTick(true)));
         NeoForge.EVENT_BUS.addListener(ViewportEvent.ComputeFogColor.class, QuasarClient::fog);
     }
 
