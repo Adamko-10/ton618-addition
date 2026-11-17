@@ -80,7 +80,8 @@ public final class Ton618AdditionClient {
         LastLightInfo.selectWarning = () -> {
             Minecraft mc = Minecraft.getInstance();
             return mc.level != null && mc.level.dimension() == Ton618Link.DARK ? null
-                : "Locked: set TON618's Scale to ∞ and use it, then cast Last Light in the dark";
+                // short enough for the menu's warning line (Adam, 2026-11-17)
+                : "Not yet: set TON618's Scale to ∞ and use it first";
         };
     }
 
