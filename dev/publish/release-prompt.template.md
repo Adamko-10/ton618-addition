@@ -47,7 +47,7 @@ In the repository folder:
 3. `git fetch origin`, then `git merge-base --is-ancestor origin/main main` succeeds (the push is a fast-forward).
 4. `git diff --name-only origin/main..main | grep -iE '\.jar$|^libs/|^run/'` prints nothing.
 5. The jar exists, its SHA-256 is the one above (`sha256sum "<jar>"`), and its version is {{VERSION}}:
-   `unzip -p "<jar>" META-INF/neoforge.mods.toml | grep -m1 '^version'` shows `version="{{VERSION}}"`.
+   `unzip -p "<jar>" META-INF/neoforge.mods.toml | grep -m1 '^version'` shows `version = "{{VERSION}}"`.
 6. `gh release view v{{VERSION}} --repo Adamko-10/ton618-addition` says the release doesn't exist yet. If it exists,
    stop and tell me.
 
