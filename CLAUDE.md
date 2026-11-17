@@ -33,6 +33,14 @@ D. **The explosion: better looking and more unique** (since 1.1.0 it is 5x bigge
    at 110 blocks ends up inside the fireball). Make it its own thing (not a generic orange fireball): e.g. the jet's
    blue-white plasma, a shock dome, a column, the star's own colour.
 
+**Adam's picks (2026-11-17 ~22:50, clickable)**: **1.1.1 = a polish update now** ("now we are making smth like version
+1.1.1 or smth which is ig a polish thing and next one will be bigger polish with the changed cutscene"): the explosion
+and the impact sound first (his pick), then the rest of the sound overhaul (C), the power slider (**0.1x to 3x of
+today's size, warning above 2x**), the third-person HUD (**a mock-up for him first**). **1.2.0 = the bigger polish**:
+the scale reveal (A), "prolly dad's plan" (Fable via his dad's Claude Max: write it one self-contained prompt then),
+"lets leave that for later". He asked whether 1.1.0 needs the Quasar addon: no, it's optional (without SS-21 Quasar
+TA-02 stays hidden, Last Light works; CurseForge lists it optional).
+
 Adam, 2026-11-17 (with a screenshot of TA-02 in third person, no film, Complementary on): "for next update write this
 down". In his words, then what it means here:
 1. **A power slider for the explosion**: "lets add a slider to select the power of the explosion just like the shooting
