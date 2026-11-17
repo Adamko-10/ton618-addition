@@ -1,5 +1,6 @@
 package dev.adamko.ton618addition.quasar;
 
+import cyou.rimuru.rimulib.mc1211.api.CarveApi;
 import cyou.rimuru.rimulib.mc1211.api.NetApi;
 import cyou.rimuru.rimulib.mc1211.api.SkillApi;
 import cyou.rimuru.rimulib.mc1211.skill.SkillHolder;
@@ -64,6 +65,10 @@ public final class QuasarJets {
     private static final int LOCK_TIMEOUT = 1200;
     /** How long the world's loops ({@code quasar_beam_loop}, {@code quasar_lobe_loop}) are: 3 s. */
     private static final int LOOP_TICKS = 60;
+    /** The blast ring reaches this many crater radii from the mark. */
+    static final double RING = 1.8;
+    /** The ring's work a server tick, at most (it runs out with the shock wave over ~1.5 s, longer on a slow server). */
+    private static final long RING_BUDGET_NS = 4_000_000L;
     /** How far the ground can be for press 2 (blocks). */
     private static final double MARK_RANGE = 256.0;
     /** Players this close to the caster or the mark get the film (Adam: "Caster + nearby players", ~128 blocks). */
@@ -111,8 +116,9 @@ public final class QuasarJets {
         boolean popped;
         /** The landing blast has hit; the crater's columns, nearest the mark first, and how many are cut. */
         boolean blasted;
-        final List<int[]> craterColumns = new ArrayList<>();
-        int craterDone;
+        /** The blast ring round the crater: its columns, nearest the mark first, and how many are done. */
+        List<int[]> ringColumns;
+        int ringDone;
         /** The real tick (since the cast) the beam's and the lobe's loops are next replayed at. */
         long nextBeam;
         long nextLobe;
@@ -190,9 +196,11 @@ public final class QuasarJets {
             return deny(player, "Aim at the ground, within 256 blocks");
         }
         QuasarStars.Star picked = QuasarStars.ALL.get(lock.star());
-        BlockPos ground = block.getBlockPos();
+        // through trees and plants to the ground under them: the jet (and its crater) lands on the land, not a treetop
+        BlockPos ground = groundBelow(player.serverLevel(), block.getBlockPos());
         Vec3 mark = new Vec3(ground.getX() + 0.5, ground.getY() + 1.0, ground.getZ() + 0.5);
-        double safe = picked.type().lobe + 4.0;
+        // clear of the crater (the caster is never hurt, but the ground under them would go)
+        double safe = Math.max(picked.type().lobe, picked.type().blast) + 6.0;
         if (mark.distanceTo(player.position()) < safe) {
             return deny(player, "Too close: aim at least " + (int) Math.ceil(safe) + " blocks away");
         }
@@ -268,7 +276,7 @@ public final class QuasarJets {
                 blast(level, run, terrain);
             }
             if (terrain && t >= QuasarClock.LANDS) {
-                crater(level, run, t);
+                ring(level, run, t);
             }
             if (terrain && !run.loosened && t >= QuasarClock.SWEEP + 30) {
                 run.loosened = true;
@@ -455,6 +463,21 @@ public final class QuasarJets {
         }
     }
 
+    /** The first block at or under {@code pos} that is ground: not a log, leaves, a plant or air. */
+    static BlockPos groundBelow(ServerLevel level, BlockPos pos) {
+        BlockPos.MutableBlockPos p = pos.mutable();
+        while (p.getY() > level.getMinBuildHeight()) {
+            BlockState state = level.getBlockState(p);
+            if (state.isAir() || state.is(BlockTags.LOGS) || state.is(BlockTags.LEAVES)
+                || state.canBeReplaced() && state.getFluidState().isEmpty()) {
+                p.move(0, -1, 0);
+            } else {
+                break;
+            }
+        }
+        return p.immutable();
+    }
+
     private static boolean movable(ServerLevel level, BlockPos pos, BlockState state) {
         return !state.isAir() && state.getFluidState().isEmpty() && !state.hasBlockEntity()
             && state.getDestroySpeed(level, pos) >= 0f && state.isCollisionShapeFullBlock(level, pos)
@@ -462,13 +485,15 @@ public final class QuasarJets {
     }
 
     /**
-     * LANDS: the jet hits the ground (Adam, 2026-11-16: "make it feel like a big impact and a proper explosion"). Everything
-     * near is hurt (most at the middle) and thrown out; with terrain on, blocks from the crater fly out as debris. The
-     * caster, creative and spectator players, and what the jet carries are spared. The crater itself is {@link #crater}.
+     * LANDS: the jet hits the ground (Adam, 2026-11-16: "make it feel like a big impact and a proper explosion"; 2026-11-17:
+     * "make it actually destructive"). Everything near is hurt (most at the middle) and thrown out; with terrain on, the
+     * crater is cut by RimuLib's carver (as The Shooting Star's own big craters: fast, spread over ticks, and land that
+     * isn't loaded is cut when it loads), blocks fly out as debris, and the blast ring ({@link #ring}) flattens the land
+     * round it. The caster, creative and spectator players, and what the jet carries are spared.
      */
     private static void blast(ServerLevel level, Running run, boolean terrain) {
         QuasarStars.Type type = run.star.type();
-        double reach = type.blast * 1.6;
+        double reach = type.blast * 1.3;
         for (LivingEntity e : level.getEntitiesOfClass(LivingEntity.class, new AABB(run.mark, run.mark).inflate(reach),
             e -> e.isAlive() && !e.getUUID().equals(run.caster) && !run.carriedIds.contains(e.getUUID()))) {
             Vec3 rel = e.position().subtract(run.mark);
@@ -478,12 +503,12 @@ public final class QuasarJets {
             }
             double near = 1.0 - d / reach;
             e.hurt(lobeDamage(level), (float) (type.blastDamage * (0.35 + 0.65 * near)));
-            push(e, rel, 0.6 + 1.6 * near, 0.5 + 0.6 * near);
+            push(e, rel, 0.8 + 2.4 * near, 0.6 + 0.9 * near);
         }
         if (!terrain) {
             return;
         }
-        // debris: surface blocks from the crater, flung up and out
+        // debris first, from the surface the crater is about to take: flung up and out, landing round the rim and beyond
         int thrown = 0;
         for (int tries = 0; tries < type.debris * 4 && thrown < type.debris; tries++) {
             double a = run.random.nextDouble() * Math.PI * 2.0;
@@ -500,74 +525,132 @@ public final class QuasarJets {
             }
             FallingBlockEntity block = FallingBlockEntity.fall(level, top, state);
             block.dropItem = false;
-            double speed = 0.5 + run.random.nextDouble() * 0.9;
-            block.setDeltaMovement(Math.cos(a) * speed, 0.9 + run.random.nextDouble() * 0.9, Math.sin(a) * speed);
+            double speed = 0.8 + run.random.nextDouble() * 1.6;
+            block.setDeltaMovement(Math.cos(a) * speed, 1.0 + run.random.nextDouble() * 1.4, Math.sin(a) * speed);
             block.hurtMarked = true;
             thrown++;
         }
+        crater(level, run);
     }
 
-    /** LANDS..: the landing crater, cut from the middle out over a few ticks (the bowl later melts into it). */
-    private static void crater(ServerLevel level, Running run, long t) {
-        double radius = run.star.type().blast;
-        if (run.craterColumns.isEmpty() && run.craterDone == 0) {
-            int r = Mth.ceil(radius);
-            for (int dx = -r; dx <= r; dx++) {
-                for (int dz = -r; dz <= r; dz++) {
-                    if (dx * dx + dz * dz <= radius * radius) {
-                        run.craterColumns.add(new int[]{dx, dz});
+    /**
+     * The crater: a bowl {@code blastDepth} deep at the middle under the mark, everything above it gone, its floor
+     * scorched (blackstone, basalt, glowing magma toward the middle). Pure maths in the floor and the surface: RimuLib may
+     * work them out on its own threads.
+     */
+    private static void crater(ServerLevel level, Running run) {
+        QuasarStars.Type type = run.star.type();
+        double r = type.blast;
+        double depth = type.blastDepth;
+        double mx = run.mark.x;
+        double mz = run.mark.z;
+        int markY = Mth.floor(run.mark.y);
+        int minY = level.getMinBuildHeight() + 6;
+        CarveApi.Floor floor = (x, z) -> {
+            double dx = x + 0.5 - mx;
+            double dz = z + 0.5 - mz;
+            double s2 = (dx * dx + dz * dz) / (r * r);
+            if (s2 >= 1.0) {
+                return CarveApi.UNTOUCHED;
+            }
+            return Math.max(minY, (int) Math.round(markY - depth * (1.0 - s2)));
+        };
+        CarveApi.Surface scorch = (x, y, z, state) -> {
+            if (state.isAir() || !state.getFluidState().isEmpty()) {
+                return state;
+            }
+            double dx = x + 0.5 - mx;
+            double dz = z + 0.5 - mz;
+            double s = Math.sqrt(dx * dx + dz * dz) / r;
+            int roll = Math.floorMod((x * 73856093) ^ (z * 19349663) ^ (y * 83492791), 100);
+            if (roll < 18 * (1.0 - s)) {
+                return Blocks.MAGMA_BLOCK.defaultBlockState();
+            }
+            if (roll < 50) {
+                return Blocks.BLACKSTONE.defaultBlockState();
+            }
+            return roll < 80 ? Blocks.BASALT.defaultBlockState() : Blocks.COARSE_DIRT.defaultBlockState();
+        };
+        try {
+            CarveApi.flatten(level, new Vec3(Math.floor(mx) + 0.5, markY, Math.floor(mz) + 0.5), r + 1.0, floor, scorch)
+                .named(Ton618Addition.MOD_ID + ":quasar_crater").start();
+        } catch (RuntimeException | LinkageError failed) {
+            Ton618Addition.LOG.error("{}: RimuLib couldn't cut the crater", QuasarInfo.TITLE, failed);
+        }
+    }
+
+    /**
+     * LANDS..: the blast ring, from the crater's edge out to {@link #RING} x its radius, running out with the shock wave:
+     * trees and plants flattened, grass and dirt scorched to coarse dirt, a few fires near the rim. Columns nearest the mark
+     * first, {@link #RING_BUDGET_NS} of each server tick at most; only land that is loaded.
+     */
+    private static void ring(ServerLevel level, Running run, long t) {
+        double r = run.star.type().blast;
+        double outer = r * RING;
+        if (run.ringColumns == null) {
+            run.ringColumns = new ArrayList<>();
+            int o = Mth.ceil(outer);
+            for (int dx = -o; dx <= o; dx++) {
+                for (int dz = -o; dz <= o; dz++) {
+                    int d2 = dx * dx + dz * dz;
+                    if (d2 > (r - 1) * (r - 1) && d2 <= outer * outer) {
+                        run.ringColumns.add(new int[]{dx, dz});
                     }
                 }
             }
-            run.craterColumns.sort((a, b) -> Integer.compare(a[0] * a[0] + a[1] * a[1], b[0] * b[0] + b[1] * b[1]));
+            run.ringColumns.sort((a, b) -> Integer.compare(a[0] * a[0] + a[1] * a[1], b[0] * b[0] + b[1] * b[1]));
         }
-        double reach = radius * QuasarClock.ramp(t, QuasarClock.LANDS, QuasarClock.LANDS + 6);
+        double reach = r + (outer - r) * QuasarClock.ramp(t, QuasarClock.LANDS, QuasarClock.LANDS + 30);
         int cx = Mth.floor(run.mark.x);
         int cz = Mth.floor(run.mark.z);
-        while (run.craterDone < run.craterColumns.size()) {
-            int[] col = run.craterColumns.get(run.craterDone);
+        long until = System.nanoTime() + RING_BUDGET_NS;
+        while (run.ringDone < run.ringColumns.size() && System.nanoTime() < until) {
+            int[] col = run.ringColumns.get(run.ringDone);
             double d = Math.sqrt(col[0] * col[0] + col[1] * col[1]);
             if (d > reach) {
                 break;
             }
-            run.craterDone++;
-            craterColumn(level, run, cx + col[0], cz + col[1], d / radius);
+            run.ringDone++;
+            ringColumn(level, cx + col[0], cz + col[1], (d - r) / (outer - r));
         }
     }
 
-    private static void craterColumn(ServerLevel level, Running run, int x, int z, double share) {
+    private static void ringColumn(ServerLevel level, int x, int z, double share) {
         if (!level.hasChunkAt(new BlockPos(x, 0, z))) {
             return;
         }
-        int topY = level.getHeight(Heightmap.Types.MOTION_BLOCKING, x, z) - 1;
-        BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos(x, topY, z);
-        // the ground: below trees, leaves and plants (they go too)
-        int groundY = topY;
-        while (groundY > level.getMinBuildHeight()) {
-            BlockState state = level.getBlockState(pos.setY(groundY));
-            if (state.isAir() || state.is(BlockTags.LOGS) || state.is(BlockTags.LEAVES) || state.canBeReplaced()) {
-                groundY--;
+        int top = level.getHeight(Heightmap.Types.MOTION_BLOCKING, x, z) - 1;
+        BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos(x, top, z);
+        int y = top;
+        // trees and plants go, down to the ground
+        while (y > level.getMinBuildHeight()) {
+            BlockState state = level.getBlockState(pos.setY(y));
+            boolean plant = state.is(BlockTags.LOGS) || state.is(BlockTags.LEAVES) || state.is(BlockTags.SAPLINGS)
+                || state.is(Blocks.BAMBOO) || state.is(Blocks.BAMBOO_SAPLING) || state.is(Blocks.SUGAR_CANE) || state.is(Blocks.CACTUS)
+                || state.is(Blocks.BROWN_MUSHROOM_BLOCK) || state.is(Blocks.RED_MUSHROOM_BLOCK) || state.is(Blocks.MUSHROOM_STEM)
+                || !state.isAir() && state.canBeReplaced() && state.getFluidState().isEmpty();
+            if (plant && removable(level, pos, state)) {
+                level.setBlock(pos, Blocks.AIR.defaultBlockState(), Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE);
+                y--;
+            } else if (state.isAir()) {
+                y--;
             } else {
                 break;
             }
         }
-        int depth = (int) Math.round(run.star.type().blastDepth * (1.0 - share * share));
-        int floorY = Math.max(level.getMinBuildHeight() + 1, groundY - depth);
-        for (int y = topY; y > floorY; y--) {
-            pos.setY(y);
-            BlockState state = level.getBlockState(pos);
-            if (!state.isAir() && removable(level, pos, state)) {
-                level.setBlock(pos, Blocks.AIR.defaultBlockState(), Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE);
-            }
+        BlockState ground = level.getBlockState(pos.setY(y));
+        int roll = Math.floorMod((x * 73856093) ^ (z * 19349663), 100);
+        if ((ground.is(Blocks.GRASS_BLOCK) || ground.is(Blocks.DIRT) || ground.is(Blocks.PODZOL) || ground.is(Blocks.MYCELIUM))
+            && roll < 85 - share * 45) {
+            level.setBlock(pos, Blocks.COARSE_DIRT.defaultBlockState(), Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE);
+            ground = Blocks.COARSE_DIRT.defaultBlockState();
         }
-        // a scorched floor: blackstone, basalt and some still-glowing magma
-        pos.setY(floorY);
-        BlockState floor = level.getBlockState(pos);
-        if (!floor.isAir() && removable(level, pos, floor) && run.random.nextFloat() < 0.8f - (float) share * 0.5f) {
-            float roll = run.random.nextFloat();
-            BlockState scorch = roll < 0.15f ? Blocks.MAGMA_BLOCK.defaultBlockState()
-                : roll < 0.55f ? Blocks.BLACKSTONE.defaultBlockState() : Blocks.BASALT.defaultBlockState();
-            level.setBlock(pos, scorch, Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE);
+        // a few fires near the rim
+        if (share < 0.35 && roll < 5 && ground.isSolid()) {
+            BlockPos above = pos.above();
+            if (level.getBlockState(above).isAir()) {
+                level.setBlock(above, Blocks.FIRE.defaultBlockState(), Block.UPDATE_ALL);
+            }
         }
     }
 

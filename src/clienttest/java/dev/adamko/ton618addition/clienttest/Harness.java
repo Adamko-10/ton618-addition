@@ -50,7 +50,8 @@ import net.minecraft.world.phys.Vec3;
  * <ul>
  *   <li>{@code skill}: {@code quasar} (default) or {@code lastlight};</li>
  *   <li>{@code star}: TA-02's star by name or index (default Antares);</li>
- *   <li>{@code distance}: how far from the caster the jet lands, blocks east (default 80);</li>
+ *   <li>{@code distance}: how far from the caster the jet lands, blocks east (default 110: the biggest crater needs 66);</li>
+ *   <li>{@code perch}: how high above the trees the player stands (default 35, so the aim clears the canopy);</li>
  *   <li>{@code shots}: story ticks to screenshot, comma separated, or {@code from-to/step} (default every 20 to the end);</li>
  *   <li>{@code edu}: educational mode on for this run (default false);</li>
  *   <li>{@code world}: {@code normal} (default, fixed seed) or {@code flat};</li>
@@ -63,7 +64,8 @@ final class Harness {
     private static final String LEVEL = "ton618test";
     static final String SKILL = prop("skill", "quasar");
     static final String STAR = prop("star", "Antares");
-    static final int DISTANCE = Integer.parseInt(prop("distance", "80"));
+    static final int DISTANCE = Integer.parseInt(prop("distance", "110"));
+    static final int PERCH = Integer.parseInt(prop("perch", "35"));
     static final boolean EDU = Boolean.parseBoolean(prop("edu", "false"));
     static final String WORLD = prop("world", "normal");
     static final long SEED = Long.parseLong(prop("seed", "618"));
@@ -193,7 +195,7 @@ final class Harness {
             run(player.server, "execute in ton618:devoured run tp " + name + " 0.5 1 0.5 0 0");
             return;
         }
-        // a glass perch above the trees, so both presses see open sky and the ground far off (spawn can be in a forest)
+        // a glass perch high above the trees, so both presses see open sky and the ground far off (spawn can be in a forest)
         ServerLevel level = player.serverLevel();
         int x = Mth.floor(player.getX());
         int z = Mth.floor(player.getZ());
@@ -203,7 +205,7 @@ final class Harness {
                 top = Math.max(top, level.getHeight(Heightmap.Types.MOTION_BLOCKING, x + dx, z + dz));
             }
         }
-        int y = top + 12;
+        int y = top + PERCH;
         run(player.server, "fill " + (x - 1) + " " + y + " " + (z - 1) + " " + (x + 1) + " " + y + " " + (z + 1) + " glass");
         player.teleportTo(level, x + 0.5, y + 1, z + 0.5, player.getYRot(), player.getXRot());
     }

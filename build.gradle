@@ -74,7 +74,7 @@ neoForge {
             loadedMods.set([mainMod, testMod])
             programArguments.addAll('--width', '1280', '--height', '720')
             systemProperty 'ton618test', 'true'
-            ['skill', 'star', 'distance', 'shots', 'edu', 'world', 'seed'].each { key ->
+            ['skill', 'star', 'distance', 'perch', 'shots', 'edu', 'world', 'seed'].each { key ->
                 var name = "ton618test.${key}"
                 var value = project.findProperty(name) ?: System.getProperty(name)
                 if (value != null) {
