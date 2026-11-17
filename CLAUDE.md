@@ -32,6 +32,9 @@ first** (Adam's brief, his own words at its end), then this file. Fable's part: 
   me the result". So **Opus finishes round 2 and does film/visual fixes in the film files** (in Fable's style; §7b's
   ownership rule is relaxed for fixes), and **big Fable jobs** (SA-04B / SA-03 previz, new films) get a self-contained
   prompt Adam runs on his dad's Max plan (in his personal rules too).
+- **Round 2 finished by Opus** (`7c07cdf`): harness run clean, the impact shot under the clouds with the fireball
+  filling the frame. Test jar `..	est builds6-11-17 TA-02 impactTON 618 Addition 1.1.0 TA-02 impact TEST [NeoForge
+  1.21.1].jar`, **in his instance** (the destructive jar there renamed `.disabled`). Next: Adam's test (sounds included).
 
 ### >>> RESUME HERE (2026-11-17 ~00:30, Adam's PC): TA-02 redo round 1 + sounds in his instance; his test next <<<
 
