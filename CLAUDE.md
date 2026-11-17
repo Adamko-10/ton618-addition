@@ -52,6 +52,27 @@ the atlas 6 x 5 with SPLASH/ARC tiles) and the impact sound (`quasar_impact_near
 an electric impact core (Sonniss #151), a zap (#160), trailer booms, arcs, a buzz tail; each player gets a mix by
 distance, pitched by the star, delayed by the speed of sound (17.15 blocks a tick, up to 3 s) unless they get the film;
 `QuasarJets.impactSound`/`booms`). Harness: `marker-shaders.sh` takes `EXTRA="-Dton618test.star=0 ...distance=200"`.
+**1.1.1, 2026-11-17 ~23:20 (committed `9dea376` explosion + sound, `28174d3` sliders + lock; version 1.1.1; test jar
+`TON 618 Addition 1.1.1 sliders TEST` in his instance, the explosion TEST renamed `.disabled`; not pushed)**:
+- **Power and Damage sliders** (`QuasarSkill.power()` = `Power(0.1, 3, 1, factor, craterAcross)`, `warnAbove` 2,
+  `powerSliders` true: RimuLib shows Power **and Damage** together, no way to show Power alone). Power scales the
+  crater's width (x p), depth (x p^0.75), debris (x min(p, 1.5)), the hits' reach, the safe distance
+  (`QuasarStars.safeDistance(type, power)` = max(lobe, blast x p / 5) + 6), the marker, the aim preview
+  (`QuasarClient.aimPower` reads RimuLib's internal `SkillTuning.power`), every visual (`QuasarCast.blast`). Damage =
+  the hit at the blast's middle (falling to 0.35 at its reach); **∞, the menu's default (RimuLib's `maxDamage`), kills
+  everything in reach** (before: the star's `blastDamage` 14-45, now unused). Both in `QuasarFx` (power, damage). Tested
+  at 0.3x: a 180-block crater, everything scaled (`..\test builds\2026-11-17 1.1.1 power 0.3\`). Not seen: the menu's
+  slider rows (no harness view of TON 618's menu): his test.
+- **Locked, not hidden, without SS-21 Quasar** (Adam: "it should be there but locked, make it work like that"): joins
+  both menus always; `selectWarning` "Locked: needs the SS-21 Quasar addon (The Shooting Star: SS-21 Quasar)"; the
+  server refuses ("Locked: ... needs ... installed"); no named stars. Not tested without SS-21 (the harness has it).
+- He asked again (2026-11-17): the addon is needed only for TA-02 (optional for the mod); TA-02's name: **TA-02 ·
+  Quasar Jets**. Proposed for 1.2.0's scale reveal (told him): a pull-back ladder Earth -> Sun -> Solar System -> Sgr A*
+  -> TON 618's horizon filling the screen (27 Solar Systems across), cards "TON 618" / "40 BILLION SUNS" / "LIGHT
+  NEEDS 9 DAYS TO CROSS IT", more facts in educational mode.
+- **Left for 1.1.1**: the HUD mock-up (his pick: show it first), the rest of the sound overhaul (both films, ask him
+  which moments), his test; the description's "without it, TA-02 stays hidden" -> "locked" and a 1.1.1 changelog
+  (Power/Damage sliders with ∞ = kill by default, the new blast and impact, locked TA-02) at release.
 
 Adam, 2026-11-17 (with a screenshot of TA-02 in third person, no film, Complementary on): "for next update write this
 down". In his words, then what it means here:
