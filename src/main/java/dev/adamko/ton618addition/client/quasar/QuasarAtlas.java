@@ -70,7 +70,7 @@ final class QuasarAtlas {
     private static final ByteBufferBuilder PACK_BYTES = new ByteBufferBuilder(1 << 18);
 
     /** The effects' quads from the painted looks: glowing-eyes, added, hidden by what stands in front, no fog of ours. */
-    static final RenderType PACK = Types.pack();
+    static final RenderType PACK = Types.pack("ton618_addition_pack_glow", true);
 
     private QuasarAtlas() {
     }
@@ -317,7 +317,7 @@ final class QuasarAtlas {
             });
         }
 
-        static RenderType pack() {
+        static RenderType pack(String name, boolean depth) {
             TransparencyStateShard additive = new TransparencyStateShard("ton618_addition_pack_additive", () -> {
                 RenderSystem.enableBlend();
                 RenderSystem.blendFuncSeparate(GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ONE,
@@ -330,12 +330,12 @@ final class QuasarAtlas {
                 fogStart = RenderSystem.getShaderFogStart();
                 RenderSystem.setShaderFogStart(Float.MAX_VALUE);
             }, () -> RenderSystem.setShaderFogStart(fogStart));
-            return create("ton618_addition_pack_glow", DefaultVertexFormat.NEW_ENTITY, VertexFormat.Mode.QUADS, 1 << 16, false, false,
+            return create(name, DefaultVertexFormat.NEW_ENTITY, VertexFormat.Mode.QUADS, 1 << 16, false, false,
                 CompositeState.builder()
                     .setShaderState(RENDERTYPE_EYES_SHADER)
                     .setTextureState(new TextureStateShard(LOCATION, true, false))
                     .setTransparencyState(additive)
-                    .setDepthTestState(LEQUAL_DEPTH_TEST)
+                    .setDepthTestState(depth ? LEQUAL_DEPTH_TEST : NO_DEPTH_TEST)
                     .setWriteMaskState(COLOR_WRITE)
                     .setCullState(NO_CULL)
                     .setTexturingState(noFog)

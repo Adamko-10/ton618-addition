@@ -232,8 +232,8 @@ final class JetCamera {
         Vec3 dir = at(mark, fw, rt, lerp(95F, 4F, u), 0.0, lerp(15F, 2F + blast * 0.12F, u)).subtract(pos).normalize();
         float jet = JetScript.jet(type);
         // the landing: one hard kick that dies away, and a second when the shock wave reaches the camera (the wave's
-        // front is blast x (1 + 5 x easeOut(b / 32)) from the mark, as QuasarRender draws it)
-        float reach = ((float) pos.distanceTo(mark) / blast - 1F) / 5F;
+        // front is blast x (1 + 2 x easeOut(b / 32)) from the mark, as QuasarRender draws it)
+        float reach = ((float) pos.distanceTo(mark) / blast - 1F) / 2F;
         float waveAt = reach >= 1F ? Float.MAX_VALUE : 795F + 32F * (1F - (float) Math.cbrt(1F - Math.max(0F, reach)));
         float shake = 0.004F * lin(760F, 795F, t) * jet + 0.05F * Math.min(1.3F, 0.6F + blast / 20F) * kick(t, 795F, 8F)
             + 0.02F * kick(t, waveAt, 6F) + 0.003F * lin(795F, 800F, t);

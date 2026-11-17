@@ -65,8 +65,8 @@ public final class QuasarJets {
     private static final int LOCK_TIMEOUT = 1200;
     /** How long the world's loops ({@code quasar_beam_loop}, {@code quasar_lobe_loop}) are: 3 s. */
     private static final int LOOP_TICKS = 60;
-    /** The blast ring reaches this many crater radii from the mark. */
-    static final double RING = 1.8;
+    /** The blast ring reaches this many crater radii from the mark (1.8 until the crater was made five times wider). */
+    static final double RING = 1.25;
     /** The ring's work a server tick, at most (it runs out with the shock wave over ~1.5 s, longer on a slow server). */
     private static final long RING_BUDGET_NS = 4_000_000L;
     /** How far the ground can be for press 2 (blocks). */
@@ -116,6 +116,13 @@ public final class QuasarJets {
         boolean popped;
         /** The landing blast has hit; the crater's columns, nearest the mark first, and how many are cut. */
         boolean blasted;
+        /**
+         * The crater, cut from the middle out with the shock wave ({@link #cutCrater}), then handed to RimuLib to finish
+         * (land that wasn't loaded, as it loads).
+         */
+        @Nullable
+        CarveApi.Cut crater;
+        boolean craterHandedOver;
         /** The blast ring round the crater: its columns, nearest the mark first, and how many are done. */
         List<int[]> ringColumns;
         int ringDone;
@@ -199,8 +206,8 @@ public final class QuasarJets {
         // through trees and plants to the ground under them: the jet (and its crater) lands on the land, not a treetop
         BlockPos ground = groundBelow(player.serverLevel(), block.getBlockPos());
         Vec3 mark = new Vec3(ground.getX() + 0.5, ground.getY() + 1.0, ground.getZ() + 0.5);
-        // clear of the crater (the caster is never hurt, but the ground under them would go)
-        double safe = Math.max(picked.type().lobe, picked.type().blast) + 6.0;
+        // clear of the lobe (the caster is never hurt, and the crater keeps the ground they stand on)
+        double safe = QuasarStars.safeDistance(picked.type());
         if (mark.distanceTo(player.position()) < safe) {
             return deny(player, "Too close: aim at least " + (int) Math.ceil(safe) + " blocks away");
         }
@@ -276,6 +283,7 @@ public final class QuasarJets {
                 blast(level, run, terrain);
             }
             if (terrain && t >= QuasarClock.LANDS) {
+                cutCrater(run, t);
                 ring(level, run, t);
             }
             if (terrain && !run.loosened && t >= QuasarClock.SWEEP + 30) {
@@ -300,11 +308,13 @@ public final class QuasarJets {
             }
         } catch (RuntimeException failed) {
             Ton618Addition.LOG.error("{} failed at tick {}; the strike stops", QuasarInfo.TITLE, t, failed);
+            handOver(run);
             dropAll(run);
             running = null;
             return;
         }
         if (t >= QuasarClock.END) {
+            handOver(run);
             dropAll(run);
             running = null;
         }
@@ -492,6 +502,7 @@ public final class QuasarJets {
      * round it. The caster, creative and spectator players, and what the jet carries are spared.
      */
     private static void blast(ServerLevel level, Running run, boolean terrain) {
+        long started = System.nanoTime();
         QuasarStars.Type type = run.star.type();
         double reach = type.blast * 1.3;
         for (LivingEntity e : level.getEntitiesOfClass(LivingEntity.class, new AABB(run.mark, run.mark).inflate(reach),
@@ -505,6 +516,7 @@ public final class QuasarJets {
             e.hurt(lobeDamage(level), (float) (type.blastDamage * (0.35 + 0.65 * near)));
             push(e, rel, 0.8 + 2.4 * near, 0.6 + 0.9 * near);
         }
+        long hits = System.nanoTime();
         if (!terrain) {
             return;
         }
@@ -523,6 +535,9 @@ public final class QuasarJets {
             if (!movable(level, top, state)) {
                 continue;
             }
+            // its place emptied without block updates first (fall() would update every neighbour: in a jungle, bamboo and
+            // plants breaking in chains, 1.5 s for 270 blocks; the crater takes that land anyway)
+            level.setBlock(top, state.getFluidState().createLegacyBlock(), Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE);
             FallingBlockEntity block = FallingBlockEntity.fall(level, top, state);
             block.dropItem = false;
             double speed = 0.8 + run.random.nextDouble() * 1.6;
@@ -530,7 +545,52 @@ public final class QuasarJets {
             block.hurtMarked = true;
             thrown++;
         }
+        long debris = System.nanoTime();
         crater(level, run);
+        long done = System.nanoTime();
+        Ton618Addition.LOG.info("{}: the landing blast ({} blocks across): hits {} ms, {} debris {} ms, the crater set up {} ms",
+            QuasarInfo.TITLE, (int) (type.blast * 2), (hits - started) / 1_000_000, thrown, (debris - hits) / 1_000_000,
+            (done - debris) / 1_000_000);
+    }
+
+    /**
+     * LANDS..: the crater cut from the middle out as the shock wave runs (RimuLib's carver, within its shared time budget
+     * of each server tick; only land that is loaded). After two seconds, or once it is done, RimuLib finishes the rest
+     * by itself, as the land loads ({@link #handOver}). Left to RimuLib from the start, the biggest craters (since they
+     * were made five times wider, 2026-11-17) were cut in its own order and the middle could stay untouched for long.
+     */
+    private static void cutCrater(Running run, long t) {
+        CarveApi.Cut cut = run.crater;
+        if (cut == null || run.craterHandedOver) {
+            return;
+        }
+        double r = run.star.type().blast;
+        float u = QuasarClock.ramp(t, QuasarClock.LANDS, QuasarClock.LANDS + 30);
+        try {
+            cut.tick(4.0 + (r + 1.0) * u);
+            if (cut.done() || t >= QuasarClock.LANDS + 40) {
+                handOver(run);
+            }
+        } catch (RuntimeException | LinkageError failed) {
+            Ton618Addition.LOG.error("{}: RimuLib couldn't cut the crater", QuasarInfo.TITLE, failed);
+            run.crater = null;
+        }
+    }
+
+    /** Whatever of the crater is left is RimuLib's to finish (as its land loads). */
+    private static void handOver(Running run) {
+        CarveApi.Cut cut = run.crater;
+        if (cut == null || run.craterHandedOver) {
+            return;
+        }
+        run.craterHandedOver = true;
+        try {
+            if (!cut.done()) {
+                cut.start();
+            }
+        } catch (RuntimeException | LinkageError failed) {
+            Ton618Addition.LOG.error("{}: RimuLib couldn't finish the crater", QuasarInfo.TITLE, failed);
+        }
     }
 
     /**
@@ -546,7 +606,15 @@ public final class QuasarJets {
         double mz = run.mark.z;
         int markY = Mth.floor(run.mark.y);
         int minY = level.getMinBuildHeight() + 6;
+        // the caster may stand inside it (QuasarStars.safeDistance): the 5 x 5 columns under their feet are kept
+        Player caster = level.getPlayerByUUID(run.caster);
+        Vec3 feet = caster != null && caster.level() == level ? caster.position() : run.fx.position();
+        int footX = Mth.floor(feet.x);
+        int footZ = Mth.floor(feet.z);
         CarveApi.Floor floor = (x, z) -> {
+            if (Math.abs(x - footX) <= 2 && Math.abs(z - footZ) <= 2) {
+                return CarveApi.UNTOUCHED;
+            }
             double dx = x + 0.5 - mx;
             double dz = z + 0.5 - mz;
             double s2 = (dx * dx + dz * dz) / (r * r);
@@ -572,8 +640,9 @@ public final class QuasarJets {
             return roll < 80 ? Blocks.BASALT.defaultBlockState() : Blocks.COARSE_DIRT.defaultBlockState();
         };
         try {
-            CarveApi.flatten(level, new Vec3(Math.floor(mx) + 0.5, markY, Math.floor(mz) + 0.5), r + 1.0, floor, scorch)
-                .named(Ton618Addition.MOD_ID + ":quasar_crater").start();
+            // (lazy: only land that is loaded is cut; the rest waits for its land, see handOver)
+            run.crater = CarveApi.flatten(level, new Vec3(Math.floor(mx) + 0.5, markY, Math.floor(mz) + 0.5), r + 1.0, floor, scorch)
+                .named(Ton618Addition.MOD_ID + ":quasar_crater").lazy();
         } catch (RuntimeException | LinkageError failed) {
             Ton618Addition.LOG.error("{}: RimuLib couldn't cut the crater", QuasarInfo.TITLE, failed);
         }

@@ -11,6 +11,7 @@ import javax.annotation.Nullable;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
@@ -73,6 +74,8 @@ public final class QuasarRender {
     /** How much of each named star is seen (0 behind land, 1 in the open), eased; and when the last frame was. */
     private static final float[] SEEN = new float[QuasarStars.ALL.size()];
     private static long starsFrame;
+    private static float quasarOpen = 1f;
+    private static long quasarFrame;
     private static boolean failed;
     @Nullable
     private static QuasarCast particlesFor;
@@ -106,6 +109,11 @@ public final class QuasarRender {
             // shader draws in the level's stages (Adam, 2026-11-17: "when your shaders are on ... you can see stuff like
             // the stars in the sky without them looking out of place"): then everything is drawn after the particles,
             // from the looks painted before the frame (QuasarAtlas), as the SA Series does it.
+            // Without a pack the sky's things (the named stars too) are drawn with the sky, so the land and the clouds
+            // are drawn over them; their names are the HUD's, over everything (Adam, 2026-11-17: "make them display under
+            // clouds but the text above clouds"). A pack paints its own sky over anything drawn with the sky (tested with
+            // Complementary: the stars were gone), so with one they stay after the particles, over the pack's clouds, and
+            // a ray from the eye hides the second sun when land stands in its way.
             boolean pack = QuasarGl.shaderPack();
             RenderLevelStageEvent.Stage stage = event.getStage();
             if (stage == RenderLevelStageEvent.Stage.AFTER_SKY) {
@@ -113,27 +121,19 @@ public final class QuasarRender {
                 skyProj.set(event.getProjectionMatrix());
                 skyKnown = true;
                 if (!pack && QuasarGl.ready()) {
-                    sky(Frame.of(event), level);
+                    Frame frame = Frame.of(event);
+                    sky(frame, level);
+                    stars(frame, level);
                 }
             } else if (stage == RenderLevelStageEvent.Stage.AFTER_WEATHER && !pack && QuasarGl.ready()) {
-                Frame frame = Frame.of(event);
-                stars(frame, level);
-                world(frame, mc);
+                world(Frame.of(event), mc);
             } else if (stage == RenderLevelStageEvent.Stage.AFTER_PARTICLES && pack && QuasarGl.ready() && QuasarAtlas.ready()) {
                 Frame frame = Frame.of(event);
-                BufferBuilder out = QuasarAtlas.packBuilder();
-                QuasarGl.packing = out;
-                try {
+                packed(QuasarAtlas.PACK, () -> {
                     sky(frame, level);
                     stars(frame, level);
                     world(frame, mc);
-                } finally {
-                    QuasarGl.packing = null;
-                }
-                MeshData mesh = out.build();
-                if (mesh != null) {
-                    QuasarAtlas.PACK.draw(mesh);
-                }
+                });
             }
         } catch (RuntimeException broken) {
             // a strike whose light can't be drawn mustn't take the game down
@@ -142,6 +142,21 @@ public final class QuasarRender {
             Ton618Addition.LOG.error("The Quasar Jets world effects stopped drawing", broken);
             Tesselator.getInstance().clear();
             QuasarGl.end();
+        }
+    }
+
+    /** With a shader pack on: what {@code draws} draws, gathered and drawn in one go from the painted looks as {@code type}. */
+    private static void packed(RenderType type, Runnable draws) {
+        BufferBuilder out = QuasarAtlas.packBuilder();
+        QuasarGl.packing = out;
+        try {
+            draws.run();
+        } finally {
+            QuasarGl.packing = null;
+        }
+        MeshData mesh = out.build();
+        if (mesh != null) {
+            type.draw(mesh);
         }
     }
 
@@ -254,34 +269,50 @@ public final class QuasarRender {
 
         if (cast != null) {
             Vector3f at = toVector(cast.quasarDirection()).mul(SKY);
+            // (with a shader pack these are drawn after the land, a hundred blocks out: land further off that stands in
+            // the way hides them by a ray from the eye; Adam, 2026-11-17: "make this not display over mountains/blocks")
+            float open = QuasarGl.packing != null ? quasarSeen(level, camera.getPosition(), cast.quasarDirection()) : 1f;
             // TON618, fed: a new point of light where there was none, growing as the jets come on
             if (t >= QuasarClock.IGNITE && t < QuasarClock.NIGHT + 30 && sun < 0.6f) {
                 float lit = (0.35f * QuasarClock.ramp(t, QuasarClock.IGNITE, QuasarClock.IGNITE + 30)
                     + 0.65f * QuasarClock.ramp(t, QuasarClock.JETS, QuasarClock.DAY)) * (1f - QuasarClock.ramp(t, QuasarClock.NIGHT, QuasarClock.NIGHT + 30));
                 float half = 8f + 12f * QuasarClock.ramp(t, QuasarClock.JETS, QuasarClock.DAY);
                 BufferBuilder b = QuasarGl.begin();
-                QuasarGl.billboard(b, at, right, up, half, QUASAR, lit * (1f - sun));
+                QuasarGl.billboard(b, at, right, up, half, QUASAR, lit * (1f - sun) * open);
                 QuasarGl.draw(b, view, proj, QuasarGl.STAR, seconds, 6.18f, 0f, 0.35f);
             }
             // the second sun: TON618 blazing as a quasar, low in the sky
             if (sun > 0.01f) {
                 float flare = 1f + 0.9f * (float) Math.exp(-Math.max(0f, t - QuasarClock.DAY) / 10f);
                 BufferBuilder b = QuasarGl.begin();
-                QuasarGl.billboard(b, at, right, up, 95f, new float[]{0.4f, 0.58f, 1f}, 0.14f * sun);
+                QuasarGl.billboard(b, at, right, up, 95f, new float[]{0.4f, 0.58f, 1f}, 0.14f * sun * open);
                 QuasarGl.draw(b, view, proj, QuasarGl.GLOW, 2.2f, 0.2f, 0f, 0f);
                 b = QuasarGl.begin();
-                QuasarGl.billboard(b, at, right, up, 58f * flare, WHITE, Math.min(1f, sun * 1.15f));
+                QuasarGl.billboard(b, at, right, up, 58f * flare, WHITE, Math.min(1f, sun * 1.15f) * open);
                 QuasarGl.draw(b, view, proj, QuasarGl.SUN, seconds, 0f, 0f, 0f);
             }
         }
         QuasarGl.end();
     }
 
+    /** How much of TON618 (the point of light, the second sun) is in the open, eased over a few frames. */
+    private static float quasarSeen(ClientLevel level, Vec3 eye, Vec3 direction) {
+        long now = System.nanoTime();
+        float dt = Math.min(0.1f, (now - quasarFrame) / 1.0e9f);
+        quasarFrame = now;
+        double reach = Math.min(320.0, Minecraft.getInstance().options.getEffectiveRenderDistance() * 16.0);
+        boolean clear = level.clip(new ClipContext(eye, eye.add(direction.scale(reach)), ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE,
+            CollisionContext.empty())).getType() == HitResult.Type.MISS;
+        quasarOpen += ((clear ? 1f : 0f) - quasarOpen) * Math.min(1f, dt * 10f);
+        return quasarOpen;
+    }
+
     /**
      * Our 8 named stars: only while holding TON 618's item or the Stellar Remote with TA-02 picked (Adam, 2026-11-16).
-     * The one being launched stays (for the film's viewers too) until it leaves the sky. They are drawn after the
-     * clouds, so a cloud never hides the star the player is trying to lock, and each is hidden only when land stands in
-     * its way (a ray from the eye says so; it fades in and out over a few frames).
+     * The one being launched stays (for the film's viewers too) until it leaves the sky. Without a shader pack they are
+     * drawn with the sky, so the land and the game's clouds are drawn over them, while their names stay on top (the
+     * HUD's, {@link QuasarReticle}); with one, over the pack's clouds (see render). A ray from the eye also fades each
+     * one out when land stands in its way.
      */
     private static void stars(Frame frame, ClientLevel level) {
         float partial = frame.partial();
@@ -398,19 +429,20 @@ public final class QuasarRender {
         if (b0 >= 0f && b0 < 16f) {
             float u = 1f - b0 / 16f;
             BufferBuilder b = QuasarGl.begin();
-            QuasarGl.billboard(b, new Vector3f(mark).add(0f, blast * 0.3f, 0f), right, up, Math.min(blast * 8f, 320f), pale, u * u);
+            QuasarGl.billboard(b, new Vector3f(mark).add(0f, blast * 0.3f, 0f), right, up, Math.min(blast * 4f, 900f), pale, u * u);
             QuasarGl.draw(b, view, proj, QuasarGl.GLOW, 14f, 0.6f, 0f, 0f);
         }
         if (b0 >= 0f && b0 < 32f) {
             float u = b0 / 32f;
-            float r = blast * (1f + 5f * easeOut(u));
+            // (out to 3 crater radii: the crater is five times wider since 2026-11-17)
+            float r = blast * (1f + 2f * easeOut(u));
             BufferBuilder b = QuasarGl.begin();
-            QuasarGl.ring(b, new Vector3f(mark).add(0f, 0.35f, 0f), r * 0.78f, r, pale, 1f);
+            QuasarGl.ring(b, new Vector3f(mark).add(0f, 0.35f, 0f), r * 0.86f, r, pale, 1f);
             QuasarGl.draw(b, view, proj, QuasarGl.SHOCK, t, (float) Math.pow(1f - u, 1.3) * 1.2f, 24f, 0f);
         }
         if (b0 >= 0f && b0 < 46f) {
             float u = b0 / 46f;
-            float r = blast * (0.9f + 3.8f * easeOut(Math.min(1f, b0 / 34f)));
+            float r = blast * (0.9f + 1.2f * easeOut(Math.min(1f, b0 / 34f)));
             BufferBuilder b = QuasarGl.begin();
             // (never taller than a tree, however big the crater: a tall one stands like a wall of fog)
             QuasarGl.wall(b, new Vector3f(mark).add(0f, -0.5f, 0f), r, Math.min(blast * (0.16f + 0.26f * u), 5f + 9f * u), mix(DUST, col, 0.15f), 1f);
@@ -548,7 +580,7 @@ public final class QuasarRender {
 
     /** Nearer than this the server refuses the second press (QuasarJets.cast: the bigger of lobe and crater, plus 6). */
     static double tooClose(QuasarStars.Type type) {
-        return Math.max(type.lobe, type.blast) + 6.0;
+        return QuasarStars.safeDistance(type);
     }
 
     // ---- the game's own particles: smoke, sparks and embers for the blast, the standing jet, the lobe and its pop --------
@@ -596,13 +628,13 @@ public final class QuasarRender {
         double lobe = type.lobe;
         if (k == QuasarClock.LANDS) {
             add(level, ParticleTypes.FLASH, m.x, m.y + 1.5, m.z, 0, 0, 0);
-            int bursts = 1 + Math.round(type.size * 1.5f);
+            int bursts = 2 + Math.round(type.size * 2.5f);
             for (int i = 0; i < bursts; i++) {
                 add(level, ParticleTypes.EXPLOSION_EMITTER, m.x + (r.nextDouble() - 0.5) * blast, m.y + r.nextDouble() * 2.0,
                     m.z + (r.nextDouble() - 0.5) * blast, 0, 0, 0);
             }
             // dust kicked out along the ground, sparks and embers thrown up
-            int dust = 40 + (int) (blast * 4.0);
+            int dust = 40 + (int) (Math.min(blast, 60.0) * 4.0);
             for (int i = 0; i < dust; i++) {
                 double a = r.nextDouble() * Math.PI * 2.0;
                 double speed = 0.5 + r.nextDouble() * 0.9;
@@ -610,13 +642,13 @@ public final class QuasarRender {
                     m.y + 0.3 + r.nextDouble(), m.z + Math.sin(a) * blast * 0.5, Math.cos(a) * speed, 0.03 + r.nextDouble() * 0.15,
                     Math.sin(a) * speed);
             }
-            int sparks = 30 + (int) (blast * 3.0);
+            int sparks = 30 + (int) (Math.min(blast, 60.0) * 3.0);
             for (int i = 0; i < sparks; i++) {
                 double a = r.nextDouble() * Math.PI * 2.0;
                 double out = 0.2 + r.nextDouble() * 0.9;
                 add(level, ParticleTypes.FIREWORK, m.x, m.y + 0.5, m.z, Math.cos(a) * out, 0.4 + r.nextDouble() * 1.1, Math.sin(a) * out);
             }
-            for (int i = 0; i < 10 + (int) (blast * 2.0); i++) {
+            for (int i = 0; i < 10 + (int) (Math.min(blast, 60.0) * 2.0); i++) {
                 add(level, ParticleTypes.LAVA, m.x + (r.nextDouble() - 0.5) * blast * 1.4, m.y + 0.2, m.z + (r.nextDouble() - 0.5) * blast * 1.4,
                     0, 0, 0);
             }

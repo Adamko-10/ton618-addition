@@ -13,10 +13,10 @@ import net.minecraft.world.phys.Vec3;
 public final class QuasarStars {
     /** What the star's type changes. Lengths in blocks. */
     public enum Type {
-        RED_DWARF("Red dwarf", 0xFF7A4D, 0.7f, 1.5, 9, 3, 12, 1f, 4f, 0.8f, 20, 10, 14f, 60),
-        SUN_LIKE("Sun-like", 0xFFE2A0, 1.0f, 2.6, 15, 4, 20, 2f, 6f, 0.9f, 30, 15, 22f, 90),
-        BLUE_GIANT("Blue giant", 0xA8C8FF, 1.6f, 4.2, 24, 6, 32, 3f, 9f, 1f, 45, 22, 32f, 130),
-        RED_SUPERGIANT("Red supergiant", 0xFF9450, 2.3f, 6.1, 33, 8, 44, 4f, 12f, 1f, 60, 30, 45f, 180);
+        RED_DWARF("Red dwarf", 0xFF7A4D, 0.7f, 1.5, 9, 3, 12, 1f, 4f, 0.8f, 100, 20, 14f, 90),
+        SUN_LIKE("Sun-like", 0xFFE2A0, 1.0f, 2.6, 15, 4, 20, 2f, 6f, 0.9f, 150, 30, 22f, 135),
+        BLUE_GIANT("Blue giant", 0xA8C8FF, 1.6f, 4.2, 24, 6, 32, 3f, 9f, 1f, 225, 44, 32f, 195),
+        RED_SUPERGIANT("Red supergiant", 0xFF9450, 2.3f, 6.1, 33, 8, 44, 4f, 12f, 1f, 300, 60, 45f, 270);
 
         public final String label;
         /** Its colour: the star, the jet's sheath, the lobe, the crystals, the reticle. */
@@ -41,7 +41,8 @@ public final class QuasarStars {
          * the crater's radius and its depth at the middle, the hit at the middle (less further out, to 1.3 x the radius),
          * and how many blocks are thrown out as debris. Around the crater, out to {@code QuasarJets.RING} x the radius,
          * the blast flattens trees and plants and scorches the ground. Tripled on 2026-11-17 (Adam: "make it actually
-         * destructive").
+         * destructive"), then five times wider and twice as deep the same day (Adam: "make the explosion like 5x
+         * larger"): 200 to 600 blocks across.
          */
         public final double blast;
         public final int blastDepth;
@@ -65,6 +66,15 @@ public final class QuasarStars {
             this.blastDamage = blastDamage;
             this.debris = debris;
         }
+    }
+
+    /**
+     * How far from the caster the jet must land: clear of the radio lobe and of what the crater was before it was made
+     * five times wider (26 to 66 blocks, what press 2 can reach). The caster may stand inside today's crater: they are
+     * never hurt, and the ground under them is kept ({@code QuasarJets.crater}).
+     */
+    public static double safeDistance(Type type) {
+        return Math.max(type.lobe, type.blast / 5.0) + 6.0;
     }
 
     /**

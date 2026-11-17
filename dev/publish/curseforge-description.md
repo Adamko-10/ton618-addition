@@ -67,7 +67,7 @@ Then the film: the remote **fast-forwards the star's own time** while a star eng
 
 *   **A second sun**: the night turns to day for everyone in the world.
 *   **The jet** sweeps down from the sky, carrying mobs and items along.
-*   **The landing**: a huge blast. A crater up to **60 blocks wide** (by the star's type: red dwarf, Sun-like, blue giant, red supergiant), debris flung out, trees flattened and fires round the rim.
+*   **The landing**: a huge blast. A crater **200 to 600 blocks wide** (by the star's type: red dwarf, Sun-like, blue giant, red supergiant), debris flung out, trees flattened and fires round the rim.
 *   **The radio lobe**: a bubble of plasma swells over the crater, hurts what is inside and pops.
 *   **The star is missing** from the sky for a few nights afterwards.
 *   **Its own film** (skippable with **J**) and its own sounds.
@@ -104,7 +104,7 @@ It joins TON 618 through RimuLib's official addon API and TON 618's own `/ton618
 
 ## Plans
 
-This is version **1.1.0**. Planned: 1.1.0 for the other loaders, and real music for the films. Comments, bug reports and ideas are very welcome!
+This is version **1.1.0**. Planned: 1.1.0 for the other loaders; a **Power slider** for TA-02's blast (like The Shooting Star's own skills); better sounds in both films; an on-screen readout for TA-02 when you watch it without the film; and real music for the films. Comments, bug reports and ideas are very welcome!
 
 ## Credits
 

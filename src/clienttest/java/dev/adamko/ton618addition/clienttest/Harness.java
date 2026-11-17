@@ -214,6 +214,8 @@ final class Harness {
         ServerLevel level = player.serverLevel();
         int x = Mth.floor(player.getX()) + DISTANCE;
         int z = Mth.floor(player.getZ());
+        // (the land there loaded first: unloaded, its height reads as the bottom of the world and press 2 is refused)
+        level.getChunk(x >> 4, z >> 4);
         Vec3 target = new Vec3(x + 0.5, level.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, x, z) - 0.5, z + 0.5);
         look(player, target.subtract(player.getEyePosition()));
         boolean cast = QuasarJets.cast(player, Ton618Link.QUASAR_ON_TON618);
