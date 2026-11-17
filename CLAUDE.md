@@ -27,6 +27,11 @@ first** (Adam's brief, his own words at its end), then this file. Fable's part: 
   anything that needs to be resumed"): it checks them in the harness and makes the impact test jar. Ponytail checked:
   still off (config `off`, no flags). Adam asked for the Last Light previz: sent him `previz/last-light-previz.html`
   and the link https://claude.ai/artifact/Ta6Z91SRwtCYN1z27zKQtJ.
+- **Fable now needs paid usage credits** (its resume stopped: "Fable 5.2 requires usage credits"). Adam: "you can do
+  opus for now for fixes, my dad has a claude max plan and he has spare usage so i could ask him to run a prompt and give
+  me the result". So **Opus finishes round 2 and does film/visual fixes in the film files** (in Fable's style; §7b's
+  ownership rule is relaxed for fixes), and **big Fable jobs** (SA-04B / SA-03 previz, new films) get a self-contained
+  prompt Adam runs on his dad's Max plan (in his personal rules too).
 
 ### >>> RESUME HERE (2026-11-17 ~00:30, Adam's PC): TA-02 redo round 1 + sounds in his instance; his test next <<<
 
