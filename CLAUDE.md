@@ -60,7 +60,8 @@ distance, pitched by the star, delayed by the speed of sound (17.15 blocks a tic
   (`QuasarStars.safeDistance(type, power)` = max(lobe, blast x p / 5) + 6), the marker, the aim preview
   (`QuasarClient.aimPower` reads RimuLib's internal `SkillTuning.power`), every visual (`QuasarCast.blast`). Damage =
   the hit at the blast's middle (falling to 0.35 at its reach); **∞, the menu's default (RimuLib's `maxDamage`), kills
-  everything in reach** (before: the star's `blastDamage` 14-45, now unused). Both in `QuasarFx` (power, damage). Tested
+  everything in reach** (before: the star's `blastDamage` 14-45, now unused). **Adam, 2026-11-17 (clickable): "Keep ∞
+  kills"** as the default. Both in `QuasarFx` (power, damage). Tested
   at 0.3x: a 180-block crater, everything scaled (`..\test builds\2026-11-17 1.1.1 power 0.3\`). Not seen: the menu's
   slider rows (no harness view of TON 618's menu): his test.
 - **Locked, not hidden, without SS-21 Quasar** (Adam: "it should be there but locked, make it work like that"): joins
