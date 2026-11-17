@@ -79,7 +79,20 @@ distance, pitched by the star, delayed by the speed of sound (17.15 blocks a tic
   educational line when the player's or the caster's educational mode is on. Harness shots `..\test builds\2026-11-17
   1.1.1 hud 2\`. Jar `TON 618 Addition 1.1.1 HUD TEST` in his instance (the sliders TEST renamed `.disabled`). The
   film's caption still says "66 billion Suns" (`JetScript`): check the facts (40 billion) in 1.2.0.
-- **Left for 1.1.1**: the rest of the sound overhaul (both films, ask him which moments), his test; the description's "without it, TA-02 stays hidden" -> "locked" and a 1.1.1 changelog
+- **2026-11-18 ~00:15, Adam**: "lets finish up the sounds for now and work on other stuff for 1.1.1 we do need to make
+  sfx better later but rn its not wotth too much attention" -> **the film sound overhaul is parked for later** (the
+  impact is done). The HUD: "the ui is fine as is but i will likely wanna change it in the future" (his "the clock
+  speeding up" was about the film's sounds, a mix-up). His picks for the rest of 1.1.1 (clickable, all four), **done
+  `5548cd8`**: `[quasar_jets] max_power` (0.1-3, default 3) / `max_damage` (0 = no cap; above 0 ∞ becomes it), a cast
+  above them held and the caster told in chat (tested: Power 3 on max_power 2 -> "held to Power 2.0×"; with Antares
+  at 2x the harness's aim was then "too close": the server's own ray hits treetops nearer than the 126-block safe
+  distance; `dev/test/limits.sh` now uses Alpha Centauri A); the debris thrown 40 a tick (not yet measured: his game
+  opened); the film's card "about 40 billion Suns"; `dev/publish/changelog-1.1.1.md` + the description for 1.1.1.
+  Jar `..\test builds\2026-11-18 TON 618 Addition 1.1.1 limits\TON 618 Addition 1.1.1 limits TEST [NeoForge
+  1.21.1].jar`, **not yet in his instance** (his game was open at 00:13): swap it in when it's closed (the HUD TEST
+  there -> `.disabled`).
+- **Left for 1.1.1**: his test round; then release (NeoForge first: a remade release prompt for 1.1.1, as 1.1.0's);
+  then the ports of everything to the six loaders. the description's "without it, TA-02 stays hidden" -> "locked" and a 1.1.1 changelog
   (Power/Damage sliders with ∞ = kill by default, the new blast and impact, locked TA-02) at release.
 
 Adam, 2026-11-17 (with a screenshot of TA-02 in third person, no film, Complementary on): "for next update write this
