@@ -5,7 +5,32 @@ Handoff notes for every Claude session in this folder (`C:\Users\User\Desktop\to
 Started 2026-11-13 by an Opus 5.5 session (xhigh) that was started from Adam's SA Series session. **Read `BRIEF.md`
 first** (Adam's brief, his own words at its end), then this file. Fable's part: `prompts\FABLE-PREVIZ-AND-FILM-PROMPT.md`.
 
-### >>> RESUME HERE (2026-11-17 ~19:15, Adam's PC): before 1.1.0: real shader-pack support and a landing marker <<<
+### >>> RESUME HERE (2026-11-17 ~19:45, Adam's PC): shaders done properly + landing marker built; 1.1.0 jar ready <<<
+
+- **Built and harness-tested (`9549112`)**, both with Complementary Reimagined on and off (`dev/test/marker-shaders.sh`,
+  films off in the harness's own `config/rimulib.properties` so the camera stays on the land; screenshots in
+  `..\test builds\2026-11-17 marker and shaders\nopack\` and `...marker and shaders 3\pack\`):
+  - **Shaders**: `client/quasar/QuasarAtlas` bakes every look of `quasar_world` into one 6x3 texture (192 px tiles)
+    at `RenderFrameEvent.Pre` (shader uniform `Bake` = 1: light softly clipped, alpha 1 wherever there is light: packs
+    discard near-transparent pixels, which is why the first try showed only the jet's core), then `QuasarRender` draws
+    sky, stars and world at `AFTER_PARTICLES` through `QuasarGl.packing` -> `QuasarAtlas.emit` (NEW_ENTITY quads,
+    uv moved into the tile, colour x alpha x strength) with an eyes render type (additive, LEQUAL depth, no fog of
+    ours). The old late overlay (`QuasarRender.late`, its `GameRendererMixin` call, `QuasarGl.late`) is gone. Only
+    light is added with a pack: smoke and the lobe's skin don't darken. Seen with the pack: the named stars, the marker,
+    the jet, the fireball, the lobe, the pop's rings, all hidden by trees in front.
+  - **Landing marker**: a `MARK` target as wide as the crater (half size blast/0.86, so its outer ring is the crater's
+    edge), the small bright middle, a pillar of light (a `BEAM` band 170 blocks up, bright foot, fading out) and a
+    glow at its foot; a ring runs out from the middle (`QuasarRender.markPulse`: one at the cast, then every 3 s,
+    faster from SWEEP-160 to one every 0.8 s at LANDS, counted as a phase). For everyone who sees the strike, from the
+    cast to the landing. The aim preview before the second press also shows the crater's size (red when too close).
+  - Release texts: the changelog and the description mention the marker and the shader support.
+- **The jar**: `..\releases\1.1.0\jars\TON 618 Addition 1.1.0 [NeoForge 1.21.1].jar` (and `changelogs\main.md`
+  refreshed), a copy in `..\test builds\2026-11-17 TON 618 Addition 1.1.0 marker and shaders\`, and **in his instance**
+  `NeoForge 1.21.1 (1)` (the copy there of the same name was overwritten, not renamed: PowerShell's `Test-Path` reads
+  `[...]` as a wildcard; use `-LiteralPath` next time). Waiting for his look, then his OK to publish (push, GitHub
+  v1.1.0, CurseForge file + description + summary + Source link).
+
+### >>> 2026-11-17 ~19:15 (Adam's PC): before 1.1.0: real shader-pack support and a landing marker <<<
 
 - **Shaders, round 1 (`b1ed557`)**: with Iris on, every TA-02 world effect was painted over by the pack; now they are
   drawn late (before the HUD, over the land, no depth). Visible, but Adam: "i want the mod to be compatible with
