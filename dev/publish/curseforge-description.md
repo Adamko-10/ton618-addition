@@ -14,9 +14,9 @@ An **unofficial**, fan-made addon for **[TON 618](https://www.curseforge.com/min
 
 ## ⚠️ Compatibility — please read
 
-Version **1.1.0** works with **TON 618 1.1.0** and needs **RimuLib 1.2.3** or newer (TON 618 needs it too). **TA-02 · Quasar Jets** also needs **[The Shooting Star: SS-21 Quasar](https://www.curseforge.com/minecraft/mc-addons/the-shooting-star-addition-ss-21-quasar)**; without it, TA-02 stays hidden.
+Version **1.1.1** works with **TON 618 1.1.0** and needs **RimuLib 1.2.3** or newer (TON 618 needs it too). **TA-02 · Quasar Jets** also needs **[The Shooting Star: SS-21 Quasar](https://www.curseforge.com/minecraft/mc-addons/the-shooting-star-addition-ss-21-quasar)**; without it, TA-02 shows in the menus but stays locked.
 
-**1.1.0 is out for NeoForge 1.21.1 first.** The other builds below are still **1.0.0** (Last Light only) and get 1.1.0 in a later update.
+**1.1.1 is out for NeoForge 1.21.1 first.** The other builds below are still **1.0.0** (Last Light only) and get TA-02 in a later update.
 
 ### Available builds
 
@@ -56,18 +56,20 @@ Then time lets go. A wave of light rolls out from you, and a film carries you th
 
 ## TA-02 · Quasar Jets
 
-**Only with SS-21 Quasar installed.** At **night**, hold **TON 618** (or the Stellar Remote) with **TA-02** picked: eight named stars appear in the sky, each with its name: **Barnard's Star**, **Wolf 359**, **Alpha Centauri A**, **Tau Ceti**, **Rigel**, **Spica**, **Betelgeuse** and **Antares**.
+**Unlocked by SS-21 Quasar.** At **night**, hold **TON 618** (or the Stellar Remote) with **TA-02** picked: eight named stars appear in the sky, each with its name: **Barnard's Star**, **Wolf 359**, **Alpha Centauri A**, **Tau Ceti**, **Rigel**, **Spica**, **Betelgeuse** and **Antares**.
 
 1.  **Look at a star and cast** to lock it.
-2.  **Aim at the ground and cast again** (far enough away: up to 66 blocks for the biggest stars). The target on the ground shows where it will land and how big the crater will be (red when you're too close).
+2.  **Aim at the ground and cast again** (far enough away: up to 66 blocks for the biggest stars at Power 1×). The target on the ground shows where it will land and how big the crater will be (red when you're too close).
 
-Until the jet lands, everyone near sees a **landing marker**: a target as wide as the crater, a pillar of light standing on it, and a ring pulsing faster and faster.
+**Sliders**, like The Shooting Star's own skills, under TA-02 in the H menu: **Power** (0.1× to 3× the star's own blast; a warning above 2×) and **Damage** (the hit at the blast's middle; **∞**, the default, kills everything in its reach).
+
+Until the jet lands, everyone near sees a **landing marker**: a target as wide as the crater, a pillar of light standing on it, and a ring pulsing faster and faster. Watching without the film (films off, or further off than the film reaches), a **readout** in the corner follows the strike: the phase, the star's racing clock, the time to impact, the mark's distance and direction, and a countdown as the jet comes in.
 
 Then the film: the remote **fast-forwards the star's own time** while a star engine drives it across the galaxy (its clock races through years while only seconds pass on Earth). TON618 tears it apart, lights up as a **quasar**, and turns one of its jets towards the Earth.
 
 *   **A second sun**: the night turns to day for everyone in the world.
 *   **The jet** sweeps down from the sky, carrying mobs and items along.
-*   **The landing**: a huge blast. A crater **200 to 600 blocks wide** (by the star's type: red dwarf, Sun-like, blue giant, red supergiant), debris flung out, trees flattened and fires round the rim.
+*   **The landing**: the quasar's plasma hits the Earth. A blue-white flash, the jet's plasma splashing out over the ground, a ball of plasma (white-hot, then electric violet), **magnetic arcs** leaping out of the crater, a ring of cloud rising; a crater **200 to 600 blocks wide** at Power 1× (by the star's type: red dwarf, Sun-like, blue giant, red supergiant), debris flung out, trees flattened and fires round the rim. Its boom reaches you at the speed of sound: the flash first, then the boom.
 *   **The radio lobe**: a bubble of plasma swells over the crater, hurts what is inside and pops.
 *   **The star is missing** from the sky for a few nights afterwards.
 *   **Its own film** (skippable with **J**) and its own sounds.
@@ -92,7 +94,7 @@ A small **TON 618 Addition** panel in the top right corner of the H menu holds y
 
 ## Settings
 
-*   `config/ton618_addition-common.toml` (the server's): Last Light on or off, **who can cast it** (everyone, or operators only: it brings the world back for everyone, which TON 618 leaves to operators with `/ton618 restore`), and whether the world comes back on a morning; for TA-02: on or off, who can cast it, terrain changes, the second sun, carrying players, the most things carried, and how many nights a star stays missing.
+*   `config/ton618_addition-common.toml` (the server's): Last Light on or off, **who can cast it** (everyone, or operators only: it brings the world back for everyone, which TON 618 leaves to operators with `/ton618 restore`), and whether the world comes back on a morning; for TA-02: on or off, who can cast it, terrain changes, the second sun, carrying players, the most things carried, how many nights a star stays missing, and **limits for the sliders** (the most Power, and a cap on Damage so ∞ doesn't kill outright).
 *   `config/ton618_addition-client.toml` (each player's own): educational mode (or use the H menu's switch). On NeoForge 1.21.1 both files are also under Mods → TON 618 Addition → Config.
 
 ## Will it work with future versions of TON 618?
@@ -104,7 +106,7 @@ It joins TON 618 through RimuLib's official addon API and TON 618's own `/ton618
 
 ## Plans
 
-This is version **1.1.0**. Planned: 1.1.0 for the other loaders; a **Power slider** for TA-02's blast (like The Shooting Star's own skills); better sounds in both films; an on-screen readout for TA-02 when you watch it without the film; and real music for the films. Comments, bug reports and ideas are very welcome!
+This is version **1.1.1**. Planned: TA-02 for the other loaders; a film moment showing just how big TON 618 is; better sounds in both films; and real music for the films. Comments, bug reports and ideas are very welcome!
 
 ## Credits
 

@@ -208,7 +208,7 @@ final class JetScript {
         new Caption(102, 150, "THE STAR ENGINE", "a mirror to catch its own light"),
         new Caption(154, 202, "FAST FORWARD", "the remote speeds up the star's own time"),
         new Caption(206, 262, "ACROSS THE UNIVERSE", "18 billion light years, in seconds for us"),
-        new Caption(270, 326, "TON618", "66 billion Suns"),
+        new Caption(270, 326, "TON618", "about 40 billion Suns"),
         new Caption(336, 384, "CAUGHT", "the mirror falls in first"),
         new Caption(388, 438, "TIDAL DISRUPTION", "the star is pulled into a ribbon"),
         new Caption(444, 526, "IGNITION", "the brightest thing in the universe"),

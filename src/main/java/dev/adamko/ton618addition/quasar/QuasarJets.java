@@ -126,6 +126,9 @@ public final class QuasarJets {
         @Nullable
         CarveApi.Cut crater;
         boolean craterHandedOver;
+        /** The landing's debris still to throw, and how many more places may be tried for it. */
+        int debrisLeft;
+        int debrisTries;
         /** The blast ring round the crater: its columns, nearest the mark first, and how many are done. */
         List<int[]> ringColumns;
         int ringDone;
@@ -231,6 +234,18 @@ public final class QuasarJets {
         Tuning tune = tuning == null ? Tuning.initial(skill) : tuning.clampFor(skill);
         float power = Mth.clamp(tune.power(), 0.1F, 3F);
         float damage = tune.erases() ? Float.POSITIVE_INFINITY : tune.damage();
+        // the server's limits (config [quasar_jets] max_power, max_damage)
+        float maxPower = Ton618AdditionConfig.quasarMaxPower();
+        float maxDamage = Ton618AdditionConfig.quasarMaxDamage();
+        if (power > maxPower || maxDamage > 0F && damage > maxDamage) {
+            power = Math.min(power, maxPower);
+            if (maxDamage > 0F) {
+                damage = Math.min(damage, maxDamage);
+            }
+            player.sendSystemMessage(Component.literal(String.format(java.util.Locale.ROOT, "This server holds %s to Power %.1f×%s",
+                QuasarInfo.NAME, power, maxDamage > 0F ? String.format(java.util.Locale.ROOT, " and Damage %.0f", maxDamage) : ""))
+                .withStyle(ChatFormatting.GRAY));
+        }
         double safe = QuasarStars.safeDistance(picked.type(), power);
         if (mark.distanceTo(player.position()) < safe) {
             return deny(player, "Too close: aim at least " + (int) Math.ceil(safe) + " blocks away");
@@ -309,6 +324,9 @@ public final class QuasarJets {
             if (terrain && t >= QuasarClock.LANDS) {
                 cutCrater(run, t);
                 ring(level, run, t);
+                if (run.blasted && run.debrisLeft > 0) {
+                    throwDebris(level, run);
+                }
             }
             if (terrain && !run.loosened && t >= QuasarClock.SWEEP + 30) {
                 run.loosened = true;
@@ -546,10 +564,29 @@ public final class QuasarJets {
         if (!terrain) {
             return;
         }
-        // debris first, from the surface the crater is about to take: flung up and out, landing round the rim and beyond
+        // the debris, thrown over the next few ticks (all at once it held the server up at the landing)
+        run.debrisLeft = (int) Math.round(type.debris * Math.min(run.fx.power(), 1.5));
+        run.debrisTries = run.debrisLeft * 4;
+        throwDebris(level, run);
+        long debris = System.nanoTime();
+        crater(level, run);
+        long done = System.nanoTime();
+        Ton618Addition.LOG.info("{}: the landing blast ({} blocks across): hits {} ms, the first debris {} ms, the crater set up {} ms",
+            QuasarInfo.TITLE, (int) (run.blast() * 2), (hits - started) / 1_000_000, (debris - hits) / 1_000_000,
+            (done - debris) / 1_000_000);
+    }
+
+    /** Debris thrown this tick: blocks, flung up and out, landing round the rim and beyond. */
+    private static final int DEBRIS_A_TICK = 40;
+
+    /**
+     * LANDS..: up to {@link #DEBRIS_A_TICK} blocks of the surface the blast takes, flung up and out, landing round the rim
+     * and beyond; until the strike's debris is all thrown (or it ran out of places to throw it from).
+     */
+    private static void throwDebris(ServerLevel level, Running run) {
         int thrown = 0;
-        int debrisCount = (int) Math.round(type.debris * Math.min(run.fx.power(), 1.5));
-        for (int tries = 0; tries < debrisCount * 4 && thrown < debrisCount; tries++) {
+        while (run.debrisLeft > 0 && run.debrisTries > 0 && thrown < DEBRIS_A_TICK) {
+            run.debrisTries--;
             double a = run.random.nextDouble() * Math.PI * 2.0;
             double d = Math.sqrt(run.random.nextDouble()) * run.blast() * 0.9;
             int x = Mth.floor(run.mark.x + Math.cos(a) * d);
@@ -571,13 +608,8 @@ public final class QuasarJets {
             block.setDeltaMovement(Math.cos(a) * speed, 1.0 + run.random.nextDouble() * 1.4, Math.sin(a) * speed);
             block.hurtMarked = true;
             thrown++;
+            run.debrisLeft--;
         }
-        long debris = System.nanoTime();
-        crater(level, run);
-        long done = System.nanoTime();
-        Ton618Addition.LOG.info("{}: the landing blast ({} blocks across): hits {} ms, {} debris {} ms, the crater set up {} ms",
-            QuasarInfo.TITLE, (int) (run.blast() * 2), (hits - started) / 1_000_000, thrown, (debris - hits) / 1_000_000,
-            (done - debris) / 1_000_000);
     }
 
     /**

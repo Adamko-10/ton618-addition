@@ -21,6 +21,8 @@ public final class Ton618AdditionConfig {
     private static final ModConfigSpec.BooleanValue QUASAR_CARRY_PLAYERS;
     private static final ModConfigSpec.IntValue QUASAR_MAX_CARRIED;
     private static final ModConfigSpec.IntValue QUASAR_MISSING_NIGHTS;
+    private static final ModConfigSpec.DoubleValue QUASAR_MAX_POWER;
+    private static final ModConfigSpec.DoubleValue QUASAR_MAX_DAMAGE;
 
     static {
         ModConfigSpec.Builder b = new ModConfigSpec.Builder();
@@ -35,12 +37,12 @@ public final class Ton618AdditionConfig {
             .define("morning_on_return", true);
         b.pop();
         b.push("quasar_jets");
-        QUASAR_ENABLED = b.comment("TA-02 Quasar Jets can be cast on this server (it only appears with SS-21 Quasar installed).")
+        QUASAR_ENABLED = b.comment("TA-02 Quasar Jets can be cast on this server (it stays locked without SS-21 Quasar installed).")
             .define("enabled", true);
         QUASAR_WHO = b.comment("Who may cast Quasar Jets: EVERYONE or OPERATORS (permission level 2).")
             .defineEnum("who_can_cast", Who.EVERYONE);
-        QUASAR_TERRAIN = b.comment("The radio lobe melts a glassy bowl, leaves frozen-light crystals and the jet lifts loose blocks.",
-                "false: no blocks are changed (the light show, the carrying and the damage stay).")
+        QUASAR_TERRAIN = b.comment("The landing blasts a crater, the radio lobe melts a glassy bowl and leaves frozen-light crystals,",
+                "and the jet lifts loose blocks. false: no blocks are changed (the light show, the carrying and the damage stay).")
             .define("terrain", true);
         QUASAR_SECOND_SUN = b.comment("The second sun: the night turns to day for everyone in the overworld while the strike runs.")
             .define("second_sun", true);
@@ -50,6 +52,13 @@ public final class Ton618AdditionConfig {
             .defineInRange("max_carried", 40, 0, 200);
         QUASAR_MISSING_NIGHTS = b.comment("A launched star is missing from the night sky for this many nights (0: back at once).")
             .defineInRange("missing_nights", 3, 0, 100);
+        QUASAR_MAX_POWER = b.comment("The most Power a player may pick on Quasar Jets' slider (0.1 to 3, as the slider goes).",
+                "More Power cuts a wider crater (up to 1800 blocks across at 3), which can keep a server busy for a while.",
+                "A cast above it is held to it, and the caster is told.")
+            .defineInRange("max_power", 3.0, 0.1, 3.0);
+        QUASAR_MAX_DAMAGE = b.comment("The most Damage Quasar Jets' landing may do at its middle, in health points. 0: no cap, so the",
+                "slider's ∞ (its default) kills everything in the blast's reach. Above 0, ∞ becomes this number.")
+            .defineInRange("max_damage", 0.0, 0.0, 100000.0);
         b.pop();
         SPEC = b.build();
     }
@@ -80,6 +89,15 @@ public final class Ton618AdditionConfig {
 
     public static int quasarMissingNights() {
         return SPEC.isLoaded() ? QUASAR_MISSING_NIGHTS.get() : 3;
+    }
+
+    public static float quasarMaxPower() {
+        return SPEC.isLoaded() ? QUASAR_MAX_POWER.get().floatValue() : 3F;
+    }
+
+    /** 0: no cap. */
+    public static float quasarMaxDamage() {
+        return SPEC.isLoaded() ? QUASAR_MAX_DAMAGE.get().floatValue() : 0F;
     }
 
     private Ton618AdditionConfig() {
