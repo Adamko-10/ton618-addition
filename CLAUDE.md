@@ -5,7 +5,33 @@ Handoff notes for every Claude session in this folder (`C:\Users\User\Desktop\to
 Started 2026-11-13 by an Opus 5.5 session (xhigh) that was started from Adam's SA Series session. **Read `BRIEF.md`
 first** (Adam's brief, his own words at its end), then this file. Fable's part: `prompts\FABLE-PREVIZ-AND-FILM-PROMPT.md`.
 
-### >>> NEXT UPDATE (after 1.1.0): Adam's list, 2026-11-17 (write-down, not started) <<<
+### >>> NEXT UPDATE (after 1.1.0): Adam's list, 2026-11-17 (started 2026-11-17 ~22:45, NeoForge first) <<<
+
+**1.1.0 is being published by ChatGPT** (Adam, 2026-11-17 ~22:40: "i am already getting chatgpt to post the update")
+with `..\releases\1.1.0\RELEASE-PROMPT.md` (the remade one, head `93901d5`). Check its report when he brings it:
+GitHub `v1.1.0` Latest, CurseForge file + relations, description, summary, Source link.
+
+**Adam, 2026-11-17 ~22:40, the next update's main items** (his words: "next update we make it more clear that its ton
+618 idk how other then text saying that but yea i wanna show just how big ton 618 is just like how the original mod does
+in its cutsceen and tell me some stuff about ton 618 like is it at the center of a galaxy and stuff / and obv improve
+sfx especially at impact but in general overhaul them and make the explosion look better and more unique / write all of
+this down and lets get started"):
+A. **Make it clear it is TON 618, and show how big it is**, in TA-02's film: a scale reveal of our own (the original
+   TON 618 mod's film shows its size: take the idea only, never its assets or shots, rimuru_dev's terms). Ideas: pull
+   back from the Sun and the Solar System, drawn to scale, until TON618's event horizon dwarfs Neptune's orbit (~27x),
+   with labels; name cards ("TON 618", "40 BILLION SUNS"); in educational mode short facts on screen.
+B. **TON 618 facts** (told to Adam 2026-11-17; check each against a source before it goes in the game): an ultramassive
+   black hole powering a hyperluminous quasar at the centre of a galaxy (the galaxy can't be seen: the quasar, ~140
+   trillion Suns bright, outshines it); ~40 billion Suns (older estimate 66 billion), ~10,000x the Milky Way's Sgr A*
+   (4 million); event horizon ~1,600 AU across (40 billion; ~2,600 AU for 66 billion): ~27x Neptune's orbit, light takes
+   9+ days to cross; light left it ~10.8 billion years ago (redshift ~2.22); in Canes Venatici near the Big Dipper's
+   handle; entry 618 of the Tonantzintla (Mexico) survey of 1957, first logged as a faint blue star.
+C. **Sounds: overhaul them all, the impact most** ("obv improve sfx especially at impact but in general overhaul
+   them"): TA-02's world sounds and both films' (the Sonniss recipe engine, `art/sonniss_sounds.sh`; Last Light too, as
+   item 2 below).
+D. **The explosion: better looking and more unique** (since 1.1.0 it is 5x bigger: craters 200-600 blocks; the camera
+   at 110 blocks ends up inside the fireball). Make it its own thing (not a generic orange fireball): e.g. the jet's
+   blue-white plasma, a shock dome, a column, the star's own colour.
 
 Adam, 2026-11-17 (with a screenshot of TA-02 in third person, no film, Complementary on): "for next update write this
 down". In his words, then what it means here:
