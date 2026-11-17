@@ -5,6 +5,23 @@ Handoff notes for every Claude session in this folder (`C:\Users\User\Desktop\to
 Started 2026-11-13 by an Opus 5.5 session (xhigh) that was started from Adam's SA Series session. **Read `BRIEF.md`
 first** (Adam's brief, his own words at its end), then this file. Fable's part: `prompts\FABLE-PREVIZ-AND-FILM-PROMPT.md`.
 
+### >>> RESUME HERE (2026-11-17 ~01:25, Adam's PC): the destructive landing in his instance; Fable reframes it <<<
+
+- **Adam (2026-11-17, ~00:40, couldn't listen: late)**: "it looks much better overall but the impact is still super
+  underwhelming, make it actually destructive pls". Done (`9a964a6`): `QuasarStars.Type` `blast` 20/30/45/60,
+  `blastDepth` 10/15/22/30, `blastDamage` 14/22/32/45, `debris` 60/90/130/180; the crater cut by **RimuLib's
+  `CarveApi.flatten`** (a bowl under the mark, scorched floor; the biggest: 64 chunks in 70 ms, worst tick 22 ms, logged
+  in `run/clienttest/rimulib.log` as `ton618_addition:quasar_crater`); a **blast ring** (`QuasarJets.ring`, out to
+  `RING` = 1.8 x `blast`, 4 ms a tick) flattening trees, bamboo, mushrooms and plants, coarse-dirt scorch, a few fires
+  near the rim; hit within 1.3 x `blast`, harder shove; **the mark drops through trees to the ground**
+  (`groundBelow`; the harness hit a jungle-giant treetop at y 94 before); the caster must aim at least
+  `max(lobe, blast) + 6` away (66 for supergiants). Harness defaults now `distance` 110, `perch` 35.
+- Test jar `..\test builds\2026-11-17 TA-02 destructive\TON 618 Addition 1.1.0 TA-02 destructive TEST [NeoForge
+  1.21.1].jar`, **in his instance** (the "quality and sounds" jar there renamed `.disabled`).
+- **Sent to Fable** (round 2, small): at the landing the film's camera now sits above the clouds (its framing scales
+  with `blast`); keep the impact shots under the clouds and framed on the blast; its reticle preview should use
+  `groundBelow`'s rule. Fable makes `... TA-02 impact TEST ...`; Opus commits and swaps it in.
+
 ### >>> RESUME HERE (2026-11-17 ~00:30, Adam's PC): TA-02 redo round 1 + sounds in his instance; his test next <<<
 
 - **Fable's first redo round is committed** (`45dd562`; its report: film look, the remote fast-forwarding the star's
