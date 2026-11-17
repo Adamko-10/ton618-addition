@@ -1,6 +1,7 @@
 package dev.adamko.ton618addition.client.mixin;
 
 import dev.adamko.ton618addition.client.HudRescue;
+import dev.adamko.ton618addition.client.quasar.QuasarRender;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
@@ -22,6 +23,8 @@ abstract class GameRendererMixin {
 
     @Inject(method = "render", at = @At(value = "INVOKE", target = GUI_RENDER))
     private void ton618Addition$beforeHud(DeltaTracker delta, boolean renderLevel, CallbackInfo ci) {
+        // TA-02's world effects, when a shader pack painted over them in the level's passes
+        QuasarRender.late();
         HudRescue.beforeGui();
     }
 

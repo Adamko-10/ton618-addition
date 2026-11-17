@@ -45,7 +45,7 @@ import org.joml.Vector3f;
  * Everything is a function of the strike's story tick. Also keeps the frame's sky view and projection for
  * {@link QuasarReticle}.
  */
-final class QuasarRender {
+public final class QuasarRender {
     /** Our sky things are drawn this far from the eye (inside even the shortest render distance's far plane). */
     private static final float SKY = 100f;
     /** As far as the second press reaches ({@code QuasarJets.MARK_RANGE}). */
@@ -82,6 +82,25 @@ final class QuasarRender {
     private QuasarRender() {
     }
 
+    /** What a drawing pass needs from the frame: the partial tick, the camera and the level's matrices. */
+    record Frame(float partial, Camera camera, Matrix4f view, Matrix4f proj) {
+        static Frame of(RenderLevelStageEvent event) {
+            return new Frame(event.getPartialTick().getGameTimeDeltaPartialTick(true), event.getCamera(),
+                new Matrix4f(event.getModelViewMatrix()), new Matrix4f(event.getProjectionMatrix()));
+        }
+    }
+
+    /**
+     * With a shader pack on (Iris), the pack draws the whole level again in its own passes and paints over anything drawn
+     * in the level's stages, so every effect here showed nothing (Adam's question, 2026-11-17: "is it compatible with
+     * shaders"; tested with Complementary). Then the frames are kept and the effects drawn late, after the pack has
+     * finished the picture and before the HUD ({@link #late}, from {@code GameRendererMixin}), over the land (no depth).
+     */
+    @Nullable
+    private static Frame lateSky;
+    @Nullable
+    private static Frame lateWorld;
+
     static void render(RenderLevelStageEvent event) {
         Minecraft mc = Minecraft.getInstance();
         ClientLevel level = mc.level;
@@ -89,16 +108,24 @@ final class QuasarRender {
             return;
         }
         try {
+            boolean pack = QuasarGl.shaderPack();
             if (event.getStage() == RenderLevelStageEvent.Stage.AFTER_SKY) {
                 skyView.set(event.getModelViewMatrix());
                 skyProj.set(event.getProjectionMatrix());
                 skyKnown = true;
-                if (QuasarGl.ready()) {
-                    sky(event, level);
+                if (pack) {
+                    lateSky = Frame.of(event);
+                } else if (QuasarGl.ready()) {
+                    sky(Frame.of(event), level);
                 }
             } else if (event.getStage() == RenderLevelStageEvent.Stage.AFTER_WEATHER && QuasarGl.ready()) {
-                stars(event, level);
-                world(event, mc);
+                if (pack) {
+                    lateWorld = Frame.of(event);
+                } else {
+                    Frame frame = Frame.of(event);
+                    stars(frame, level);
+                    world(frame, mc);
+                }
             }
         } catch (RuntimeException broken) {
             // a strike whose light can't be drawn mustn't take the game down
@@ -109,11 +136,41 @@ final class QuasarRender {
         }
     }
 
+    /** Before the HUD, after a shader pack has finished the frame: the effects kept from this frame's level passes. */
+    public static void late() {
+        Frame sky = lateSky;
+        Frame world = lateWorld;
+        lateSky = null;
+        lateWorld = null;
+        Minecraft mc = Minecraft.getInstance();
+        ClientLevel level = mc.level;
+        if (failed || level == null || level.dimension() != Level.OVERWORLD || !QuasarGl.ready() || sky == null && world == null) {
+            return;
+        }
+        QuasarGl.late = true;
+        try {
+            if (sky != null) {
+                sky(sky, level);
+            }
+            if (world != null) {
+                stars(world, level);
+                world(world, mc);
+            }
+        } catch (RuntimeException broken) {
+            failed = true;
+            Ton618Addition.LOG.error("The Quasar Jets world effects stopped drawing (shader pack)", broken);
+            Tesselator.getInstance().clear();
+            QuasarGl.end();
+        } finally {
+            QuasarGl.late = false;
+        }
+    }
+
     // ---- the sky -------------------------------------------------------------------------------------------------------
 
-    private static void sky(RenderLevelStageEvent event, ClientLevel level) {
-        float partial = event.getPartialTick().getGameTimeDeltaPartialTick(true);
-        Camera camera = event.getCamera();
+    private static void sky(Frame frame, ClientLevel level) {
+        float partial = frame.partial();
+        Camera camera = frame.camera();
         Vector3f right = new Vector3f(camera.getLeftVector()).negate();
         Vector3f up = new Vector3f(camera.getUpVector());
         float night = level.getStarBrightness(partial) * (1f - level.getRainLevel(partial));
@@ -124,8 +181,8 @@ final class QuasarRender {
         if (sun <= 0.01f && !strike) {
             return;
         }
-        Matrix4f view = new Matrix4f(event.getModelViewMatrix());
-        Matrix4f proj = new Matrix4f(event.getProjectionMatrix());
+        Matrix4f view = new Matrix4f(frame.view());
+        Matrix4f proj = new Matrix4f(frame.proj());
         float seconds = (level.getGameTime() % 24000L + partial) / 20f;
         QuasarGl.light(false);
 
@@ -175,8 +232,8 @@ final class QuasarRender {
      * clouds, so a cloud never hides the star the player is trying to lock, and each is hidden only when land stands in
      * its way (a ray from the eye says so; it fades in and out over a few frames).
      */
-    private static void stars(RenderLevelStageEvent event, ClientLevel level) {
-        float partial = event.getPartialTick().getGameTimeDeltaPartialTick(true);
+    private static void stars(Frame frame, ClientLevel level) {
+        float partial = frame.partial();
         float night = level.getStarBrightness(partial) * (1f - level.getRainLevel(partial));
         QuasarCast cast = QuasarClient.current();
         float t = cast == null ? -1f : cast.tick(partial);
@@ -188,13 +245,13 @@ final class QuasarRender {
         if (!launching && (!holding || night <= 0.01f)) {
             return;
         }
-        Camera camera = event.getCamera();
+        Camera camera = frame.camera();
         Vec3 eye = camera.getPosition();
         Vector3f look = camera.getLookVector();
         Vector3f right = new Vector3f(camera.getLeftVector()).negate();
         Vector3f up = new Vector3f(camera.getUpVector());
-        Matrix4f view = new Matrix4f(event.getModelViewMatrix());
-        Matrix4f proj = new Matrix4f(event.getProjectionMatrix());
+        Matrix4f view = new Matrix4f(frame.view());
+        Matrix4f proj = new Matrix4f(frame.proj());
         float seconds = (level.getGameTime() % 24000L + partial) / 20f;
         float strength = Math.min(1f, night * 2.2f);
         QuasarGl.light(false);
@@ -231,12 +288,12 @@ final class QuasarRender {
 
     // ---- in the world --------------------------------------------------------------------------------------------------
 
-    private static void world(RenderLevelStageEvent event, Minecraft mc) {
-        float partial = event.getPartialTick().getGameTimeDeltaPartialTick(true);
-        Camera camera = event.getCamera();
+    private static void world(Frame frame, Minecraft mc) {
+        float partial = frame.partial();
+        Camera camera = frame.camera();
         Vec3 eye = camera.getPosition();
-        Matrix4f view = new Matrix4f(event.getModelViewMatrix());
-        Matrix4f proj = new Matrix4f(event.getProjectionMatrix());
+        Matrix4f view = new Matrix4f(frame.view());
+        Matrix4f proj = new Matrix4f(frame.proj());
         QuasarCast cast = QuasarClient.current();
         aimedMark = null;
         if (cast == null) {

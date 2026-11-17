@@ -65,6 +65,34 @@ public final class QuasarGl {
         }
     }
 
+    /** Drawing after a shader pack has finished the frame ({@code QuasarRender.late}): no depth test. */
+    static boolean late;
+    private static java.lang.reflect.Method irisInUse;
+    private static Object iris;
+    private static boolean irisLooked;
+
+    /** A shader pack is on (Iris's public API, looked up by name: Iris is optional). */
+    static boolean shaderPack() {
+        if (!irisLooked) {
+            irisLooked = true;
+            try {
+                Class<?> api = Class.forName("net.irisshaders.iris.api.v0.IrisApi");
+                iris = api.getMethod("getInstance").invoke(null);
+                irisInUse = api.getMethod("isShaderPackInUse");
+            } catch (ReflectiveOperationException | LinkageError absent) {
+                irisInUse = null;
+            }
+        }
+        if (irisInUse == null) {
+            return false;
+        }
+        try {
+            return (Boolean) irisInUse.invoke(iris);
+        } catch (ReflectiveOperationException | RuntimeException unsure) {
+            return false;
+        }
+    }
+
     static boolean ready() {
         return shader != null;
     }
@@ -348,7 +376,8 @@ public final class QuasarGl {
     static void light(boolean depth) {
         RenderSystem.enableBlend();
         RenderSystem.blendFunc(GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA);
-        if (depth) {
+        // drawn late over a shader pack's finished picture: its depth isn't the level's, so none
+        if (depth && !late) {
             RenderSystem.enableDepthTest();
         } else {
             RenderSystem.disableDepthTest();
