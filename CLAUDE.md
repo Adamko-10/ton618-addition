@@ -5,6 +5,25 @@ Handoff notes for every Claude session in this folder (`C:\Users\User\Desktop\to
 Started 2026-11-13 by an Opus 5.5 session (xhigh) that was started from Adam's SA Series session. **Read `BRIEF.md`
 first** (Adam's brief, his own words at its end), then this file. Fable's part: `prompts\FABLE-PREVIZ-AND-FILM-PROMPT.md`.
 
+### >>> RESUME HERE (2026-11-17 ~18:00, Adam's PC): releasing 1.1.0 on NeoForge; shader test first <<<
+
+- **Adam (2026-11-17)**: "i tested it looks betetr, its good enough now ... the mod got approved [1.0.0 on CurseForge], lets
+  decide whats next and can we honestly just release it like this". His picks (clickable): **release 1.1.0 for NeoForge
+  1.21.1 now, the other six loaders later** (bends "port before CurseForge" this once; ports = 2-4 sessions, 1.21.11 and
+  26.3 hardest); **a shader test first, done by Claude** ("you do that please"): his own test had Iris on but shaders
+  off (`enableShaders=false`), and TA-02 has no shader-pack handling at all. Harness: `-Pshaders` adds `libs/shaders/`
+  (Iris 1.8.14 + Sodium 0.8.13, copied from his instance, git-ignored); `run/clienttest/shaderpacks/` has his
+  Complementary Reimagined r5.9.3 and `run/clienttest/config/iris.properties` switches it on. **Not run yet** (his game
+  was open). Sounds still unheard ("i still cant hear").
+- **Done for 1.1.0** (`8bff0cb`): Last Light's menu warning "Not yet: set TON618's Scale to ∞ and use it first" (his
+  pick; the old one was cut off); **Last Light's icon redone as pixel art** (64x32 at 4x, `tools/icons/LastLightIcon.java`;
+  Adam: "redo it in pixel style and make a rule for this": the rule "icons are pixel art, all in one style" is in his
+  personal rules). TA-02's icon was already pixel art.
+- **Release steps left**: the shader test (fix what breaks), the 1.1.0 changelog (`dev/publish/changelog-1.1.0.md`),
+  the CurseForge description (a TA-02 section, frozen light under it; his description rework is a separate job), push
+  `main`, GitHub release `v1.1.0` (NeoForge jar only), CurseForge file 1.1.0 (TON 618 + RimuLib required, SS-21 Quasar
+  and The Shooting Star optional), the **Source link** on CurseForge (written down 11-15). Ask before each outward step.
+
 ### >>> RESUME HERE (2026-11-17 ~01:25, Adam's PC): the destructive landing in his instance; Fable reframes it <<<
 
 - **Adam (2026-11-17, ~00:40, couldn't listen: late)**: "it looks much better overall but the impact is still super
