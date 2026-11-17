@@ -188,7 +188,7 @@ final class QuasarReticle {
             detail = "aim at the ground and cast again";
         } else {
             double away = aimed.distanceTo(mc.player.position());
-            double safe = QuasarRender.tooClose(s.type());
+            double safe = QuasarRender.tooClose(s.type(), QuasarClient.aimPower());
             if (away < safe) {
                 detail = "too close: aim at least " + (int) Math.ceil(safe) + " blocks away";
                 detailRgb = WARN;
@@ -243,7 +243,7 @@ final class QuasarReticle {
         float a = 0f;
         if (b0 < 14f) {
             float u = 1f - b0 / 14f;
-            a = (float) Math.max(0.0, 1.0 - d / (type.blast * 10.0)) * u * u * 0.9f;
+            a = (float) Math.max(0.0, 1.0 - d / (cast.blast() * 10.0)) * u * u * 0.9f;
         }
         if (p0 >= 0f) {
             a = Math.max(a, (float) Math.max(0.0, 1.0 - d / (type.lobe * 3.0)) * (1f - p0 / 12f) * 0.8f);

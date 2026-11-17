@@ -73,8 +73,8 @@ public final class QuasarStars {
      * five times wider (26 to 66 blocks, what press 2 can reach). The caster may stand inside today's crater: they are
      * never hurt, and the ground under them is kept ({@code QuasarJets.crater}).
      */
-    public static double safeDistance(Type type) {
-        return Math.max(type.lobe, type.blast / 5.0) + 6.0;
+    public static double safeDistance(Type type, double power) {
+        return Math.max(type.lobe, type.blast * power / 5.0) + 6.0;
     }
 
     /**

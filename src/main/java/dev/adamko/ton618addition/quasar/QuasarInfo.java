@@ -25,6 +25,8 @@ public final class QuasarInfo {
 
     /** The menu's warning when TA-02 is picked, or null; set by the client (night, overworld). */
     public static volatile Supplier<String> selectWarning = () -> null;
+    /** The crater's width at 1x for the menu's Power line (the client sets it: the locked star's; else a Sun-like star's). */
+    public static volatile Supplier<Float> craterAcross = () -> (float) (QuasarStars.Type.SUN_LIKE.blast * 2.0);
 
     private QuasarInfo() {
     }

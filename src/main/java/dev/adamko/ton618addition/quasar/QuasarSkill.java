@@ -5,7 +5,10 @@ import cyou.rimuru.rimulib.mc1211.skill.Skill;
 
 /**
  * TA-02 · Quasar Jets as a skill in a RimuLib skill menu: one for TON 618's own item, one for the Stellar Remote; both
- * cast {@link QuasarJets#cast}. No sliders: the star you pick sets the size.
+ * cast {@link QuasarJets#cast}. The star you pick sets the size; the Power slider (0.1x to 3x of it, a warning above 2x)
+ * and the Damage slider (the hit at the blast's middle; ∞ kills everything in its reach) work as on The Shooting Star's
+ * own skills (Adam, 2026-11-17: "a slider to select the power of the explosion just like the shooting star addition
+ * and the original shooting star"; his pick: 0.1x to 3x). Without SS-21 Quasar it is in the menus but locked.
  */
 public final class QuasarSkill implements Skill {
     private final int defaultKey;
@@ -55,14 +58,20 @@ public final class QuasarSkill implements Skill {
         return this.defaultKey;
     }
 
+    /** The Power slider: 0.1x to 3x the star's own blast; the menu shows it as N× and the crater's width in blocks. */
     @Override
     public Power power() {
-        return null;
+        return new Power(0.1F, 3F, 1F, true, QuasarInfo.craterAcross.get());
+    }
+
+    @Override
+    public float warnAbove() {
+        return 2F;
     }
 
     @Override
     public boolean powerSliders() {
-        return false;
+        return true;
     }
 
     @Override

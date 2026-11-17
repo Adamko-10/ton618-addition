@@ -221,7 +221,7 @@ public final class QuasarRender {
             float b0 = t - QuasarClock.LANDS;
             if (b0 >= 0f && b0 < 44f) {
                 fireAge = b0 / 44f;
-                fireRadius = plasmaRadius((float) type.blast, b0);
+                fireRadius = plasmaRadius((float) cast.blast(), b0);
             }
             if (b0 >= 0f && b0 < SPLASH_TICKS) {
                 splashFront = splashFront(b0);
@@ -258,7 +258,7 @@ public final class QuasarRender {
         if (b0 < 0f || b0 >= 44f) {
             return 0f;
         }
-        float blast = (float) cast.star().type().blast;
+        float blast = (float) cast.blast();
         float age = b0 / 44f;
         float r = plasmaRadius(blast, b0);
         double d = eye.distanceTo(cast.mark().add(0.0, blast * 0.55 * age, 0.0));
@@ -486,7 +486,7 @@ public final class QuasarRender {
         Vector3f mark = new Vector3f((float) (cast.mark().x - eye.x), (float) (cast.mark().y - eye.y), (float) (cast.mark().z - eye.z));
         Vector3f right = new Vector3f(camera.getLeftVector()).negate();
         Vector3f up = new Vector3f(camera.getUpVector());
-        float blast = (float) type.blast;
+        float blast = (float) cast.blast();
         float lobeRadius = (float) type.lobe;
         float b0 = t - QuasarClock.LANDS;
         QuasarGl.light(true);
@@ -678,14 +678,15 @@ public final class QuasarRender {
         Vec3 at = new Vec3(ground.getX() + 0.5, ground.getY() + 1.0, ground.getZ() + 0.5);
         aimedMark = at;
         QuasarStars.Type type = QuasarStars.ALL.get(locked).type();
-        boolean tooClose = at.distanceTo(mc.player.position()) < tooClose(type);
+        float power = QuasarClient.aimPower();
+        boolean tooClose = at.distanceTo(mc.player.position()) < tooClose(type, power);
         float ticks = (mc.level == null ? 0L : mc.level.getGameTime() % 24000L) + partial;
         float[] tint = tooClose ? new float[]{1f, 0.25f, 0.2f} : QuasarGl.rgb(type.color);
         Vector3f where = new Vector3f((float) (at.x - eye.x), (float) (at.y - eye.y), (float) (at.z - eye.z));
         QuasarGl.light(true);
         // how wide the crater will be (its outer ring on the crater's edge), and the middle
         BufferBuilder b = QuasarGl.begin();
-        QuasarGl.flat(b, new Vector3f(where).add(0f, 0.12f, 0f), (float) type.blast / 0.86f, tint, 1f);
+        QuasarGl.flat(b, new Vector3f(where).add(0f, 0.12f, 0f), (float) (type.blast * power) / 0.86f, tint, 1f);
         QuasarGl.draw(b, view, proj, QuasarGl.MARK, ticks, tooClose ? 0.25f : 0.3f, 0f, 0f);
         b = QuasarGl.begin();
         QuasarGl.flat(b, new Vector3f(where).add(0f, 0.16f, 0f), 2.6f + 0.4f * type.size, tint, 1f);
@@ -694,8 +695,8 @@ public final class QuasarRender {
     }
 
     /** Nearer than this the server refuses the second press (QuasarJets.cast: the bigger of lobe and crater, plus 6). */
-    static double tooClose(QuasarStars.Type type) {
-        return QuasarStars.safeDistance(type);
+    static double tooClose(QuasarStars.Type type, double power) {
+        return QuasarStars.safeDistance(type, power);
     }
 
     // ---- the game's own particles: smoke, sparks and embers for the blast, the standing jet, the lobe and its pop --------
@@ -739,7 +740,7 @@ public final class QuasarRender {
         QuasarStars.Type type = cast.star().type();
         RandomSource r = level.random;
         Vec3 m = cast.mark();
-        double blast = type.blast;
+        double blast = cast.blast();
         double lobe = type.lobe;
         if (k == QuasarClock.LANDS) {
             add(level, ParticleTypes.FLASH, m.x, m.y + 1.5, m.z, 0, 0, 0);
@@ -855,9 +856,9 @@ public final class QuasarRender {
         double d = event.getCamera().getPosition().distanceTo(cast.mark());
         float b0 = t - QuasarClock.LANDS;
         float p0 = t - QuasarClock.POP;
-        float amp = 3f * near(d, type.blast * 12.0) * (float) Math.exp(-b0 / 9f);
+        float amp = 3f * near(d, cast.blast() * 12.0) * (float) Math.exp(-b0 / 9f);
         if (t < QuasarClock.POP) {
-            amp += 0.12f * near(d, type.blast * 6.0) + 0.25f * near(d, type.lobe * 3.0) * smooth(835f, 888f, t);
+            amp += 0.12f * near(d, cast.blast() * 6.0) + 0.25f * near(d, type.lobe * 3.0) * smooth(835f, 888f, t);
         }
         if (p0 >= 0f) {
             amp += 2.2f * near(d, type.lobe * 6.0) * (float) Math.exp(-p0 / 7f);

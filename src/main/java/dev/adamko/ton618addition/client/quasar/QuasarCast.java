@@ -69,6 +69,11 @@ public final class QuasarCast {
     }
 
     /** The launched star and its type (what the type changes: {@link QuasarStars.Type}). */
+    /** The landing blast's radius: the star's, times the Power slider it was cast with. */
+    public double blast() {
+        return star().type().blast * this.fx.power();
+    }
+
     public QuasarStars.Star star() {
         return QuasarStars.ALL.get(Math.floorMod(this.fx.star(), QuasarStars.ALL.size()));
     }

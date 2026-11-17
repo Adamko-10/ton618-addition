@@ -58,7 +58,10 @@ public final class Ton618Link {
     /** Last Light on The Shooting Star's Stellar Remote (when The Shooting Star is installed). */
     public static final LastLightSkill ON_REMOTE = new LastLightSkill(LastLightInfo.KEY_ON_REMOTE, true);
 
-    /** TA-02 · Quasar Jets on TON 618's item and on the Stellar Remote: only joined when SS-21 Quasar is installed. */
+    /**
+     * TA-02 · Quasar Jets on TON 618's item and on the Stellar Remote: always in the menus, locked without SS-21 Quasar
+     * (Adam, 2026-11-17: "it should be there but locked").
+     */
     public static final QuasarSkill QUASAR_ON_TON618 = new QuasarSkill(QuasarInfo.KEY_ON_TON618, false);
     public static final QuasarSkill QUASAR_ON_REMOTE = new QuasarSkill(QuasarInfo.KEY_ON_REMOTE, true);
 
@@ -102,10 +105,8 @@ public final class Ton618Link {
             }
             SkillApi.extend(set, new LastLightSkill[]{ON_TON618}, (player, skill, tuning) -> LastLight.cast(player, skill));
             logJoined(set, ON_TON618, "TON 618's menu");
-            if (quasar) {
-                SkillApi.extend(set, new QuasarSkill[]{QUASAR_ON_TON618}, (player, skill, tuning) -> QuasarJets.cast(player, skill));
-                logJoined(set, QUASAR_ON_TON618, "TON 618's menu");
-            }
+            SkillApi.extend(set, new QuasarSkill[]{QUASAR_ON_TON618}, (player, skill, tuning) -> QuasarJets.cast(player, skill, tuning));
+            logJoined(set, QUASAR_ON_TON618, "TON 618's menu");
         });
         SkillApi.whenRegistered(SHOOTING_STAR, set -> {
             // the Stellar Remote is The Shooting Star's set that holds its own skills (an enum of them)
@@ -114,16 +115,12 @@ public final class Ton618Link {
             }
             SkillApi.extend(set, new LastLightSkill[]{ON_REMOTE}, (player, skill, tuning) -> LastLight.cast(player, skill));
             logJoined(set, ON_REMOTE, "the Stellar Remote");
-            if (quasar) {
-                SkillApi.extend(set, new QuasarSkill[]{QUASAR_ON_REMOTE}, (player, skill, tuning) -> QuasarJets.cast(player, skill));
-            }
+            SkillApi.extend(set, new QuasarSkill[]{QUASAR_ON_REMOTE}, (player, skill, tuning) -> QuasarJets.cast(player, skill, tuning));
             showInMenu(set);
-            if (quasar) {
-                logJoined(set, QUASAR_ON_REMOTE, "the Stellar Remote");
-            }
+            logJoined(set, QUASAR_ON_REMOTE, "the Stellar Remote");
         });
         if (!quasar) {
-            Ton618Addition.LOG.info("{} stays hidden: SS-21 Quasar isn't installed.", QuasarInfo.TITLE);
+            Ton618Addition.LOG.info("{} is locked: SS-21 Quasar isn't installed.", QuasarInfo.TITLE);
         }
     }
 

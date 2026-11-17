@@ -8,6 +8,7 @@ import dev.adamko.ton618addition.client.quasar.QuasarCast;
 import dev.adamko.ton618addition.client.quasar.QuasarClient;
 import dev.adamko.ton618addition.lastlight.LastLight;
 import dev.adamko.ton618addition.lastlight.LastLightClock;
+import cyou.rimuru.rimulib.mc1211.skill.Tuning;
 import dev.adamko.ton618addition.link.Ton618Link;
 import dev.adamko.ton618addition.quasar.QuasarJets;
 import dev.adamko.ton618addition.quasar.QuasarStars;
@@ -54,6 +55,7 @@ import net.minecraft.world.phys.Vec3;
  *   <li>{@code perch}: how high above the trees the player stands (default 35, so the aim clears the canopy);</li>
  *   <li>{@code shots}: story ticks to screenshot, comma separated, or {@code from-to/step} (default every 20 to the end);</li>
  *   <li>{@code edu}: educational mode on for this run (default false);</li>
+ *   <li>{@code power}: TA-02's Power slider (default 1);</li>
  *   <li>{@code world}: {@code normal} (default, fixed seed) or {@code flat};</li>
  *   <li>{@code seed}: the world seed (default 618).</li>
  * </ul>
@@ -67,6 +69,8 @@ final class Harness {
     static final int DISTANCE = Integer.parseInt(prop("distance", "110"));
     static final int PERCH = Integer.parseInt(prop("perch", "35"));
     static final boolean EDU = Boolean.parseBoolean(prop("edu", "false"));
+    /** TA-02's Power slider for the cast (Damage stays ∞, as the menu starts it). */
+    static final float POWER = Float.parseFloat(prop("power", "1"));
     static final String WORLD = prop("world", "normal");
     static final long SEED = Long.parseLong(prop("seed", "618"));
     static final float[] SHOTS = shots(prop("shots", ""), "lastlight".equals(SKILL) ? LastLightClock.END + 20 : 1000);
@@ -143,7 +147,7 @@ final class Harness {
             case LOCK -> {
                 onServer(server, player -> {
                     look(player, star().direction());
-                    QuasarJets.cast(player, Ton618Link.QUASAR_ON_TON618);
+                    QuasarJets.cast(player, Ton618Link.QUASAR_ON_TON618, new Tuning(POWER, Tuning.INFINITE, 1F));
                 });
                 step = Step.LOCKED;
                 waitUntil = now + 10;
@@ -218,7 +222,7 @@ final class Harness {
         level.getChunk(x >> 4, z >> 4);
         Vec3 target = new Vec3(x + 0.5, level.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, x, z) - 0.5, z + 0.5);
         look(player, target.subtract(player.getEyePosition()));
-        boolean cast = QuasarJets.cast(player, Ton618Link.QUASAR_ON_TON618);
+        boolean cast = QuasarJets.cast(player, Ton618Link.QUASAR_ON_TON618, new Tuning(POWER, Tuning.INFINITE, 1F));
         log("press 2 at " + target + ": " + (cast ? "the strike started" : "REFUSED"));
     }
 

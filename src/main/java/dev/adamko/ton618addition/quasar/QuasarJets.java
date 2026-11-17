@@ -4,10 +4,12 @@ import cyou.rimuru.rimulib.mc1211.api.CarveApi;
 import cyou.rimuru.rimulib.mc1211.api.NetApi;
 import cyou.rimuru.rimulib.mc1211.api.SkillApi;
 import cyou.rimuru.rimulib.mc1211.skill.SkillHolder;
+import cyou.rimuru.rimulib.mc1211.skill.Tuning;
 import dev.adamko.ton618addition.ReadingTime;
 import dev.adamko.ton618addition.Ton618Addition;
 import dev.adamko.ton618addition.Ton618AdditionConfig;
 import dev.adamko.ton618addition.link.Education;
+import dev.adamko.ton618addition.link.Ton618Link;
 import dev.adamko.ton618addition.net.QuasarFx;
 import dev.adamko.ton618addition.net.QuasarLock;
 import dev.adamko.ton618addition.net.QuasarMissing;
@@ -145,6 +147,16 @@ public final class QuasarJets {
             this.random = RandomSource.create(fx.castGameTime());
         }
 
+        /** The landing blast's radius: the star's, times the Power slider. */
+        double blast() {
+            return this.star.type().blast * this.fx.power();
+        }
+
+        /** The crater's depth at its middle (it grows slower than the width with Power). */
+        double depth() {
+            return this.star.type().blastDepth * Math.pow(this.fx.power(), 0.75);
+        }
+
         /** Story ticks of {@link QuasarClock} (slower in the reading windows when the caster had educational mode on). */
         long tick(MinecraftServer server) {
             long real = server.overworld().getGameTime() - this.fx.castGameTime();
@@ -154,8 +166,14 @@ public final class QuasarJets {
 
     // ---- casting --------------------------------------------------------------------------------------------------
 
-    /** Both presses, from either menu. True only when the strike started (the menu then starts the cooldown). */
-    public static boolean cast(ServerPlayer player, QuasarSkill skill) {
+    /**
+     * Both presses, from either menu, with the menu's sliders ({@code tuning}; the second press uses Power and Damage).
+     * True only when the strike started (the menu then starts the cooldown).
+     */
+    public static boolean cast(ServerPlayer player, QuasarSkill skill, @Nullable Tuning tuning) {
+        if (!Ton618Link.ss21Installed()) {
+            return deny(player, "Locked: " + QuasarInfo.NAME + " needs The Shooting Star: SS-21 Quasar installed");
+        }
         if (!Ton618AdditionConfig.quasarEnabled()) {
             return deny(player, QuasarInfo.TITLE + " is turned off on this server");
         }
@@ -210,7 +228,10 @@ public final class QuasarJets {
         BlockPos ground = groundBelow(player.serverLevel(), block.getBlockPos());
         Vec3 mark = new Vec3(ground.getX() + 0.5, ground.getY() + 1.0, ground.getZ() + 0.5);
         // clear of the lobe (the caster is never hurt, and the crater keeps the ground they stand on)
-        double safe = QuasarStars.safeDistance(picked.type());
+        Tuning tune = tuning == null ? Tuning.initial(skill) : tuning.clampFor(skill);
+        float power = Mth.clamp(tune.power(), 0.1F, 3F);
+        float damage = tune.erases() ? Float.POSITIVE_INFINITY : tune.damage();
+        double safe = QuasarStars.safeDistance(picked.type(), power);
         if (mark.distanceTo(player.position()) < safe) {
             return deny(player, "Too close: aim at least " + (int) Math.ceil(safe) + " blocks away");
         }
@@ -218,7 +239,7 @@ public final class QuasarJets {
             && player.getOffhandItem().getItem() instanceof SkillHolder;
         QuasarFx fx = new QuasarFx(player.getUUID(), player.getId(), now, mark, lock.star(),
             QuasarStars.quasarDirection(player.getYRot()), player.position(), player.getYRot(), player.getXRot(), offhand,
-            skill.onRemote(), true, Ton618AdditionConfig.quasarSecondSun(), Education.on(player));
+            skill.onRemote(), true, Ton618AdditionConfig.quasarSecondSun(), Education.on(player), power, damage);
         unlock(player);
         running = new Running(fx, picked);
         QuasarSky sky = QuasarSky.of(player.server);
@@ -507,7 +528,9 @@ public final class QuasarJets {
     private static void blast(ServerLevel level, Running run, boolean terrain) {
         long started = System.nanoTime();
         QuasarStars.Type type = run.star.type();
-        double reach = type.blast * 1.3;
+        double reach = run.blast() * 1.3;
+        // the Damage slider: the hit at the middle, less further out; infinite kills
+        float damage = run.fx.damage();
         for (LivingEntity e : level.getEntitiesOfClass(LivingEntity.class, new AABB(run.mark, run.mark).inflate(reach),
             e -> e.isAlive() && !e.getUUID().equals(run.caster) && !run.carriedIds.contains(e.getUUID()))) {
             Vec3 rel = e.position().subtract(run.mark);
@@ -516,7 +539,7 @@ public final class QuasarJets {
                 continue;
             }
             double near = 1.0 - d / reach;
-            e.hurt(lobeDamage(level), (float) (type.blastDamage * (0.35 + 0.65 * near)));
+            e.hurt(lobeDamage(level), Float.isInfinite(damage) ? Float.MAX_VALUE : (float) (damage * (0.35 + 0.65 * near)));
             push(e, rel, 0.8 + 2.4 * near, 0.6 + 0.9 * near);
         }
         long hits = System.nanoTime();
@@ -525,9 +548,10 @@ public final class QuasarJets {
         }
         // debris first, from the surface the crater is about to take: flung up and out, landing round the rim and beyond
         int thrown = 0;
-        for (int tries = 0; tries < type.debris * 4 && thrown < type.debris; tries++) {
+        int debrisCount = (int) Math.round(type.debris * Math.min(run.fx.power(), 1.5));
+        for (int tries = 0; tries < debrisCount * 4 && thrown < debrisCount; tries++) {
             double a = run.random.nextDouble() * Math.PI * 2.0;
-            double d = Math.sqrt(run.random.nextDouble()) * type.blast * 0.9;
+            double d = Math.sqrt(run.random.nextDouble()) * run.blast() * 0.9;
             int x = Mth.floor(run.mark.x + Math.cos(a) * d);
             int z = Mth.floor(run.mark.z + Math.sin(a) * d);
             if (!level.hasChunkAt(new BlockPos(x, 0, z))) {
@@ -552,7 +576,7 @@ public final class QuasarJets {
         crater(level, run);
         long done = System.nanoTime();
         Ton618Addition.LOG.info("{}: the landing blast ({} blocks across): hits {} ms, {} debris {} ms, the crater set up {} ms",
-            QuasarInfo.TITLE, (int) (type.blast * 2), (hits - started) / 1_000_000, thrown, (debris - hits) / 1_000_000,
+            QuasarInfo.TITLE, (int) (run.blast() * 2), (hits - started) / 1_000_000, thrown, (debris - hits) / 1_000_000,
             (done - debris) / 1_000_000);
     }
 
@@ -567,7 +591,7 @@ public final class QuasarJets {
         if (cut == null || run.craterHandedOver) {
             return;
         }
-        double r = run.star.type().blast;
+        double r = run.blast();
         float u = QuasarClock.ramp(t, QuasarClock.LANDS, QuasarClock.LANDS + 30);
         try {
             cut.tick(4.0 + (r + 1.0) * u);
@@ -602,9 +626,8 @@ public final class QuasarJets {
      * work them out on its own threads.
      */
     private static void crater(ServerLevel level, Running run) {
-        QuasarStars.Type type = run.star.type();
-        double r = type.blast;
-        double depth = type.blastDepth;
+        double r = run.blast();
+        double depth = run.depth();
         double mx = run.mark.x;
         double mz = run.mark.z;
         int markY = Mth.floor(run.mark.y);
@@ -657,7 +680,7 @@ public final class QuasarJets {
      * first, {@link #RING_BUDGET_NS} of each server tick at most; only land that is loaded.
      */
     private static void ring(ServerLevel level, Running run, long t) {
-        double r = run.star.type().blast;
+        double r = run.blast();
         double outer = r * RING;
         if (run.ringColumns == null) {
             run.ringColumns = new ArrayList<>();
@@ -814,7 +837,7 @@ public final class QuasarJets {
      * film shows the landing then). Pitched by the star: a red dwarf's higher, a giant's lower.
      */
     private static void impactSound(ServerLevel level, Running run, long real) {
-        double blast = run.star.type().blast;
+        double blast = run.blast();
         for (ServerPlayer player : level.players()) {
             double d = player.position().distanceTo(run.mark);
             if (d > IMPACT_HEARD) {

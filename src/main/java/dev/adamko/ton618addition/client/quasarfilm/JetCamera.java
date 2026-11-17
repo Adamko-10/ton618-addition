@@ -195,7 +195,7 @@ final class JetCamera {
         // high to the side of the jet's path, turning with the jet from the horizon to the mark, then easing in; far
         // enough back for the whole landing blast (the crater, the fireball over it, the dust racing out)
         QuasarStars.Type type = cast.star().type();
-        float blast = (float) type.blast;
+        float blast = (float) cast.blast();
         // (the craters are three times the size since 2026-11-17: about two crater radii off, 38 to 150 blocks, and
         // never up in the clouds)
         float away = Mth.clamp(blast * 1.42F, 27F, 106F);

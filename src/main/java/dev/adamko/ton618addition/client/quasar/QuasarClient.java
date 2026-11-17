@@ -3,6 +3,8 @@ package dev.adamko.ton618addition.client.quasar;
 import cyou.rimuru.rimulib.mc1211.client.api.NetClientApi;
 import cyou.rimuru.rimulib.mc1211.client.magic.ClientSkills;
 import cyou.rimuru.rimulib.mc1211.skill.SkillHolder;
+import cyou.rimuru.rimulib.mc1211.client.magic.SkillTuning;
+import dev.adamko.ton618addition.link.Ton618Link;
 import dev.adamko.ton618addition.Ton618Addition;
 import dev.adamko.ton618addition.client.quasarfilm.QuasarJetsFilm;
 import dev.adamko.ton618addition.net.QuasarFx;
@@ -59,9 +61,19 @@ public final class QuasarClient {
             backOnDay = days;
         }));
         QuasarInfo.selectWarning = () -> {
+            if (!Ton618Link.ss21Installed()) {
+                return "Locked: needs the SS-21 Quasar addon (The Shooting Star: SS-21 Quasar)";
+            }
             Minecraft mc = Minecraft.getInstance();
             return mc.level != null && mc.level.dimension() == Level.OVERWORLD && mc.level.isNight() ? null
                 : "Night only, in the overworld: cast at a named star, then at the ground";
+        };
+        // the menu's Power line: the locked star's crater width at 1x (else a Sun-like star's)
+        QuasarInfo.craterAcross = () -> {
+            int locked = lockedStar;
+            QuasarStars.Type type = locked >= 0 && locked < QuasarStars.ALL.size() ? QuasarStars.ALL.get(locked).type()
+                : QuasarStars.Type.SUN_LIKE;
+            return (float) (type.blast * 2.0);
         };
     }
 
@@ -84,12 +96,33 @@ public final class QuasarClient {
         if (mc.player == null) {
             return false;
         }
+        // (locked without SS-21 Quasar: no stars)
+        if (!Ton618Link.ss21Installed()) {
+            return false;
+        }
         try {
             SkillHolder holder = SkillHolder.held(mc.player);
             return holder != null && holder.skillSet() != null && ClientSkills.selected(holder.skillSet()) instanceof QuasarSkill;
         } catch (RuntimeException | LinkageError unsure) {
             return false;
         }
+    }
+
+    /** The Power slider of the TA-02 the player holds (1 when unsure): sizes the aim's crater preview and safe distance. */
+    public static float aimPower() {
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.player == null) {
+            return 1F;
+        }
+        try {
+            SkillHolder holder = SkillHolder.held(mc.player);
+            if (holder != null && holder.skillSet() != null && ClientSkills.selected(holder.skillSet()) instanceof QuasarSkill skill) {
+                return Math.max(0.1F, Math.min(3F, SkillTuning.power(skill)));
+            }
+        } catch (RuntimeException | LinkageError unsure) {
+            // the menu's internals moved: the preview at the star's own size
+        }
+        return 1F;
     }
 
     /** The named star is in the sky today (not launched lately). */
