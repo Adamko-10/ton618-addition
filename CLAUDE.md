@@ -26,13 +26,36 @@ down". In his words, then what it means here:
    (`6b14bcb`)**: with a pack a ray from the eye fades TON618's point of light and the second sun out when land is in
    the way (without a pack the land covers them anyway). Check in his game; the far part of the jet can still show
    over far land with a pack.
-5. (Not his ask, a known limit) **With a shader pack the named stars show over the pack's clouds**: drawn with the sky
-   they were wiped by Complementary's sky (tested), so they stay after the particles. Getting under a pack's clouds
-   would mean drawing them before the pack's deferred passes with depth: not tried.
+5. ~~With a shader pack the named stars show over the pack's clouds~~: **solved in 1.1.0 (`e2fd65e`)**, see the
+   2026-11-17 ~22:30 section.
 Also waiting from before: the ports of 1.1.0 to the other six loaders (after his OK on 1.1.0), real music for Quasar
 Jets (written down 2026-11-14), Codex's test findings (2026-11-17 "its fixes go to the next update").
 
-### >>> RESUME HERE (2026-11-17 ~21:45, Adam's PC): 1.1.0 final (5x blast, stars under clouds); release prompt for ChatGPT <<<
+### >>> RESUME HERE (2026-11-17 ~22:30, Adam's PC): stars behind the clouds with shaders too; release prompt remade <<<
+
+- **Adam (2026-11-17, with a Complementary screenshot: Betelgeuse and Wolf 359 over the clouds)**: "did u put it in my
+  instance cuz still no" (it was: his game started 22:06, after the swap; with a pack the stars were still drawn after
+  the particles), then "there are NO clouds without shaders so fix that please aswell, do whatever would make the stars
+  go behind clouds with and without shaders and the clouds are still there". **No clouds without shaders = his own
+  setting**: his `options.txt` has `renderClouds:"false"` (Video Settings > Clouds): told him to turn it on.
+- **Done (`e2fd65e`, harness-tested with Complementary; `..\test builds\2026-11-17 stars in the sky pass\`)**: with a
+  pack, `sky()` and `stars()` are drawn from **inside `LevelRenderer.renderSky`** (`client/mixin/LevelRendererMixin`,
+  INVOKE `ClientLevel.getStarBrightness(F)F` shift AFTER, so Iris's stage is STARS) through `QuasarRender.skyPass` ->
+  `QuasarAtlas.drawSky`: POSITION_TEX_COLOR quads (corners turned by the sky's pose, as vanilla's sun) drawn with
+  `GameRenderer::getPositionTexColorShader`, which Iris swaps for the pack's `gbuffers_skytextured` in a sky stage
+  (Iris `MixinGameRenderer`: isSky() -> SKY_TEXTURED_COLOR). How it was found: Iris's phases are set only inside
+  `renderSky` (CUSTOM_SKY before it, NONE right after, so NeoForge's AFTER_SKY event is already NONE); Complementary's
+  skytextured keeps anything that isn't the sun or the moon as "custom sky" (`color.rgb *= color.rgb *
+  smoothstep(sqrt(VdotU))`: squared and faded toward the horizon; the sun/moon are discarded with its round style),
+  and its `deferred1` keeps sky pixels and mixes its clouds over them. So the sky's looks are baked as square roots
+  (`Bake` 2, tiles 18-22) and the vertex colour square-rooted. Seen: Barnard's Star in clear sky, Tau Ceti and Rigel
+  hidden where its clouds are (the vanilla stars around them hidden too); the marker, jet and blast still draw. The
+  land ray for the second sun (`quasarSeen`) is gone: the land covers sky things now. Iris's own read of the pack
+  (`run/clienttest/shaderpacks`) and Iris's jar were read in the session scratchpad only.
+- Jar `..\releases\1.1.0\jars\` (+ `..\test builds\2026-11-17 TON 618 Addition 1.1.0 stars behind clouds\`), **in his
+  instance** (the 5x build renamed `... (5x blast).jar.disabled`); `RELEASE-PROMPT.md` remade.
+
+### >>> 2026-11-17 ~21:45 (Adam's PC): 1.1.0 final (5x blast, stars under clouds); release prompt for ChatGPT <<<
 
 - **Adam (2026-11-17)**: "make them display under clouds but the text above clouds", then "once youre done just make
   the explosion like 5x larger ... So for now finish that up and lets write a prompt for chatgpt to do everything with
