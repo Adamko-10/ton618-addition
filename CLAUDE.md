@@ -5,7 +5,20 @@ Handoff notes for every Claude session in this folder (`C:\Users\User\Desktop\to
 Started 2026-11-13 by an Opus 5.5 session (xhigh) that was started from Adam's SA Series session. **Read `BRIEF.md`
 first** (Adam's brief, his own words at its end), then this file. Fable's part: `prompts\FABLE-PREVIZ-AND-FILM-PROMPT.md`.
 
-### >>> RESUME HERE (2026-11-17 ~19:45, Adam's PC): shaders done properly + landing marker built; 1.1.0 jar ready <<<
+### >>> RESUME HERE (2026-11-17 ~20:10, Adam's PC): the named stars under the clouds (built, not tested) <<<
+
+- **Adam (2026-11-17)**: "make them display under clouds but the text above clouds if u know what i mean": the named
+  stars were drawn after the clouds on purpose (so a cloud never hid the star being locked); his own clouds are
+  Complementary's (his vanilla `renderClouds` is off). **Built, uncommitted**: `QuasarRender.render` draws `sky()` and
+  `stars()` at `AFTER_SKY` (without a pack: our shader, no depth; with one: `QuasarAtlas.PACK_SKY`, the eyes type with no
+  depth test, as the SA Series' `HalleySky` draws its pack sky), so the land and the clouds draw over them; the names
+  are the HUD's (`QuasarReticle`), on top. `world()` stays at AFTER_WEATHER / AFTER_PARTICLES. **Not tested: his game
+  was open.** Test: `bash dev/test/clouds.sh` (vanilla clouds on in the harness for the no-pack run; then look at
+  `sky.png`/`locked.png`: in the pack run the dark diagonal shapes are Complementary's clouds, and Tau Ceti/Antares sat
+  on them before). Risk: a pack that recomputes sky pixels could wipe stars drawn with the sky; if so, keep them at
+  AFTER_PARTICLES for packs. Then rebuild the jar into `..\releases\1.1.0\jars\` and his instance (`-LiteralPath`).
+
+### >>> 2026-11-17 ~19:45 (Adam's PC): shaders done properly + landing marker built; 1.1.0 jar ready <<<
 
 - **Built and harness-tested (`9549112`)**, both with Complementary Reimagined on and off (`dev/test/marker-shaders.sh`,
   films off in the harness's own `config/rimulib.properties` so the camera stays on the land; screenshots in
