@@ -21,6 +21,12 @@ first** (Adam's brief, his own words at its end), then this file. Fable's part: 
 - **Sent to Fable** (round 2, small): at the landing the film's camera now sits above the clouds (its framing scales
   with `blast`); keep the impact shots under the clouds and framed on the blast; its reticle preview should use
   `groundBelow`'s rule. Fable makes `... TA-02 impact TEST ...`; Opus commits and swaps it in.
+- **2026-11-17 ~16:35**: the PC went off during Fable's round 2 (its last activity 00:20 UTC); its six files were left
+  uncommitted on disk (cameras under the clouds, dust strips capped, the lobe as a ball in the crater, the ground
+  preview on `groundBelow`; HANDOVER "Round 2" says where it stopped) and build. Resumed (Adam: "continue work, resume
+  anything that needs to be resumed"): it checks them in the harness and makes the impact test jar. Ponytail checked:
+  still off (config `off`, no flags). Adam asked for the Last Light previz: sent him `previz/last-light-previz.html`
+  and the link https://claude.ai/artifact/Ta6Z91SRwtCYN1z27zKQtJ.
 
 ### >>> RESUME HERE (2026-11-17 ~00:30, Adam's PC): TA-02 redo round 1 + sounds in his instance; his test next <<<
 
