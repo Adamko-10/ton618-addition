@@ -50,7 +50,7 @@ import org.joml.Vector3f;
 final class QuasarAtlas {
     private static final int TILE = 192;
     private static final int COLUMNS = 6;
-    private static final int ROWS = 4;
+    private static final int ROWS = 5;
     /** Half a texel, in tiles: keeps every lookup inside its own tile. */
     private static final float INSET = 0.5F / TILE;
     private static final ResourceLocation LOCATION = Ton618Addition.id("quasar_atlas");
@@ -76,7 +76,10 @@ final class QuasarAtlas {
     private static final int SUN_SKY = 20;
     private static final int GLOW_SKY = 21;
     private static final int BEAM_SKY = 22;
-    private static final int TILES = 23;
+    /** The landing's plasma splash and a magnetic arc. */
+    private static final int SPLASH = 23;
+    private static final int ARC = 24;
+    private static final int TILES = 25;
 
     @Nullable
     private static TextureTarget target;
@@ -108,10 +111,11 @@ final class QuasarAtlas {
     /**
      * Paints the looks: all of them the first time, then the moving ones, at the strike's clock {@code t} (story ticks,
      * or the day's ticks before a strike) and the sky's {@code seconds}. {@code markPulse}: where the mark's running ring
-     * is (0 none); {@code dome}: the lobe's radius and how white it is (the pop); {@code fire}: the fireball's age and
-     * radius.
+     * is (0 none); {@code dome}: the lobe's radius and how white it is (the pop); {@code fire}: the plasma ball's age and
+     * radius; {@code splash}: how far the landing's splash has run and its age.
      */
-    static void paint(float t, float seconds, float markPulse, float domeRadius, float domeWhite, float fireAge, float fireRadius) {
+    static void paint(float t, float seconds, float markPulse, float domeRadius, float domeWhite, float fireAge, float fireRadius,
+                      float splashFront, float splashAge) {
         ShaderInstance program = QuasarGl.program();
         if (program == null) {
             return;
@@ -143,7 +147,7 @@ final class QuasarAtlas {
                 if (!all && (i >= GLOW0 && i < STAR_SKY || i == GLOW_SKY)) {
                     continue;
                 }
-                program.safeGetUniform("Bake").set(i >= STAR_SKY ? 2f : 1f);
+                program.safeGetUniform("Bake").set(i >= STAR_SKY && i <= BEAM_SKY ? 2f : 1f);
                 switch (i) {
                     case STAR, STAR_SKY -> tile(program, view, proj, i, QuasarGl.STAR, true, seconds, 0f, 0f, 0.3f, 0f);
                     case STAR_LOCKED, STAR_LOCKED_SKY -> tile(program, view, proj, i, QuasarGl.STAR, true, seconds, 0f, 1f, 0.3f, 0f);
@@ -158,6 +162,9 @@ final class QuasarAtlas {
                     // no head and no far end: the glows at its ends and a fade along it stand in for them (see emit)
                     case BEAM, BEAM_SKY -> tile(program, view, proj, i, QuasarGl.BEAM, true, t, -1.0e9f, 0.13f, 1.0e9f, 0f);
                     case GLOW_SKY -> tile(program, view, proj, i, QuasarGl.GLOW, true, GLOWS[0][0], GLOWS[0][1], 0f, 0f, 0f);
+                    case SPLASH -> tile(program, view, proj, i, QuasarGl.SPLASH, true, t, 1f, splashFront, splashAge, 0f);
+                    // across -1..1, along 0..1, grown whole (emit cuts it to how much has grown)
+                    case ARC -> tile(program, view, proj, i, QuasarGl.ARC, -1f, 0f, t, 1f, 0f, 1f, 0f);
                     default -> {
                         float[] g = GLOWS[i - GLOW0];
                         tile(program, view, proj, i, QuasarGl.GLOW, true, g[0], g[1], 0f, 0f, 0f);
@@ -179,14 +186,19 @@ final class QuasarAtlas {
     /** One tile: a quad over it, uv over the material's whole range ({@code centred}: -1..1, else 0..1), white. */
     private static void tile(ShaderInstance program, Matrix4f view, Matrix4f proj, int tile, int mode, boolean centred, float p0,
                              float p1, float p2, float p3, float q0) {
+        tile(program, view, proj, tile, mode, centred ? -1f : 0f, centred ? -1f : 0f, p0, p1, p2, p3, q0);
+    }
+
+    /** One tile, the uv's low end given for each way (the high end is 1). */
+    private static void tile(ShaderInstance program, Matrix4f view, Matrix4f proj, int tile, int mode, float loU, float loV, float p0,
+                             float p1, float p2, float p3, float q0) {
         float x = tile % COLUMNS;
         float y = (float) (tile / COLUMNS);
-        float lo = centred ? -1f : 0f;
         BufferBuilder b = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX_COLOR);
-        b.addVertex(x, y, 0f).setUv(lo, lo).setColor(1f, 1f, 1f, 1f);
-        b.addVertex(x + 1f, y, 0f).setUv(1f, lo).setColor(1f, 1f, 1f, 1f);
+        b.addVertex(x, y, 0f).setUv(loU, loV).setColor(1f, 1f, 1f, 1f);
+        b.addVertex(x + 1f, y, 0f).setUv(1f, loV).setColor(1f, 1f, 1f, 1f);
         b.addVertex(x + 1f, y + 1f, 0f).setUv(1f, 1f).setColor(1f, 1f, 1f, 1f);
-        b.addVertex(x, y + 1f, 0f).setUv(lo, 1f).setColor(1f, 1f, 1f, 1f);
+        b.addVertex(x, y + 1f, 0f).setUv(loU, 1f).setColor(1f, 1f, 1f, 1f);
         MeshData mesh = b.build();
         if (mesh == null) {
             return;
@@ -288,6 +300,14 @@ final class QuasarAtlas {
                 tile = sky ? BEAM_SKY : BEAM;
                 whiten = 0.4f;
             }
+            case QuasarGl.SPLASH -> {
+                tile = SPLASH;
+                strength = p1;
+            }
+            case QuasarGl.ARC -> {
+                tile = ARC;
+                strength = p1;
+            }
             default -> {
                 int best = 0;
                 float bestD = Float.MAX_VALUE;
@@ -321,7 +341,12 @@ final class QuasarAtlas {
             float lu;
             float lv;
             float k = strength;
-            if (mode == QuasarGl.BEAM) {
+            if (mode == QuasarGl.ARC) {
+                // along the arc: only as much as has grown
+                lu = (u + 1f) * 0.5f;
+                lv = v;
+                k *= a * (1f - smooth(p3 - 0.03f, p3, v));
+            } else if (mode == QuasarGl.BEAM) {
                 // along the jet the look doesn't change: across it only; it fades out far off as the shader's does
                 lu = (u + 1f) * 0.5f;
                 lv = 0.5f;

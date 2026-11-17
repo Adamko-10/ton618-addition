@@ -45,9 +45,9 @@ public final class QuasarContent {
     public static final DeferredHolder<SoundEvent, SoundEvent> MARK = sound("quasar_mark");
     public static final DeferredHolder<SoundEvent, SoundEvent> SUN_IGNITE = sound("quasar_sun_ignite");
     public static final DeferredHolder<SoundEvent, SoundEvent> JET_INCOMING = sound("quasar_jet_incoming");
-    public static final DeferredHolder<SoundEvent, SoundEvent> IMPACT_SMALL = sound("quasar_impact_small");
-    public static final DeferredHolder<SoundEvent, SoundEvent> IMPACT = sound("quasar_impact");
-    public static final DeferredHolder<SoundEvent, SoundEvent> IMPACT_BIG = sound("quasar_impact_big");
+    /** The landing, near and far (QuasarJets.impactSound mixes them for each player). */
+    public static final DeferredHolder<SoundEvent, SoundEvent> IMPACT_NEAR = sound("quasar_impact_near");
+    public static final DeferredHolder<SoundEvent, SoundEvent> IMPACT_FAR = sound("quasar_impact_far");
     public static final DeferredHolder<SoundEvent, SoundEvent> DEBRIS = sound("quasar_debris");
     public static final DeferredHolder<SoundEvent, SoundEvent> BEAM_LOOP = sound("quasar_beam_loop");
     public static final DeferredHolder<SoundEvent, SoundEvent> LOBE_LOOP = sound("quasar_lobe_loop");

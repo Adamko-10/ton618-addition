@@ -202,6 +202,8 @@ public final class QuasarRender {
         float domeWhite = 0f;
         float fireAge = 0f;
         float fireRadius = 4f;
+        float splashFront = 0.03f;
+        float splashAge = 0f;
         if (cast == null) {
             t = level.getGameTime() % 24000L + partial;
         } else {
@@ -219,15 +221,102 @@ public final class QuasarRender {
             float b0 = t - QuasarClock.LANDS;
             if (b0 >= 0f && b0 < 44f) {
                 fireAge = b0 / 44f;
-                fireRadius = (float) type.blast * (0.25f + 0.7f * easeOut(Math.min(1f, b0 / 10f)) + 0.2f * fireAge);
+                fireRadius = plasmaRadius((float) type.blast, b0);
+            }
+            if (b0 >= 0f && b0 < SPLASH_TICKS) {
+                splashFront = splashFront(b0);
+                splashAge = b0 / SPLASH_TICKS;
             }
         }
         try {
-            QuasarAtlas.paint(t, seconds, pulse, domeRadius, domeWhite, fireAge, fireRadius);
+            QuasarAtlas.paint(t, seconds, pulse, domeRadius, domeWhite, fireAge, fireRadius, splashFront, splashAge);
         } catch (RuntimeException broken) {
             failed = true;
             Ton618Addition.LOG.error("The Quasar Jets world effects stopped drawing (shader pack)", broken);
         }
+    }
+
+    /** The plasma splash: how long it lasts and how far out it runs (crater radii). */
+    private static final float SPLASH_TICKS = 20f;
+    private static final float SPLASH_REACH = 1.6f;
+    /** The magnetic arcs are over by this many ticks after the landing. */
+    private static final float ARCS_END = 72f;
+    private static final float[] CLOUD = {0.92f, 0.95f, 1f};
+
+    /** The plasma ball's radius {@code b} ticks after the landing. */
+    static float plasmaRadius(float blast, float b) {
+        return blast * (0.25f + 0.7f * easeOut(Math.min(1f, b / 10f)) + 0.2f * (b / 44f));
+    }
+
+    /**
+     * How much the eye is inside the landing's plasma ball (0 outside, up to 1 deep in while it is young): the biggest
+     * craters are wider than the distance a caster stands off, and from inside the ball's skin only whited out the
+     * screen, so then it isn't drawn and its glow is laid over the screen instead (QuasarReticle).
+     */
+    static float insidePlasma(QuasarCast cast, Vec3 eye, float t) {
+        float b0 = t - QuasarClock.LANDS;
+        if (b0 < 0f || b0 >= 44f) {
+            return 0f;
+        }
+        float blast = (float) cast.star().type().blast;
+        float age = b0 / 44f;
+        float r = plasmaRadius(blast, b0);
+        double d = eye.distanceTo(cast.mark().add(0.0, blast * 0.55 * age, 0.0));
+        if (d >= r) {
+            return 0f;
+        }
+        return smooth(0f, r * 0.08f, (float) (r - d)) * (1f - smooth(0.4f, 0.85f, age));
+    }
+
+    /** How far the splash's front has run, as a share of its quad (0.03 to 0.95), {@code b} ticks after the landing. */
+    static float splashFront(float b) {
+        return Math.max(0.03f, 0.95f * easeOut(Math.min(1f, b / 12f)));
+    }
+
+    /**
+     * The magnetic arcs (2 to 72 ticks after the landing): loops of light leaping up from the crater one after another,
+     * growing in a few ticks, crackling, and snapping. Their places and times are the same for everyone (from the mark).
+     */
+    private static void arcs(QuasarCast cast, Vector3f mark, float blast, QuasarStars.Type type, float[] col, float b0, float t, Matrix4f view,
+                             Matrix4f proj) {
+        int count = 5 + Math.round(type.size * 3f);
+        long seed = Double.doubleToLongBits(cast.mark().x * 31.0 + cast.mark().z * 17.0 + cast.mark().y);
+        float[] rgb = mix(col, QUASAR, 0.5f);
+        float half = Math.max(0.8f, blast * 0.012f);
+        for (int i = 0; i < count; i++) {
+            float start = 2f + 26f * hash(seed, i, 1);
+            float life = 16f + 28f * hash(seed, i, 2);
+            float a0 = b0 - start;
+            if (a0 < 0f || a0 > life) {
+                continue;
+            }
+            float grow = Math.min(1f, a0 / 5f);
+            float fade = 1f - smooth(life * 0.55f, life, a0);
+            double ang = hash(seed, i, 3) * Math.PI * 2.0;
+            double span = 0.25 + 0.55 * hash(seed, i, 4);
+            float rad = blast * (0.3f + 0.6f * hash(seed, i, 5));
+            float height = blast * (0.22f + 0.4f * hash(seed, i, 6)) * (0.8f + 0.2f * grow);
+            Vector3f[] points = new Vector3f[18];
+            for (int p = 0; p < points.length; p++) {
+                double s = p / (double) (points.length - 1);
+                double a = ang + span * s;
+                points[p] = new Vector3f(mark).add((float) (Math.cos(a) * rad), (float) (Math.sin(Math.PI * s) * height), (float) (Math.sin(a) * rad));
+            }
+            BufferBuilder b = QuasarGl.begin();
+            QuasarGl.curve(b, points, half, rgb, fade);
+            QuasarGl.draw(b, view, proj, QuasarGl.ARC, t, 1.25f, hash(seed, i, 7) * 10f, grow);
+        }
+    }
+
+    /** 0-1, the same for the same seed, i and k. */
+    private static float hash(long seed, int i, int k) {
+        long h = seed ^ (i * 0x9E3779B97F4A7C15L) ^ (k * 0xC2B2AE3D27D4EB4FL);
+        h ^= h >>> 33;
+        h *= 0xFF51AFD7ED558CCDL;
+        h ^= h >>> 33;
+        h *= 0xC4CEB9FE1A85EC53L;
+        h ^= h >>> 33;
+        return (h >>> 40) / (float) (1L << 24);
     }
 
     /**
@@ -430,12 +519,33 @@ public final class QuasarRender {
             }
         }
 
-        // ---- the landing blast (LANDS): a flash, a shock wave and a wall of dust racing out, a fireball
+        // ---- the landing blast (LANDS): a quasar's plasma hitting the Earth, not a fire (Adam, 2026-11-17: "make the
+        // explosion look better and more unique"): a blue-white flash, the jet's plasma splashing out flat over the
+        // ground, a plasma ball, magnetic arcs leaping up from the crater and snapping, a ring of cloud rising, the shock
+        // wave and the dust racing out
         if (b0 >= 0f && b0 < 16f) {
             float u = 1f - b0 / 16f;
             BufferBuilder b = QuasarGl.begin();
-            QuasarGl.billboard(b, new Vector3f(mark).add(0f, blast * 0.3f, 0f), right, up, Math.min(blast * 4f, 900f), pale, u * u);
+            QuasarGl.billboard(b, new Vector3f(mark).add(0f, blast * 0.3f, 0f), right, up, Math.min(blast * 4f, 900f), mix(pale, QUASAR, 0.5f),
+                u * u);
             QuasarGl.draw(b, view, proj, QuasarGl.GLOW, 14f, 0.6f, 0f, 0f);
+        }
+        if (b0 >= 0f && b0 < SPLASH_TICKS) {
+            float age = b0 / SPLASH_TICKS;
+            BufferBuilder b = QuasarGl.begin();
+            QuasarGl.flat(b, new Vector3f(mark).add(0f, 0.7f, 0f), blast * SPLASH_REACH, col, 1f);
+            QuasarGl.draw(b, view, proj, QuasarGl.SPLASH, t, 1.3f * (1f - age * age), splashFront(b0), age);
+        }
+        if (b0 >= 2f && b0 < ARCS_END) {
+            arcs(cast, mark, blast, type, col, b0, t, view, proj);
+        }
+        if (b0 >= 4f && b0 < 44f) {
+            // a ring of cloud where the shock wave meets the damp air, rising and widening, then gone
+            float u = (b0 - 4f) / 40f;
+            float r = blast * (0.6f + 1.0f * easeOut(u));
+            BufferBuilder b = QuasarGl.begin();
+            QuasarGl.wall(b, new Vector3f(mark).add(0f, blast * (0.25f + 0.6f * easeOut(u)), 0f), r, Math.max(3f, blast * 0.035f), CLOUD, 1f);
+            QuasarGl.draw(b, view, proj, QuasarGl.DUST, t, 0.3f * (float) Math.sin(Math.PI * u), Math.max(24f, (float) Math.floor(r * 0.5f)), 0f);
         }
         if (b0 >= 0f && b0 < 32f) {
             float u = b0 / 32f;
@@ -460,11 +570,11 @@ public final class QuasarRender {
             QuasarGl.wall(b, new Vector3f(mark).add(0f, -1f, 0f), blast * 1.15f, Math.min(blast * 0.9f, 14f), mix(DUST, col, 0.1f), 1f);
             QuasarGl.draw(b, view, proj, QuasarGl.DUST, t * 0.6f, shown, Math.max(20f, (float) Math.floor(blast * 0.9f)), 0f);
         }
-        if (b0 >= 0f && b0 < 44f) {
-            // a lumpy ball of fire that swells, rises and is gone in two seconds: the game's own smoke and the dust are
-            // what is left
+        if (b0 >= 0f && b0 < 44f && insidePlasma(cast, eye, t) <= 0f) {
+            // a lumpy ball of plasma that swells, rises and is gone in two seconds: the game's own smoke and the dust are
+            // what is left (from inside it, its glow over the screen instead: QuasarReticle)
             float age = b0 / 44f;
-            float r = blast * (0.25f + 0.7f * easeOut(Math.min(1f, b0 / 10f)) + 0.2f * age);
+            float r = plasmaRadius(blast, b0);
             BufferBuilder b = QuasarGl.begin();
             QuasarGl.blob(b, new Vector3f(mark).add(0f, blast * 0.55f * age, 0f), r, col, t, 0.16f + 0.14f * age);
             QuasarGl.draw(b, view, proj, QuasarGl.FIREBALL, t, age, r, 1f - smooth(0.4f, 0.85f, age));
@@ -633,6 +743,17 @@ public final class QuasarRender {
         double lobe = type.lobe;
         if (k == QuasarClock.LANDS) {
             add(level, ParticleTypes.FLASH, m.x, m.y + 1.5, m.z, 0, 0, 0);
+            for (int i = 0; i < 70; i++) {
+                double a = r.nextDouble() * Math.PI * 2.0;
+                double d = Math.sqrt(r.nextDouble()) * blast;
+                add(level, ParticleTypes.ELECTRIC_SPARK, m.x + Math.cos(a) * d, m.y + 0.5 + r.nextDouble() * 3.0, m.z + Math.sin(a) * d,
+                    (r.nextDouble() - 0.5) * 0.6, r.nextDouble() * 0.5, (r.nextDouble() - 0.5) * 0.6);
+            }
+            for (int i = 0; i < 40; i++) {
+                double a = r.nextDouble() * Math.PI * 2.0;
+                double d = Math.sqrt(r.nextDouble()) * blast * 0.6;
+                add(level, ParticleTypes.END_ROD, m.x + Math.cos(a) * d, m.y + 1.0, m.z + Math.sin(a) * d, 0, 0.4 + r.nextDouble() * 0.8, 0);
+            }
             int bursts = 2 + Math.round(type.size * 2.5f);
             for (int i = 0; i < bursts; i++) {
                 add(level, ParticleTypes.EXPLOSION_EMITTER, m.x + (r.nextDouble() - 0.5) * blast, m.y + r.nextDouble() * 2.0,

@@ -36,6 +36,8 @@ public final class QuasarGl {
     static final int FIREBALL = 7;
     static final int MARK = 8;
     static final int GLOW = 9;
+    static final int SPLASH = 10;
+    static final int ARC = 11;
 
     @Nullable
     private static ShaderInstance shader;
@@ -299,6 +301,41 @@ public final class QuasarGl {
         float away = (float) Math.sqrt(x * x + y * y + z * z);
         float facing = away < 1.0e-4f ? 1f : Math.abs(nx * x + ny * y + nz * z) / away;
         vertex(b, x, y, z, j / (float) segs, (float) (Math.abs(polar) / (Math.PI * 0.5)), rgb, facing);
+    }
+
+    /**
+     * A band along the points (the eye is at 0,0,0), turned to face the eye, {@code half} wide each side: uv.x -1..1
+     * across it, uv.y 0 at the first point to 1 at the last.
+     */
+    static void curve(BufferBuilder b, Vector3f[] points, float half, float[] rgb, float a) {
+        int n = points.length;
+        Vector3f dir = new Vector3f();
+        Vector3f side = new Vector3f();
+        Vector3f prevL = new Vector3f();
+        Vector3f prevR = new Vector3f();
+        float prevV = 0f;
+        boolean have = false;
+        for (int i = 0; i < n; i++) {
+            Vector3f p = points[i];
+            dir.set(points[Math.min(i + 1, n - 1)]).sub(points[Math.max(i - 1, 0)]);
+            side.set(dir).cross(p);
+            if (side.lengthSquared() < 1.0e-8f) {
+                have = false;
+                continue;
+            }
+            side.normalize(half);
+            float v = i / (float) (n - 1);
+            if (have) {
+                vertex(b, prevL.x, prevL.y, prevL.z, -1f, prevV, rgb, a);
+                vertex(b, prevR.x, prevR.y, prevR.z, 1f, prevV, rgb, a);
+                vertex(b, p.x + side.x, p.y + side.y, p.z + side.z, 1f, v, rgb, a);
+                vertex(b, p.x - side.x, p.y - side.y, p.z - side.z, -1f, v, rgb, a);
+            }
+            prevL.set(p).sub(side);
+            prevR.set(p).add(side);
+            prevV = v;
+            have = true;
+        }
     }
 
     /** A flat ring on the ground round {@code c}: uv.x 0 at {@code inner} to 1 at {@code outer}, uv.y 0-1 round it. */

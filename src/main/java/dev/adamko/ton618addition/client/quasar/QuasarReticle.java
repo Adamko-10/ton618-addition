@@ -253,6 +253,15 @@ final class QuasarReticle {
         if (a > 0.01f) {
             g.fill(0, 0, g.guiWidth(), g.guiHeight(), ((int) (Math.min(a, 1f) * 255f) << 24) | 0xF4F8FF);
         }
+        // inside the plasma ball: its glow, electric blue-violet with the star's colour, instead of its skin
+        float inside = QuasarRender.insidePlasma(cast, mc.gameRenderer.getMainCamera().getPosition(), t);
+        if (inside > 0.01f) {
+            int c = type.color;
+            int r = Math.round(((c >> 16 & 255) * 0.4f + 0.42f * 255f * 0.6f));
+            int gr = Math.round(((c >> 8 & 255) * 0.4f + 0.3f * 255f * 0.6f));
+            int b = Math.round(((c & 255) * 0.4f + 1f * 255f * 0.6f));
+            g.fill(0, 0, g.guiWidth(), g.guiHeight(), argb(r << 16 | gr << 8 | b, 0.5f * inside));
+        }
     }
 
     // ---- drawing -----------------------------------------------------------------------------------------------------------

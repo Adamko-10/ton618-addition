@@ -15,10 +15,14 @@
 //    it; Color; Param: ticks, how strong, how many ripples round it)
 //  6 a wall of dust behind the shock wave, a standing strip (uv.x 0-1 round, uv.y 0 at the ground to 1 at its top;
 //    Color.rgb the dust; Param: ticks, how strong, how many billows round it)
-//  7 the fireball of the landing, a dome (uv as 4; Color.rgb the star's colour, Color.a facing; Param: ticks, its age
-//    0-1, its radius in blocks, how strong)
+//  7 the plasma ball of the landing, a lumpy dome (uv as 4; Color.rgb the star's colour, Color.a facing; Param: ticks,
+//    its age 0-1, its radius in blocks, how strong)
 //  8 the mark on the ground (uv -1..1 on a flat quad; Color; Param: ticks, how strong, the first pulse 0-1)
 //  9 a round glow with a hot middle (uv -1..1; Color; Param.x how tight the middle is, Param.y how much wide haze)
+// 10 the jet's plasma splashing out flat over the ground as it lands (uv -1..1 on a flat quad; Color the star's;
+//    Param: ticks, how strong, how far its front has run (0-1 of the quad), its age 0-1)
+// 11 a magnetic arc leaping up from the crater, a band along a curve (uv.x -1..1 across, uv.y 0-1 along; Color;
+//    Param: ticks, how strong, its own seed, how much of it has grown 0-1)
 // Bake 1: painted onto a texture for a shader pack (client/quasar/QuasarAtlas), see the end of main; 2: the same, as
 // its square root (for the pack's sky program, which squares it).
 uniform float Mode;
@@ -211,16 +215,61 @@ vec4 fireball() {
     float top = smoothstep(0.78, 1.0, uv.y);
     n = mix(n, 0.5, top);
     n2 = mix(n2, 0.45, top);
-    // it cools as it ages: white, the star's colour, orange, then smoke
+    // it cools as it ages: white-hot, electric blue-violet with the star's colour, then dark ash (a quasar's plasma, not a
+    // fire: Adam, 2026-11-17: "make the explosion look better and more unique")
     float heat = clamp(1.2 - age * 2.2 + (n - 0.5) * 1.1 + (f - 0.6) * 0.55, 0.0, 1.0);
-    vec3 hot = mix(vec3(1.0, 0.36, 0.06), mix(color.rgb, vec3(1.0), 0.75), smoothstep(0.45, 1.0, heat));
-    vec3 smoke = vec3(0.09, 0.08, 0.075) * (0.6 + 0.8 * n2);
+    vec3 cool = mix(vec3(0.42, 0.3, 1.0), color.rgb, 0.4);
+    vec3 hot = mix(cool, vec3(0.88, 0.94, 1.0), smoothstep(0.45, 1.0, heat));
+    vec3 smoke = vec3(0.055, 0.06, 0.09) * (0.6 + 0.8 * n2);
     float glowing = smoothstep(0.0, 0.45, heat);
+    // threads of light crawling over it (the jet's magnetic field), brightest while it is hot
+    float threads = pow(1.0 - abs(2.0 * ringFbm(uv.x + T * 0.003, yy * 0.9 - T * 0.05, cells) - 1.0), 12.0) * (1.0 - top);
     // it breaks up into rags as it ages
     float body = smoothstep(0.0, 0.6, f) * smoothstep(age * 1.25 - 0.3, age * 1.25 + 0.2, n2 * 0.7 + n * 0.3 + 0.25);
     float a = body * Param.w;
-    vec3 c = mix(smoke, hot * (0.5 + 0.7 * heat), glowing);
+    vec3 c = mix(smoke, hot * (0.5 + 0.7 * heat), glowing) + vec3(0.8, 0.9, 1.0) * threads * glowing * 0.9;
     return vec4(c * a, a * mix(0.85, 0.2, glowing));
+}
+
+vec4 splash() {
+    float r = length(uv);
+    float T = Param.x;
+    float front = max(Param.z, 0.02);
+    float age = Param.w;
+    float a01 = atan(uv.y, uv.x) / 6.2832 + 0.5;
+    // streaks racing out (many thin, a few broad) and a bright ragged front
+    float spokes = pow(ringNoise(a01, r * 3.0 - T * 0.25, 48.0), 3.0) * 1.6 + 0.5 * ringNoise(a01 + 0.3, r * 1.5 - T * 0.12, 12.0);
+    float rag = (ringNoise(a01, T * 0.05, 24.0) - 0.5) * 0.06;
+    float rim = gs((r - front - rag) / 0.035);
+    float inside = 1.0 - smoothstep(front - 0.03, front + 0.02, r + rag);
+    // hottest at the middle; the middle burns out first as it ages
+    float heat = clamp(1.0 - r / front, 0.0, 1.0);
+    float body = inside * (0.25 + 0.75 * spokes) * (0.35 + 0.65 * heat) * (1.0 - age * (0.4 + 0.6 * heat));
+    vec3 plasma = mix(color.rgb, vec3(0.75, 0.88, 1.0), 0.55);
+    vec3 c = plasma * body + vec3(1.0) * rim * (1.0 - 0.6 * age) + vec3(1.0) * gs(r / 0.12) * (1.0 - age) * 1.5;
+    c *= Param.y * color.a * (1.0 - smoothstep(0.94, 1.0, r));
+    return vec4(c, 0.0);
+}
+
+vec4 arc() {
+    float T = Param.x;
+    float seed = Param.z;
+    float grown = Param.w;
+    float y = uv.y;
+    if (y > grown) {
+        discard;
+    }
+    // a jagged filament wandering across the band, jumping a little every couple of ticks
+    float jump = floor(T * 0.5);
+    float wander = (noise(vec2(y * 18.0, seed * 7.0 + jump)) - 0.5) * 0.9 + (noise(vec2(y * 55.0, seed * 3.0 + jump * 1.7)) - 0.5) * 0.35;
+    float d = abs(uv.x - wander * 0.6);
+    float core = exp(-d * d * 900.0);
+    float glow = exp(-d * d * 30.0) * 0.45;
+    float flicker = 0.7 + 0.3 * noise(vec2(T * 2.3, seed));
+    float tip = 1.0 + 1.5 * gs((y - grown) / 0.05);
+    float ends = smoothstep(0.0, 0.04, y) * smoothstep(0.0, 0.04, 1.0 - y);
+    vec3 c = (vec3(1.0) * core * 1.4 + mix(color.rgb, vec3(0.7, 0.85, 1.0), 0.5) * glow) * flicker * tip * ends;
+    return vec4(c * Param.y * color.a, 0.0);
 }
 
 vec4 mark() {
@@ -258,6 +307,10 @@ void main() {
         fragColor = fireball();
     } else if (mode == 8) {
         fragColor = mark();
+    } else if (mode == 10) {
+        fragColor = splash();
+    } else if (mode == 11) {
+        fragColor = arc();
     } else if (mode == 9) {
         float r = length(uv);
         float a = (exp(-r * r * Param.x) + Param.y * exp(-r * 3.5)) * (1.0 - smoothstep(0.75, 1.0, r));

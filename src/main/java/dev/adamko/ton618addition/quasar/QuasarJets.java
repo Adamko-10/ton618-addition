@@ -24,6 +24,7 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.protocol.game.ClientboundSoundPacket;
 import net.minecraft.network.protocol.game.ClientboundStopSoundPacket;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
@@ -131,6 +132,8 @@ public final class QuasarJets {
         long nextLobe;
         /** The last tick {@link #sounds} has played up to. */
         long soundsDone = -1;
+        /** The impact's sounds on their way to each player. */
+        final List<Boom> booms = new ArrayList<>();
         long lastLobeHit = Long.MIN_VALUE;
 
         Running(QuasarFx fx, QuasarStars.Star star) {
@@ -767,10 +770,9 @@ public final class QuasarJets {
             play(level, run, QuasarContent.JET_INCOMING.get(), 16F, 1F);
         }
         if (due(from, t, QuasarClock.LANDS)) {
-            QuasarStars.Type type = run.star.type();
-            play(level, run, (type == QuasarStars.Type.RED_DWARF ? QuasarContent.IMPACT_SMALL
-                : type == QuasarStars.Type.SUN_LIKE ? QuasarContent.IMPACT : QuasarContent.IMPACT_BIG).get(), 16F, 1F);
+            impactSound(level, run, real);
         }
+        booms(level, run, real);
         if (due(from, t, QuasarClock.LANDS + 6)) {
             play(level, run, QuasarContent.DEBRIS.get(), 8F, 1F);
         }
@@ -793,6 +795,70 @@ public final class QuasarJets {
         }
         if (due(from, t, QuasarClock.NIGHT)) {
             play(level, run, QuasarContent.NIGHT.get(), 4F, 1F);
+        }
+    }
+
+    /** Sound in the air: blocks a tick (343 m/s). */
+    private static final double SOUND_SPEED = 17.15;
+    /** The impact is heard up to this far. */
+    private static final double IMPACT_HEARD = 2500.0;
+
+    /** A player's impact sound on its way to them: when it arrives (real ticks since the cast) and how loud each half is. */
+    private record Boom(UUID player, long due, float near, float far) {
+    }
+
+    /**
+     * LANDS: the impact, for each player in the overworld their own mix of the near sound (the crack, the electric
+     * blast) and the far one (the deep, muffled boom) by their distance, arriving after the time sound takes to get to
+     * them (the flash first, then the boom), from the mark's direction. Players who get the film hear it at once (the
+     * film shows the landing then). Pitched by the star: a red dwarf's higher, a giant's lower.
+     */
+    private static void impactSound(ServerLevel level, Running run, long real) {
+        double blast = run.star.type().blast;
+        for (ServerPlayer player : level.players()) {
+            double d = player.position().distanceTo(run.mark);
+            if (d > IMPACT_HEARD) {
+                continue;
+            }
+            float near = (float) Mth.clamp(1.0 - d / (blast * 2.5), 0.0, 1.0);
+            float far = (float) (Mth.clamp(1.0 - d / IMPACT_HEARD, 0.0, 1.0) * (0.5 + 0.5 * (1.0 - near)));
+            boolean film = player.getUUID().equals(run.caster)
+                || player.position().distanceTo(run.fx.position()) <= FILM_RADIUS || d <= FILM_RADIUS;
+            long delay = film ? 0L : Math.min(60L, Math.round(d / SOUND_SPEED));
+            run.booms.add(new Boom(player.getUUID(), real + delay, near, far));
+        }
+    }
+
+    /** The impact sounds that have reached their players. */
+    private static void booms(ServerLevel level, Running run, long real) {
+        if (run.booms.isEmpty()) {
+            return;
+        }
+        QuasarStars.Type type = run.star.type();
+        float pitch = type == QuasarStars.Type.RED_DWARF ? 1.15F : type == QuasarStars.Type.SUN_LIKE ? 1F
+            : type == QuasarStars.Type.BLUE_GIANT ? 0.92F : 0.85F;
+        Iterator<Boom> it = run.booms.iterator();
+        while (it.hasNext()) {
+            Boom boom = it.next();
+            if (boom.due() > real) {
+                continue;
+            }
+            it.remove();
+            if (!(level.getPlayerByUUID(boom.player()) instanceof ServerPlayer player)) {
+                continue;
+            }
+            // three blocks from them toward the mark: from its direction, as loud as asked
+            Vec3 eye = player.getEyePosition();
+            Vec3 toward = run.mark.subtract(eye);
+            Vec3 at = toward.lengthSqr() < 9.0 ? run.mark : eye.add(toward.normalize().scale(3.0));
+            if (boom.near() > 0.02F) {
+                player.connection.send(new ClientboundSoundPacket(QuasarContent.IMPACT_NEAR, SoundSource.BLOCKS, at.x, at.y, at.z, boom.near(),
+                    pitch, level.random.nextLong()));
+            }
+            if (boom.far() > 0.02F) {
+                player.connection.send(new ClientboundSoundPacket(QuasarContent.IMPACT_FAR, SoundSource.BLOCKS, at.x, at.y, at.z, boom.far(),
+                    pitch, level.random.nextLong()));
+            }
         }
     }
 

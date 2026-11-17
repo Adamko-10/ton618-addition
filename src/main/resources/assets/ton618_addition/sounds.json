@@ -130,23 +130,17 @@
       "ton618_addition:quasar/quasar_film_zoom"
     ]
   },
-  "quasar_impact": {
+  "quasar_impact_near": {
     "sounds": [
-      "ton618_addition:quasar/quasar_impact"
+      "ton618_addition:quasar/quasar_impact_near"
     ],
-    "subtitle": "subtitles.ton618_addition.quasar_impact"
+    "subtitle": "subtitles.ton618_addition.quasar_impact_near"
   },
-  "quasar_impact_big": {
+  "quasar_impact_far": {
     "sounds": [
-      "ton618_addition:quasar/quasar_impact_big"
+      "ton618_addition:quasar/quasar_impact_far"
     ],
-    "subtitle": "subtitles.ton618_addition.quasar_impact_big"
-  },
-  "quasar_impact_small": {
-    "sounds": [
-      "ton618_addition:quasar/quasar_impact_small"
-    ],
-    "subtitle": "subtitles.ton618_addition.quasar_impact_small"
+    "subtitle": "subtitles.ton618_addition.quasar_impact_far"
   },
   "quasar_jet_incoming": {
     "sounds": [

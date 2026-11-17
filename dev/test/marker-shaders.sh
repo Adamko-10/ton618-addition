@@ -15,7 +15,8 @@ run() {
     local name="$1" shaders="$2"
     sed -i "s/^enableShaders=.*/enableShaders=$shaders/" "$CFG/iris.properties"
     rm -rf run/clienttest/screenshots
-    ./gradlew --no-daemon runClientTest -Pshaders "-Dton618test.shots=$SHOTS" > "run/clienttest/$name.log" 2>&1
+    # EXTRA: more harness settings, e.g. EXTRA="-Dton618test.star=0 -Dton618test.distance=200"
+    ./gradlew --no-daemon runClientTest -Pshaders "-Dton618test.shots=$SHOTS" ${EXTRA:-} > "run/clienttest/$name.log" 2>&1
     grep "TON618TEST\|Exception\|ERROR" "run/clienttest/$name.log" | grep -v "mixin/\]" | head -40
     mkdir -p "$DEST/$name"
     cp run/clienttest/screenshots/*.png "$DEST/$name/" 2>/dev/null

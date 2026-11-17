@@ -146,6 +146,7 @@ STORM_EYE=${CAT[74]};    SWORD=${CAT[82]};        ICE_CRUSH=${CAT[83]};   ICE_SN
 KALIMBA=${CAT[93]};      PULL_SWOOSH=${CAT[96]};  WOOSH_DEBRIS=${CAT[106]}; GLASSY_SNAP=${CAT[110]}; SCIFI_PING=${CAT[121]}
 TING=${CAT[124]};        CHORD_REVERB=${CAT[125]}; BRAAM_CREEPY=${CAT[126]}; WOOSH_SWEEP=${CAT[127]}; TWINKLE=${CAT[128]}
 METAL_RING=${CAT[132]};  WHIP=${CAT[134]};        POWERUP_SHIMMER=${CAT[144]}; FIRE_WHOOSH=${CAT[152]}; GLASS_SHARDS=${CAT[153]}
+ELEC_IMPACT=${CAT[151]}
 MAGIC_LIGHT=${CAT[159]}; SCIFI_BURST=${CAT[160]}; GORE_SMASH=${CAT[163]}; METAL_TAP=${CAT[167]}; LATCH=${CAT[170]}
 TAPE=${CAT[171]};        SPRING=${CAT[172]};      REACTOR=${CAT[197]};    SHIMMER=${CAT[198]};  FIRE_LOOP=${CAT[201]}
 WIND_WHIP=${CAT[202]};   ICE_SHATTER=${CAT[204]}; BOOM011=${CAT[210]};    BOOM075=${CAT[211]};  BOOM214=${CAT[212]}
@@ -194,26 +195,31 @@ if want quasar_jet_incoming; then   # SWEEP, exactly 2.5 s, peaking at its end: 
   make quasar_jet_incoming 2.5 -12
 fi
 
-impact() {   # impact <rate> <length>: a crack, a huge deep explosion with sub-bass, a rolling rumble
-  local r=$1
-  L "$STORM_CRASH" $CRASH 2.0 -1 0 "$(rate "$r")"
-  L "$GORE_SMASH" 0.05 1.7 -2 0 "$(rate "$r")"
-  L "$BOOM011" $B "$2" 0 0 "$(rate "$r")"
-  L "$BOOM214" $B "$2" -3 0.05 "$(rate "$r")"
-  L "$DROP_SLOW10" 0 "$2" -2 0 "$(rate "$r")"
-  L "$WOOSH_DEBRIS" 0.3 2.0 -6 0.3
-  L "$THUNDER" 6 "$2" -3 0.8 "afade=t=in:d=0.8,lowpass=f=700,$(rate "$r")"
-}
-if want quasar_impact_small; then   # LANDS, a red dwarf's
-  impact 1.2 4.0; make quasar_impact_small 4.0 -11 "volume='exp(-0.3*t)':eval=frame,afade=t=out:st=3.0:d=1.0"
+# LANDS (Adam, 2026-11-17: "improve sfx especially at impact"): a quasar's plasma hitting the Earth, not a bomb. Each
+# player gets both, mixed by distance and pitched by the star (QuasarJets.impactSound), the far one after the speed of
+# sound's delay.
+if want quasar_impact_near; then   # near: an electric zap and crack, the deep electric impact, trailer booms, a sub drop,
+  # arcs crackling, debris, a rolling rumble and a fizzling tail
+  L "$SCIFI_BURST" 0 0.31 -2 0
+  L "$ELEC_IMPACT" 0 3.69 0 0
+  L "$STORM_CRASH" $CRASH 2.0 -2 0
+  L "$BOOM011" $B 6.0 -1 0
+  L "$BOOM214" $B 6.0 -4 0.05
+  L "$DROP_SLOW10" 0 6.0 -3 0
+  L "$ARC" 0 1.04 -8 0.55 "highpass=f=1500"
+  L "$ARC" 0 1.04 -10 1.3 "highpass=f=1500,$(rate 0.8)"
+  L "$WOOSH_DEBRIS" 0.3 2.0 -7 0.35
+  L "$THUNDER" 6 6.0 -4 0.9 "afade=t=in:d=0.8,lowpass=f=700"
+  L "$BUZZ" 1 3.5 -14 1.6 "highpass=f=2000,volume='exp(-0.9*t)':eval=frame"
+  make quasar_impact_near 6.5 -13 "volume='exp(-0.45*t)':eval=frame,afade=t=out:st=5.3:d=1.2"
 fi
-if want quasar_impact; then   # LANDS, a Sun-like star's
-  impact 1.0 5.5; make quasar_impact 5.5 -10.5 "volume='exp(-0.18*t)':eval=frame,afade=t=out:st=4.3:d=1.2"
-fi
-if want quasar_impact_big; then   # LANDS, a giant's: lower and longer, with a braam's weight under it
-  impact 0.82 7.0
-  L "$HORN32" 0.1 3.0 -8 0.1 "lowpass=f=600,afade=t=out:st=1.5:d=1.5"
-  make quasar_impact_big 7.0 -10 "volume='exp(-0.13*t)':eval=frame,afade=t=out:st=5.5:d=1.5"
+if want quasar_impact_far; then   # far: only the deep part, muffled by the distance, and longer
+  L "$BOOM075" $B 7.0 0 0 "lowpass=f=400"
+  L "$BOOM011" $B 7.0 -2 0 "lowpass=f=250"
+  L "$ELEC_IMPACT" 0 3.69 -6 0 "lowpass=f=300"
+  L "$DROP_SLOW10" 0 7.0 -3 0 "lowpass=f=200"
+  L "$THUNDER" 6 7.0 -1 0.3 "afade=t=in:d=0.4,lowpass=f=500"
+  make quasar_impact_far 7.5 -14 "volume='exp(-0.3*t)':eval=frame,afade=t=out:st=6.0:d=1.5"
 fi
 
 if want quasar_debris; then   # LANDS + 6: rock and dirt raining back, heavy chunks first, then gravel and dust
