@@ -41,8 +41,9 @@ first** (Adam's brief, his own words at its end), then this file. Fable's part: 
   pipelines per blend/depth, std140 uniform block, `FilmMesh`, a scene texture). The film's HDR glow (`JetPost`,
   16-bit float targets) has no float texture format on 1.21.11 (`TextureFormat`: RGBA8, RED8, RED8I, DEPTH32): draw
   without the glow there, or fake it in 8 bits. The sky pass (`renderSky` is `SkyRenderer` there), fog (no
-  `FogRenderer.setupColor`), camera and GUI (2D pose, `nextStratum`) all differ. A big job: proposed to Adam to run it
-  in a fresh session (this one's context is long). Then one test round in his instances, then release prompts.
+  `FogRenderer.setupColor`), camera and GUI (2D pose, `nextStratum`) all differ. Adam picked **a fresh session**:
+  [TON 618 Addition: Fabric 1.21.11 and 26.3 ports](#local_767018e5-bb55-4bd0-8b32-2cf3c28ff89e) (started ~20:20 with
+  a full brief; it updates this section when done). Then one test round of all six in his instances, then release prompts.
 - Note: the mod description in the metadata (`mod_description`) still names only Last Light, on main too: add TA-02
   at the next release.
 
