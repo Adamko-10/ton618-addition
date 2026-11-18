@@ -93,6 +93,16 @@ distance, pitched by the star, delayed by the speed of sound (17.15 blocks a tic
 - **Left for 1.1.1**: his test round; then release (NeoForge first: a remade release prompt for 1.1.1, as 1.1.0's);
   then the ports of everything to the six loaders. the description's "without it, TA-02 stays hidden" -> "locked" and a 1.1.1 changelog
   (Power/Damage sliders with ∞ = kill by default, the new blast and impact, locked TA-02) at release.
+- **2026-11-18 ~09:15: 1.1.1's release prompt is made** (the user: "yea make the prompt"):
+  `..\releases\1.1.1\RELEASE-PROMPT.md` (head `9eae265`; the jar staged as `..\releases\1.1.1\jars\TON 618 Addition
+  1.1.1 [NeoForge 1.21.1].jar` = the limits TEST build; changelog `..\releases\1.1.1\changelogs\main.md`). Its checks
+  passed: version 1.1.1 in the jar, origin/main `45d8f29` fast-forwards to main, no jars/libs/run in the diff, no
+  v1.1.1 release yet. Sent to him for ChatGPT/Codex. **Meridian came out the same night** (The Shooting Star 1.6.0 +
+  RimuLib 1.3.0; TON 618 itself still 1.1.0): checked 1.1.1 against RimuLib 1.3.0 (the user: "Check it first"):
+  `dev/tools/RefCheck.java` in the SA repo finds 0 missing references, and the two fields `Ton618Link` reflects
+  (`SkillSet.rows/skills`) are still there, so 1.1.1 ships as is with its range `[1.2.3,2.0)`. TON 618 1.1.0 and SS-21
+  Quasar 1.8.0 check clean against both too. When porting to the other loaders, take RimuLib 1.3.0's file ids
+  (Forge 9676536, Fabric 9676539).
 
 Adam, 2026-11-17 (with a screenshot of TA-02 in third person, no film, Complementary on): "for next update write this
 down". In his words, then what it means here:
