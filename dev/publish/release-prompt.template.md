@@ -92,7 +92,7 @@ fields from the newest older file, sometimes wrong ones, and never the relations
   - **RimuLib** (by rimuru_dev): **Required dependency**;
   - **The Shooting Star [Demo]** (by rimuru_dev): **Optional dependency**;
   - **The Shooting Star Addition: SS-21 Quasar** (an Addons project:
-    https://www.curseforge.com/minecraft/mc-addons/the-shooting-star-addition-ss-21-quasar): **Optional dependency**.
+    https://www.curseforge.com/minecraft/mc-mods/the-shooting-star-addition-ss-21-quasar): **Optional dependency**.
     If CurseForge can't find it, skip it and tell me in the report.
 - Submit. If CurseForge answers "too many requests" (429), wait a minute and try again.
 

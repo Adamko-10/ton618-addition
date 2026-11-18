@@ -14,7 +14,7 @@ An **unofficial**, fan-made addon for **[TON 618](https://www.curseforge.com/min
 
 ## ⚠️ Compatibility — please read
 
-Version **1.1.1** works with **TON 618 1.1.0** and needs **RimuLib 1.2.3** or newer (TON 618 needs it too). **TA-02 · Quasar Jets** also needs **[The Shooting Star: SS-21 Quasar](https://www.curseforge.com/minecraft/mc-addons/the-shooting-star-addition-ss-21-quasar)**; without it, TA-02 shows in the menus but stays locked.
+Version **1.1.1** works with **TON 618 1.1.0** and needs **RimuLib 1.2.3** or newer (TON 618 needs it too). **TA-02 · Quasar Jets** also needs **[The Shooting Star: SS-21 Quasar](https://www.curseforge.com/minecraft/mc-mods/the-shooting-star-addition-ss-21-quasar)**; without it, TA-02 shows in the menus but stays locked.
 
 **1.1.1 is out for NeoForge 1.21.1 first.** The other builds below are still **1.0.0** (Last Light only) and get TA-02 in a later update.
 
