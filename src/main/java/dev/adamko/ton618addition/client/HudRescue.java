@@ -5,6 +5,8 @@ import dev.adamko.ton618addition.Ton618Addition;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.gui.GuiGraphics;
 import dev.adamko.ton618addition.client.film.LastLightFilm;
+import dev.adamko.ton618addition.client.quasar.QuasarClient;
+import dev.adamko.ton618addition.client.quasarfilm.QuasarJetsFilm;
 
 /**
  * Puts back what TON 618 hides with the HUD (Adam's test, 2026-11-14: "when ton 618 eats your world you cant open the
@@ -46,7 +48,8 @@ public final class HudRescue {
      * fallback notice ({@link LastLightNotice}: only while it runs without its film).
      */
     public static void afterGui(GuiGraphics graphics, DeltaTracker delta) {
-        if (!reached) {
+        boolean calledOff = !reached;
+        if (calledOff) {
             rescue(graphics, delta);
         }
         // Forge 1.21.1 has no RenderGuiEvent (its HUD is layers): the film's screen layer is drawn from here, every
@@ -56,6 +59,18 @@ public final class HudRescue {
             graphics.flush();
         } catch (RuntimeException failed) {
             warnOnce("the film's layer", failed);
+        }
+        // TA-02 · Quasar Jets: its film's screen layer every frame (told when the HUD was called off, as NeoForge's
+        // cancelled RenderGuiEvent.Pre does), and its reticle and readout only when the HUD was drawn
+        float partial = delta.getGameTimeDeltaPartialTick(true);
+        try {
+            QuasarJetsFilm.screen(graphics, partial, calledOff);
+            if (!calledOff) {
+                QuasarClient.hud(graphics, partial);
+            }
+            graphics.flush();
+        } catch (RuntimeException failed) {
+            warnOnce("Quasar Jets' layer", failed);
         }
         try {
             LastLightNotice.draw(graphics, delta.getGameTimeDeltaPartialTick(false));
