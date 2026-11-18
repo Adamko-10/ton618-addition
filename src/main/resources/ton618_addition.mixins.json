@@ -4,6 +4,7 @@
   "package": "dev.adamko.ton618addition.client.mixin",
   "compatibilityLevel": "JAVA_21",
   "client": [
+    "ClientLevelMixin",
     "GameRendererMixin",
     "GuiMixin"
   ],

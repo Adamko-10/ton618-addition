@@ -1,6 +1,8 @@
 package dev.adamko.ton618addition.client;
 
+import dev.adamko.ton618addition.ReadingTime;
 import dev.adamko.ton618addition.lastlight.LastLightClock;
+import dev.adamko.ton618addition.lastlight.LastLightReading;
 import dev.adamko.ton618addition.link.Ton618Link;
 import dev.adamko.ton618addition.net.LastLightFx;
 import java.util.UUID;
@@ -40,14 +42,26 @@ public final class LastLightCast {
         }
     }
 
-    /** Game ticks since the cast (see {@link LastLightClock}), with the frame's partial tick. */
+    /**
+     * Story ticks of {@link LastLightClock}, with the frame's partial tick: game ticks since the cast, slowed in the
+     * reading windows ({@code LastLightReading}) when the caster had educational mode on, as on the server.
+     */
     public float tick(float partialTick) {
+        return story(this.counted + partialTick);
+    }
+
+    /** Whole story ticks. */
+    public long tick() {
+        return (long) story(this.counted);
+    }
+
+    /** Game ticks since the cast, unslowed (for anything that must follow the real clock, e.g. a soundtrack). */
+    public float realTick(float partialTick) {
         return this.counted + partialTick;
     }
 
-    /** Whole ticks since the cast. */
-    public long tick() {
-        return this.counted;
+    private float story(float real) {
+        return this.fx.educational() ? ReadingTime.story(LastLightReading.WINDOWS, real) : real;
     }
 
     /** The packet as it came (the raw data, for anything not wrapped below). */
@@ -119,5 +133,10 @@ public final class LastLightCast {
     /** Educational mode is on (the player's setting, off by default). */
     public boolean educational() {
         return Ton618AdditionClientConfig.educational();
+    }
+
+    /** This strike runs its reading windows slower (its caster had educational mode on; the same for every viewer). */
+    public boolean slowed() {
+        return this.fx.educational();
     }
 }

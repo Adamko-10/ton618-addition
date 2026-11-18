@@ -165,3 +165,113 @@ player watching. The film key to skip.
 - TON 618's own time effects can still play over the first 200 ticks in the dark.
 - The HUD's sizes and positions were laid out from the previz's numbers but never seen in the game's lettering.
 - The soundtrack's balance was only measured, never heard.
+
+---
+
+# Polish (2026-11): the early world effects and the toasts
+
+Done 2026-11-15 by Fable on `main` (NeoForge 1.21.1) for the next update, from Codex's game test of 1.0.0
+(`..\codex tests\REPORT.md`). **Builds; not seen in a game** (how it was checked: below). Nothing committed (Fable
+runs no git). Test jar: `C:\Users\adam_\Documents\TON 618 Addition\test builds\2026-11-15 Last Light polish\TON 618
+Addition 1.0.1 polish TEST [NeoForge 1.21.1].jar` (the version inside it is still 1.0.0: `gradle.properties` is not
+a film file).
+
+## 1. The hand glow, floor ring and floor wave (game ticks ~78 to 200)
+
+**What was wrong: they were not faint, they were painted out.** In its dark, TON 618 draws its own picture as a
+RimuLib post pass at the very end of the level render (`PostFx.render`, a mixin at the RETURN of
+`LevelRenderer.renderLevel`). Its world shader keeps a pixel only where the depth buffer holds something solid;
+every other pixel ("sky") is replaced by its space render. The dark's floor block has an invisible render shape, so
+in the dark everything except the players is "sky". The 1.0.0 film drew its light at `AFTER_WEATHER` without writing
+depth, so all of it was replaced a moment later, on every loader. (The returning wave in the overworld was never
+affected: TON 618 paints nothing there.) Codex's frames at 5 s and 8 s show none of our light at all.
+
+**The fix (the one that matters):** in the dark the film now draws at `RenderLevelStageEvent.Stage.AFTER_LEVEL`.
+NeoForge fires it from `GameRenderer.renderLevel` right after `levelRenderer.renderLevel(...)` returns, so after
+RimuLib's pass, and before the depth clear for the hand, so the level's depth is still there (RimuLib copies the
+depth for its pass and leaves the real one alone) and the caster still hides what is behind them. The overworld part
+still draws at `AFTER_WEATHER`, unchanged.
+
+**Then, so it reads against what is really behind it** (TON618's disk fills most of the frame and is far brighter
+than the previz's small hole on black):
+- **Shot 2's framing** (`FilmCamera.dark`, storyboard 50 to 90): the hand was below the picture (the arm isn't raised
+  in the game as it is in the previz; projected, the hand sat at y≈800 of 720). The camera is now 2.3 to 2.1 blocks
+  back (was 1.6 to 1.4), 0.85 right (0.7), looks lower (`(0, -21, 0)` and `rt × -7` in the aim; was -13 and -9) and
+  FOV 43 (40). The hand is in the lower middle, TON618 upper right, and about 300 px of floor in front of the caster
+  is in the picture for the ring.
+- **Hand light** (`FilmWorld.hand`, dark only; the overworld's is as it was): wider and whiter halo, a white-hot core,
+  a short flare at the press and at the release (new shader material 9), and it sits just outside the hand (0.55
+  right, 0.78 up, 0.2 forward of the feet; was 0.4 / 0.82 / 0.28): from behind, the arm hid a light in the hand.
+- **Light on the floor** (new): a soft pool of warm light on the floor round the caster that follows the hand's
+  light. The previz's floor is visibly lit by the hand; the game's floor is invisible, and this is what shows it is
+  there.
+- **Press ring**: a wider band (inner edge 0.9, was 0.94), whiter, fading a little slower, with a soft glow trailing
+  inside it (the RING material's new `Param.y`, `Param.z`; 0 keeps the old look, as the burst ring in space uses it).
+- **Time wave**: a white-hot line in the middle of the front, dashes a little stronger; once the front is more than
+  ~10 blocks out (`away`) it is up to 1.5× stronger, the wall of light whiter and stronger, with a low white foot
+  under it. Close to the caster it keeps 1.0.0's strength (it is big on screen there), and the wall fades in over its
+  first 12 blocks (at 2 blocks it was a slab of light round the caster).
+
+Files: `client/film/FilmWorld.java` (the stage, `dark()`, `hand()`), `FilmCamera.java` (shot 2), `LastLightFilm.java`
+(`world()` lets both stages through), `FilmGl.java` (`FLARE = 9`), `shaders/film/last_light.fsh` (modes 3, 5, new 9).
+
+## 2. Toasts hidden during the film (all inside `LastLightFilm`)
+
+- `start()`: when the film gets the camera, `Minecraft.getToasts().clear()` (the "Move with W, A, S and D" toast of
+  a new game stays up until the player moves, so it sat on the whole film).
+- NeoForge's `ToastAddEvent` (cancellable, fired by `ToastComponent.addToast`): while `film != null` the toast is
+  cancelled and kept (8 at most); `showHeldToasts()` adds them back when the film lets go of the camera (`end()`,
+  skipped with the film key, or `fail()`). With RimuLib's films off there is no film and toasts are left alone.
+- Not done: toasts already on screen at the start are cleared, not brought back (their list is private).
+
+## How it was checked without a game
+
+- Read (decompiled into the session's scratch folder only, nothing copied): TON 618's `ton_world` shader and the
+  uniforms it gets in the dark, its void floor's render shape, RimuLib's `LevelRendererMixin` and `PostFxRenderer`;
+  and NeoForge's patched `GameRenderer` (`build/moddev/artifacts/neoforge-21.1.248-sources.jar`) for where
+  `AFTER_LEVEL` and the toasts are drawn.
+- **`previz/polish-check/`** (new, mine): `node previz/polish-check/server.js`, open http://localhost:8767/, then
+  `check.draw(tick)` in the console (`check.draw(tick, true)` = 1.0.0's numbers). It draws the dark's effects with
+  the film's **real** `last_light.fsh` over Codex's 3 s game frame (read from `..\codex tests\`, outside the repo,
+  re-projected as the sky) with a box for the caster. The page mirrors `FilmCamera.dark` / `FilmWorld.dark` by hand:
+  change a number in one, change it in the other. This is where the strengths above were set (the first try
+  whited out the caster at the release). Its projection of the 1.0.0 shot 2 matches Codex's 5 s frame (head, hole).
+
+## For the ports (Opus)
+
+- **The one thing each port must get right: in the dark, draw after RimuLib's `PostFx.render` and before the level's
+  depth is cleared for the hand.** Forge 1.21.1 / 1.20.1: `RenderLevelStageEvent.Stage.AFTER_LEVEL` should be the same
+  place (check Forge's `GameRenderer` patch). **Fabric: `WorldRenderEvents.LAST` is inside `renderLevel`, before
+  RimuLib's RETURN hook, so it is painted out**; `END` is at RETURN too and its order against RimuLib's mixin isn't
+  dependable. The sure way is a small client mixin on `GameRenderer.renderLevel`, right after the
+  `LevelRenderer.renderLevel(...)` call, that calls the film's dark draw (that mixin is outside the film's files:
+  yours). 1.21.11 / 26.3: find where RimuLib's post pass runs in that version's frame and draw after it, with the
+  main target's depth still bound for the test.
+- Check on each branch that TON 618's dark behaves the same there (26.3's TON 618 differs in its HUD; its post
+  pass may differ too).
+- The shader: the same three changes in each branch's copy of the GLSL (1.21.11 / 26.3: the uniform-block version;
+  the material is still the `Mode` uniform, so no new pipeline). `FilmGl.FLARE = 9`.
+- 1.20.1's vertex API: nothing new, the added quads go through `FilmGl.vertex` / `billboard` / `wall` like the rest.
+- Toasts: Forge has `ToastAddEvent` (same code). Fabric has no such event: either clear the toasts every frame at
+  the top of `screen()` while `film != null` (it runs before the toasts are drawn; arriving toasts are dropped,
+  not held), or a mixin on `ToastComponent.addToast` to hold them. 1.21.11 / 26.3: the class is `ToastManager`.
+
+## Known limits
+
+- Not seen in a game: the first real look is Adam's test of the jar.
+- The film's light in the dark is now drawn over TON 618's finished picture, so TON 618's grain, colour fringes and
+  its "time stops" stutter don't touch it (it stays smooth while the picture behind it stutters).
+- The far plane still clips: with a render distance under about 6 chunks the wave's wall vanishes at the far plane
+  instead of fading out.
+- The dark's shots are placed along the way to TON618, not by where the caster faces: a caster with their back to
+  TON618 has the hand light on the far side of the body.
+- With a shader pack (Iris) the in-world parts are still untested.
+
+## What to test (told to Adam)
+
+In TON 618's dark, films on, cast Last Light, facing TON618. 1: a glow at the caster's hand from about 3 s, a
+flash at the press (~4 s), warm light on the floor. 2: a ring of light running out over the floor after the press.
+3: at ~6 s a bright wave leaving in every direction, then a bright line with a glow on the horizon, dashes on the
+floor, dust streaking up. 4: no toast over the film (start a new world so the "Move with W, A, S and D" hint is up,
+or get an advancement just before); a toast earned during the film shows after it. 5: the rest of the film as
+before.

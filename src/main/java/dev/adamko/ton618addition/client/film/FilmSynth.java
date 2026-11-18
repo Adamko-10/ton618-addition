@@ -2,6 +2,7 @@ package dev.adamko.ton618addition.client.film;
 
 import static dev.adamko.ton618addition.client.film.FilmScript.lin;
 
+import dev.adamko.ton618addition.ReadingTime;
 import java.util.Random;
 
 /**
@@ -21,9 +22,22 @@ final class FilmSynth {
     private static final float[][] PAD_BACK = {{538, 0}, {552, 0.055F}, {620, 0.05F}, {658, 0}};
     private static final float[][] WIND = {{535, 0}, {560, 0.05F}, {640, 0.04F}, {660, 0}};
 
-    /** The whole track, left and right samples in turn. */
-    static short[] render() {
-        int n = (int) (FilmScript.GAME_END / 20F * RATE);
+    /** This making's reading windows (one track is made at a time). */
+    private static float[][] windows = {};
+
+    /** When storyboard time {@code story} comes, in seconds of real time since the cast. */
+    private static double at(float story) {
+        return ReadingTime.real(windows, FilmScript.toGame(story)) / 20.0;
+    }
+
+    /**
+     * The whole track, left and right samples in turn, for a cast with these reading windows
+     * ({@code lastlight/LastLightReading}, or none): with educational mode's slow-down the held sounds last longer and
+     * the struck ones land where their moment falls in real time, so the track is as long as that cast really takes.
+     */
+    static synchronized short[] render(float[][] reading) {
+        windows = reading;
+        int n = (int) (ReadingTime.real(reading, FilmScript.GAME_END) / 20F * RATE);
         float[] l = new float[n];
         float[] r = new float[n];
         Random random = new Random(618L);
@@ -52,29 +66,29 @@ final class FilmSynth {
         hiss(l, r, random, t -> FilmScript.keys(WIND, t), t -> 500F, 0.5F);
 
         // the press: a click, a glass ping, a low thump
-        double press = FilmScript.toGame(60F) / 20.0;
+        double press = at(60F);
         noise(l, r, random, press, 0.05, 0.5F, 5000F);
         tone(l, r, press, 0.5, 1568F, 1568F, 0.18F, 0F);
         tone(l, r, press, 0.5, 55F, 55F, 0.5F, 0F);
         // the time wave: a deep whoomp falling away, air rushing out
-        double wave = FilmScript.toGame(90F) / 20.0;
+        double wave = at(90F);
         tone(l, r, wave, 2.2, 64F, 26F, 0.9F, 0F);
         noise(l, r, random, wave, 1.6, 0.5F, 1800F);
         // clock ticks, faster and faster, into the whir
         for (int k = 1; k <= 26; k++) {
-            noise(l, r, random, FilmScript.toGame(90F + 60F * (float) Math.sqrt(k / 26.0)) / 20.0, 0.03, 0.22F, 6000F);
+            noise(l, r, random, at(90F + 60F * (float) Math.sqrt(k / 26.0)), 0.03, 0.22F, 6000F);
         }
         // a bell on the title, a whoosh into the cut
-        double bell = FilmScript.toGame(104F) / 20.0;
+        double bell = at(104F);
         tone(l, r, bell, 2.6, 220F, 220F, 0.2F, -0.2F);
         tone(l, r, bell, 2.2, 440F, 440F, 0.1F, 0.2F);
         tone(l, r, bell, 1.6, 660F, 660F, 0.04F, 0F);
-        noise(l, r, random, FilmScript.toGame(147F) / 20.0, 0.5, 0.35F, 2500F);
+        noise(l, r, random, at(147F), 0.5, 0.35F, 2500F);
         // space falls colder than the hole: a long falling sigh
-        tone(l, r, FilmScript.toGame(200F) / 20.0, 2.2, 520F, 90F, 0.09F, 0F);
+        tone(l, r, at(200F), 2.2, 520F, 90F, 0.09F, 0F);
         // a soft tick for each star going out
         for (float t = 220F; t < 262F; t += 1.1F) {
-            tone(l, r, FilmScript.toGame(t) / 20.0, 0.12, 1800F + random.nextFloat() * 1600F, 0F, 0.03F, random.nextFloat() * 1.6F - 0.8F);
+            tone(l, r, at(t), 0.12, 1800F + random.nextFloat() * 1600F, 0F, 0.03F, random.nextFloat() * 1.6F - 0.8F);
         }
         // a tiny crackle for each pair (not closer together than the ear can tell apart)
         double lastCrackle = -1.0;
@@ -82,7 +96,7 @@ final class FilmSynth {
             if (FilmScript.PAIR_BORN[i] >= FilmScript.S_HUSH) {
                 break;
             }
-            double at = FilmScript.toGame(FilmScript.PAIR_BORN[i]) / 20.0;
+            double at = at(FilmScript.PAIR_BORN[i]);
             if (at - lastCrackle < 0.012) {
                 continue;
             }
@@ -90,12 +104,12 @@ final class FilmSynth {
             crackle(l, r, at, 2400F + random.nextFloat() * 4200F, 0.035F, random.nextFloat() * 1.6F - 0.8F);
         }
         // the burst, after the hush: a deep boom, a white crash, a high ring left hanging
-        double burst = FilmScript.toGame(FilmScript.S_BURST) / 20.0;
+        double burst = at(FilmScript.S_BURST);
         tone(l, r, burst, 2.6, 70F, 28F, 0.9F, 0F);
         noise(l, r, random, burst, 2.8, 0.7F, 9000F);
         tone(l, r, burst, 3.2, 2093F, 2093F, 0.05F, 0F);
         // the returning wave: a wide whoosh, two warm notes
-        double back = FilmScript.toGame(FilmScript.S_CLEAR) / 20.0;
+        double back = at(FilmScript.S_CLEAR);
         noise(l, r, random, back, 2.2, 0.45F, 1400F);
         tone(l, r, back, 2.4, 523.25F, 523.25F, 0.06F, -0.3F);
         tone(l, r, back, 2.4, 783.99F, 783.99F, 0.04F, 0.3F);
@@ -122,7 +136,7 @@ final class FilmSynth {
         int step = RATE / 160;
         float[] values = new float[n / step + 2];
         for (int i = 0; i < values.length; i++) {
-            values[i] = curve.at(FilmScript.toSb(i * step / (float) RATE * 20F));
+            values[i] = curve.at(FilmScript.toSb(ReadingTime.story(windows, i * step / (float) RATE * 20F)));
         }
         return values;
     }

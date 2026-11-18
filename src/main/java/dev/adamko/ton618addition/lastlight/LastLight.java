@@ -3,8 +3,10 @@ package dev.adamko.ton618addition.lastlight;
 import cyou.rimuru.rimulib.api.NetApi;
 import cyou.rimuru.rimulib.api.SkillApi;
 import cyou.rimuru.rimulib.skill.SkillHolder;
+import dev.adamko.ton618addition.ReadingTime;
 import dev.adamko.ton618addition.Ton618Addition;
 import dev.adamko.ton618addition.Ton618AdditionConfig;
+import dev.adamko.ton618addition.link.Education;
 import dev.adamko.ton618addition.link.Ton618Link;
 import dev.adamko.ton618addition.net.LastLightEnd;
 import dev.adamko.ton618addition.net.LastLightFx;
@@ -44,8 +46,10 @@ public final class LastLight {
             this.fx = fx;
         }
 
+        /** Story ticks of {@link LastLightClock} (slower in the reading windows when the caster had educational mode on). */
         long tick(MinecraftServer server) {
-            return server.overworld().getGameTime() - this.fx.castGameTime();
+            long real = server.overworld().getGameTime() - this.fx.castGameTime();
+            return this.fx.educational() ? (long) ReadingTime.story(LastLightReading.WINDOWS, real) : real;
         }
     }
 
@@ -71,7 +75,7 @@ public final class LastLight {
         boolean offhand = !(player.getMainHandItem().getItem() instanceof SkillHolder)
             && player.getOffhandItem().getItem() instanceof SkillHolder;
         LastLightFx fx = new LastLightFx(player.getUUID(), player.getId(), server.overworld().getGameTime(), player.position(),
-            player.getYRot(), player.getXRot(), offhand, skill.onRemote());
+            player.getYRot(), player.getXRot(), offhand, skill.onRemote(), Education.on(player));
         running = new Running(fx);
         int told = 0;
         ServerLevel dark = server.getLevel(Ton618Link.DARK);
