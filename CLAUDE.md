@@ -1,10 +1,618 @@
 # CLAUDE.md: TON 618 Addition
 
-Handoff notes for every Claude session in this folder (`C:\Users\User\Desktop\ton 618 addition`, on Adam's VM).
+Handoff notes for every Claude session in this folder (`C:\Users\User\Desktop\ton 618 addition`, on Adam's VM; since
+2026-11-15 on Adam's PC: `C:\Users\adam_\Documents\TON 618 Addition\ton 618 addition`, run by the SA Series' session).
 Started 2026-11-13 by an Opus 5.5 session (xhigh) that was started from Adam's SA Series session. **Read `BRIEF.md`
 first** (Adam's brief, his own words at its end), then this file. Fable's part: `prompts\FABLE-PREVIZ-AND-FILM-PROMPT.md`.
 
-### >>> RESUME HERE (2026-11-14 evening, the VM): NeoForge 1.21.1 approved; GitHub repo; then the 7 ports; then release <<<
+### >>> NEXT UPDATE (after 1.1.0): Adam's list, 2026-11-17 (started 2026-11-17 ~22:45, NeoForge first) <<<
+
+**1.1.0 is being published by ChatGPT** (Adam, 2026-11-17 ~22:40: "i am already getting chatgpt to post the update")
+with `..\releases\1.1.0\RELEASE-PROMPT.md` (the remade one, head `93901d5`). Check its report when he brings it:
+GitHub `v1.1.0` Latest, CurseForge file + relations, description, summary, Source link.
+
+**Adam, 2026-11-17 ~22:40, the next update's main items** (his words: "next update we make it more clear that its ton
+618 idk how other then text saying that but yea i wanna show just how big ton 618 is just like how the original mod does
+in its cutsceen and tell me some stuff about ton 618 like is it at the center of a galaxy and stuff / and obv improve
+sfx especially at impact but in general overhaul them and make the explosion look better and more unique / write all of
+this down and lets get started"):
+A. **Make it clear it is TON 618, and show how big it is**, in TA-02's film: a scale reveal of our own (the original
+   TON 618 mod's film shows its size: take the idea only, never its assets or shots, rimuru_dev's terms). Ideas: pull
+   back from the Sun and the Solar System, drawn to scale, until TON618's event horizon dwarfs Neptune's orbit (~27x),
+   with labels; name cards ("TON 618", "40 BILLION SUNS"); in educational mode short facts on screen.
+B. **TON 618 facts** (told to Adam 2026-11-17; check each against a source before it goes in the game): an ultramassive
+   black hole powering a hyperluminous quasar at the centre of a galaxy (the galaxy can't be seen: the quasar, ~140
+   trillion Suns bright, outshines it); ~40 billion Suns (older estimate 66 billion), ~10,000x the Milky Way's Sgr A*
+   (4 million); event horizon ~1,600 AU across (40 billion; ~2,600 AU for 66 billion): ~27x Neptune's orbit, light takes
+   9+ days to cross; light left it ~10.8 billion years ago (redshift ~2.22); in Canes Venatici near the Big Dipper's
+   handle; entry 618 of the Tonantzintla (Mexico) survey of 1957, first logged as a faint blue star.
+C. **Sounds: overhaul them all, the impact most** ("obv improve sfx especially at impact but in general overhaul
+   them"): TA-02's world sounds and both films' (the Sonniss recipe engine, `art/sonniss_sounds.sh`; Last Light too, as
+   item 2 below).
+D. **The explosion: better looking and more unique** (since 1.1.0 it is 5x bigger: craters 200-600 blocks; the camera
+   at 110 blocks ends up inside the fireball). Make it its own thing (not a generic orange fireball): e.g. the jet's
+   blue-white plasma, a shock dome, a column, the star's own colour.
+
+**Adam's picks (2026-11-17 ~22:50, clickable)**: **1.1.1 = a polish update now** ("now we are making smth like version
+1.1.1 or smth which is ig a polish thing and next one will be bigger polish with the changed cutscene"): the explosion
+and the impact sound first (his pick), then the rest of the sound overhaul (C), the power slider (**0.1x to 3x of
+today's size, warning above 2x**), the third-person HUD (**a mock-up for him first**). **1.2.0 = the bigger polish**:
+the scale reveal (A), "prolly dad's plan" (Fable via his dad's Claude Max: write it one self-contained prompt then),
+"lets leave that for later". He asked whether 1.1.0 needs the Quasar addon: no, it's optional (without SS-21 Quasar
+TA-02 stays hidden, Last Light works; CurseForge lists it optional).
+**The ports (Adam, 2026-11-17 ~23:05, asked "did you port the 1.1.0 to other mod loaders": no, NeoForge only, on
+purpose)**: his pick, **after 1.1.1**: one porting round for all six with 1.1.0 + 1.1.1. ChatGPT's release: GitHub
+`v1.1.0` published 2026-11-17 21:43 UTC at `45d8f29` (Latest; asset = the 1,615,938-byte jar with every fix); `main`
+pushed to `45d8f29`; CurseForge part not reported yet.
+**1.1.1 progress (2026-11-17 ~23:10, uncommitted on main, not pushed)**: the explosion (`quasar_world.fsh` modes 10
+SPLASH and 11 ARC, the fireball recoloured into a plasma ball with field threads; `QuasarRender`: a blue-white flash,
+the plasma splash, 5-12 magnetic arcs from the crater (seeded by the mark), a white condensation ring, electric sparks
+and end-rod particles; from inside the plasma ball its glow over the screen instead (`insidePlasma`, `QuasarReticle`);
+the atlas 6 x 5 with SPLASH/ARC tiles) and the impact sound (`quasar_impact_near` / `_far` replace the three old ones:
+an electric impact core (Sonniss #151), a zap (#160), trailer booms, arcs, a buzz tail; each player gets a mix by
+distance, pitched by the star, delayed by the speed of sound (17.15 blocks a tick, up to 3 s) unless they get the film;
+`QuasarJets.impactSound`/`booms`). Harness: `marker-shaders.sh` takes `EXTRA="-Dton618test.star=0 ...distance=200"`.
+**1.1.1, 2026-11-17 ~23:20 (committed `9dea376` explosion + sound, `28174d3` sliders + lock; version 1.1.1; test jar
+`TON 618 Addition 1.1.1 sliders TEST` in his instance, the explosion TEST renamed `.disabled`; not pushed)**:
+- **Power and Damage sliders** (`QuasarSkill.power()` = `Power(0.1, 3, 1, factor, craterAcross)`, `warnAbove` 2,
+  `powerSliders` true: RimuLib shows Power **and Damage** together, no way to show Power alone). Power scales the
+  crater's width (x p), depth (x p^0.75), debris (x min(p, 1.5)), the hits' reach, the safe distance
+  (`QuasarStars.safeDistance(type, power)` = max(lobe, blast x p / 5) + 6), the marker, the aim preview
+  (`QuasarClient.aimPower` reads RimuLib's internal `SkillTuning.power`), every visual (`QuasarCast.blast`). Damage =
+  the hit at the blast's middle (falling to 0.35 at its reach); **∞, the menu's default (RimuLib's `maxDamage`), kills
+  everything in reach** (before: the star's `blastDamage` 14-45, now unused). **Adam, 2026-11-17 (clickable): "Keep ∞
+  kills"** as the default. Both in `QuasarFx` (power, damage). Tested
+  at 0.3x: a 180-block crater, everything scaled (`..\test builds\2026-11-17 1.1.1 power 0.3\`). Not seen: the menu's
+  slider rows (no harness view of TON 618's menu): his test.
+- **Locked, not hidden, without SS-21 Quasar** (Adam: "it should be there but locked, make it work like that"): joins
+  both menus always; `selectWarning` "Locked: needs the SS-21 Quasar addon (The Shooting Star: SS-21 Quasar)"; the
+  server refuses ("Locked: ... needs ... installed"); no named stars. Not tested without SS-21 (the harness has it).
+- He asked again (2026-11-17): the addon is needed only for TA-02 (optional for the mod); TA-02's name: **TA-02 ·
+  Quasar Jets**. Proposed for 1.2.0's scale reveal (told him): a pull-back ladder Earth -> Sun -> Solar System -> Sgr A*
+  -> TON 618's horizon filling the screen (27 Solar Systems across), cards "TON 618" / "40 BILLION SUNS" / "LIGHT
+  NEEDS 9 DAYS TO CROSS IT", more facts in educational mode.
+- **The third-person HUD, done (`3056700`)**: mock-up shown inline (a top-left panel, a phase bar, a jet-inbound
+  countdown, three moments); Adam (clickable): "Build it like this", "Everyone near". `client/quasar/QuasarHud`
+  (RenderGuiEvent.Post, RimuLib's overlay like `QuasarReticle`): for anyone within 2000 blocks of the mark (or the
+  caster) without the film; the panel's rows change by phase (`rows`); the phase bar sits at the top beside the panel
+  (at the bottom the hotbar hid it); "JET INBOUND" + countdown on a plate (the second sun's sky is bright); the
+  educational line when the player's or the caster's educational mode is on. Harness shots `..\test builds\2026-11-17
+  1.1.1 hud 2\`. Jar `TON 618 Addition 1.1.1 HUD TEST` in his instance (the sliders TEST renamed `.disabled`). The
+  film's caption still says "66 billion Suns" (`JetScript`): check the facts (40 billion) in 1.2.0.
+- **2026-11-18 ~00:15, Adam**: "lets finish up the sounds for now and work on other stuff for 1.1.1 we do need to make
+  sfx better later but rn its not wotth too much attention" -> **the film sound overhaul is parked for later** (the
+  impact is done). The HUD: "the ui is fine as is but i will likely wanna change it in the future" (his "the clock
+  speeding up" was about the film's sounds, a mix-up). His picks for the rest of 1.1.1 (clickable, all four), **done
+  `5548cd8`**: `[quasar_jets] max_power` (0.1-3, default 3) / `max_damage` (0 = no cap; above 0 ∞ becomes it), a cast
+  above them held and the caster told in chat (tested: Power 3 on max_power 2 -> "held to Power 2.0×"; with Antares
+  at 2x the harness's aim was then "too close": the server's own ray hits treetops nearer than the 126-block safe
+  distance; `dev/test/limits.sh` now uses Alpha Centauri A); the debris thrown 40 a tick (not yet measured: his game
+  opened); the film's card "about 40 billion Suns"; `dev/publish/changelog-1.1.1.md` + the description for 1.1.1.
+  Jar `..\test builds\2026-11-18 TON 618 Addition 1.1.1 limits\TON 618 Addition 1.1.1 limits TEST [NeoForge
+  1.21.1].jar`, **in his instance** since 00:20 (the HUD TEST there renamed `.disabled`).
+- **Left for 1.1.1**: his test round; then release (NeoForge first: a remade release prompt for 1.1.1, as 1.1.0's);
+  then the ports of everything to the six loaders. the description's "without it, TA-02 stays hidden" -> "locked" and a 1.1.1 changelog
+  (Power/Damage sliders with ∞ = kill by default, the new blast and impact, locked TA-02) at release.
+- **2026-11-18 ~09:15: 1.1.1's release prompt is made** (the user: "yea make the prompt"):
+  `..\releases\1.1.1\RELEASE-PROMPT.md` (head `9eae265`; the jar staged as `..\releases\1.1.1\jars\TON 618 Addition
+  1.1.1 [NeoForge 1.21.1].jar` = the limits TEST build; changelog `..\releases\1.1.1\changelogs\main.md`). Its checks
+  passed: version 1.1.1 in the jar, origin/main `45d8f29` fast-forwards to main, no jars/libs/run in the diff, no
+  v1.1.1 release yet. Sent to him for ChatGPT/Codex. **Meridian came out the same night** (The Shooting Star 1.6.0 +
+  RimuLib 1.3.0; TON 618 itself still 1.1.0): checked 1.1.1 against RimuLib 1.3.0 (the user: "Check it first"):
+  `dev/tools/RefCheck.java` in the SA repo finds 0 missing references, and the two fields `Ton618Link` reflects
+  (`SkillSet.rows/skills`) are still there, so 1.1.1 ships as is with its range `[1.2.3,2.0)`. TON 618 1.1.0 and SS-21
+  Quasar 1.8.0 check clean against both too. When porting to the other loaders, take RimuLib 1.3.0's file ids
+  (Forge 9676536, Fabric 9676539).
+- **2026-11-18 ~13:30: a new CurseForge description format** is drafted on the SA Series first (`C:\Users\adam_\
+  Documents\Shooting Star Addition\releases\description rework\`); Adam reads it, and once he likes it, this project's
+  description gets the same format ("i want to later apply it to all projects like ton addition"). The players'
+  roadmap (`...\Shooting Star Addition\announcements\roadmap 2026-11-18.md`) now has a TON 618 Addition section
+  (ports next, then 1.2.0's scale reveal, real music for TA-02 later).
+
+- **2026-11-18: 1.1.1 release** (NeoForge 1.21.1 only). Pushed `main` to `e805b9f`; GitHub
+  `v1.1.1` is Latest, with the checked jar and changelog:
+  https://github.com/Adamko-10/ton618-addition/releases/tag/v1.1.1.
+  CurseForge file `9680692` is **Approved** and public:
+  https://www.curseforge.com/minecraft/mc-mods/ton-618-addition/files/9680692. Verified Release,
+  Minecraft 1.21.1, NeoForge, Java 21, Client and Server, the exact Markdown changelog, and all four
+  relations (TON 618 and RimuLib required, The Shooting Star [Demo] and SS-21 Quasar optional).
+  The Summary and Source already matched. The 1.1.1 description is published and verified on the
+  public page, with the existing links at the top preserved. Adam chose to keep the working live
+  `/mc-mods/` Quasar link because the supplied `/mc-addons/` link returns 404. The other six loaders
+  are still on 1.0.0.
+
+Adam, 2026-11-17 (with a screenshot of TA-02 in third person, no film, Complementary on): "for next update write this
+down". In his words, then what it means here:
+1. **A power slider for the explosion**: "lets add a slider to select the power of the explosion just like the shooting
+   star addition and the original shooting star". TA-02's Power slider in RimuLib's H menu (as the SA Series' skills:
+   `Power(min, max, initial, factor, blocks)`, warning above some value), scaling the landing blast (crater radius and
+   depth, damage, debris, the visuals). Decide the range with him (e.g. 0.1x to 10x of today's 5x size).
+2. **Better sounds in both films**: "lets also improve sfx for both cutscenes" (TA-01 Last Light's and TA-02's films;
+   the Sonniss recipe engine, `art/sonniss_sounds.sh`; ask him which moments sound wrong first).
+3. **A HUD for third person without the film**: "lets also add a ui for 3rd person no cutscene ... make it similar to
+   shooting star addition but make it make sense so adjust it accordingly yk". Like the SA Series' strike overlays
+   (Halley/Luna/Proxima: a top-left readout, phase captions, a countdown/descent bar, the target), but saying what
+   TA-02 is doing (the star's flight and its clock racing, TON618 feeding, the jet coming in, time to landing,
+   distance to the mark, the lobe and its pop). Show him a mock-up first.
+4. **The second sun showing over mountains/blocks** in third person without the film ("lets make this not display
+   over mountains/blocks (its the "second sun" in no cutscene 3rd person)"): with a shader pack the sky's things are
+   drawn after the particles at 100 blocks, so land further away than that didn't hide them. **Done already in 1.1.0
+   (`6b14bcb`)**: with a pack a ray from the eye fades TON618's point of light and the second sun out when land is in
+   the way (without a pack the land covers them anyway). Check in his game; the far part of the jet can still show
+   over far land with a pack.
+5. ~~With a shader pack the named stars show over the pack's clouds~~: **solved in 1.1.0 (`e2fd65e`)**, see the
+   2026-11-17 ~22:30 section.
+Also waiting from before: the ports of 1.1.0 to the other six loaders (after his OK on 1.1.0), real music for Quasar
+Jets (written down 2026-11-14), Codex's test findings (2026-11-17 "its fixes go to the next update").
+
+### >>> RESUME HERE (2026-11-17 ~22:30, Adam's PC): stars behind the clouds with shaders too; release prompt remade <<<
+
+- **Adam (2026-11-17, with a Complementary screenshot: Betelgeuse and Wolf 359 over the clouds)**: "did u put it in my
+  instance cuz still no" (it was: his game started 22:06, after the swap; with a pack the stars were still drawn after
+  the particles), then "there are NO clouds without shaders so fix that please aswell, do whatever would make the stars
+  go behind clouds with and without shaders and the clouds are still there". **No clouds without shaders = his own
+  setting**: his `options.txt` has `renderClouds:"false"` (Video Settings > Clouds): told him to turn it on.
+- **Done (`e2fd65e`, harness-tested with Complementary; `..\test builds\2026-11-17 stars in the sky pass\`)**: with a
+  pack, `sky()` and `stars()` are drawn from **inside `LevelRenderer.renderSky`** (`client/mixin/LevelRendererMixin`,
+  INVOKE `ClientLevel.getStarBrightness(F)F` shift AFTER, so Iris's stage is STARS) through `QuasarRender.skyPass` ->
+  `QuasarAtlas.drawSky`: POSITION_TEX_COLOR quads (corners turned by the sky's pose, as vanilla's sun) drawn with
+  `GameRenderer::getPositionTexColorShader`, which Iris swaps for the pack's `gbuffers_skytextured` in a sky stage
+  (Iris `MixinGameRenderer`: isSky() -> SKY_TEXTURED_COLOR). How it was found: Iris's phases are set only inside
+  `renderSky` (CUSTOM_SKY before it, NONE right after, so NeoForge's AFTER_SKY event is already NONE); Complementary's
+  skytextured keeps anything that isn't the sun or the moon as "custom sky" (`color.rgb *= color.rgb *
+  smoothstep(sqrt(VdotU))`: squared and faded toward the horizon; the sun/moon are discarded with its round style),
+  and its `deferred1` keeps sky pixels and mixes its clouds over them. So the sky's looks are baked as square roots
+  (`Bake` 2, tiles 18-22) and the vertex colour square-rooted. Seen: Barnard's Star in clear sky, Tau Ceti and Rigel
+  hidden where its clouds are (the vanilla stars around them hidden too); the marker, jet and blast still draw. The
+  land ray for the second sun (`quasarSeen`) is gone: the land covers sky things now. Iris's own read of the pack
+  (`run/clienttest/shaderpacks`) and Iris's jar were read in the session scratchpad only.
+- Jar `..\releases\1.1.0\jars\` (+ `..\test builds\2026-11-17 TON 618 Addition 1.1.0 stars behind clouds\`), **in his
+  instance** (the 5x build renamed `... (5x blast).jar.disabled`); `RELEASE-PROMPT.md` remade.
+
+### >>> 2026-11-17 ~21:45 (Adam's PC): 1.1.0 final (5x blast, stars under clouds); release prompt for ChatGPT <<<
+
+- **Adam (2026-11-17)**: "make them display under clouds but the text above clouds", then "once youre done just make
+  the explosion like 5x larger ... So for now finish that up and lets write a prompt for chatgpt to do everything with
+  desc and changelog and everything inlcuded and then we plan". **Done, `6b14bcb`, harness-tested**:
+  - **Stars under the clouds**: without a pack `sky()` and `stars()` are drawn at `AFTER_SKY` (the land and the game's
+    clouds cover them; the names are the HUD's). With a pack (Complementary) stars drawn with the sky were **wiped by the
+    pack's sky** (`..\test builds\2026-11-17 stars under clouds\pack\sky.png`), so with one everything stays at
+    `AFTER_PARTICLES` (stars over the pack's clouds, item 5 of the next update's list) and `QuasarRender.quasarSeen`
+    (a ray from the eye, up to the render distance) hides TON618's point and the second sun behind land.
+  - **5x blast**: `QuasarStars.Type` blast 100/150/225/300 (craters 200 to 600 blocks across), depth 20/30/44/60,
+    debris 90/135/195/270; `QuasarJets.RING` 1.25; the safe distance kept as before via `QuasarStars.safeDistance`
+    (max(lobe, blast/5) + 6 = 26 to 66; also the reticle's "too close"); the 5 x 5 columns under the caster are kept;
+    the shock ring to 3 radii, the dust wall to 2.1, the flash up to 900; particle counts capped as before;
+    `JetCamera`'s wave timing matched (its camera, capped at 106 blocks off, is now inside the blast: the fireball fills
+    the screen for a moment; not looked at in the film). **The crater**: left to RimuLib (`start()` = linger) a
+    300-radius crater wasn't cut at the mark at all within 6 s; now `cutCrater` ticks the lazy cut from the middle out
+    with the shock wave for 2 s, then `handOver` gives the rest to RimuLib (also when the strike ends). Tested: cut from
+    the middle by LANDS+65, a scorched 600-block crater by +165 (`..\test builds\2026-11-17 explosion 5x crater\`).
+    **Lag**: the debris took 1.5 s (fall() updated every neighbour: bamboo/plant chains): now its place is emptied with
+    UPDATE_CLIENTS | UPDATE_KNOWN_SHAPE first: 0.29 s. The log line "the landing blast (N blocks across): hits, debris,
+    the crater set up" times it. A "Can't keep up" of ~2 s still comes over the next seconds while RimuLib cuts (the
+    harness runs the client on the same PC).
+  - Harness: `castQuasar` loads the target's chunk first (press 2 was refused twice: height read as -64).
+  - Jar `..\releases\1.1.0\jars\TON 618 Addition 1.1.0 [NeoForge 1.21.1].jar` (+ `..\test builds\2026-11-17 TON 618
+    Addition 1.1.0 5x blast\`), **in his instance** (the marker build renamed `... (marker and shaders).jar.disabled`).
+  - **The release prompt for ChatGPT/Codex**: `..\releases\1.1.0\RELEASE-PROMPT.md`, made by
+    `node dev/publish/make-release-prompt.js 1.1.0` from `dev/publish/release-prompt.template.md` (fills the head
+    commit, the jar's SHA-256, and the changelog, description and summary word for word). Remake it after any change.
+    Part A: push `main` only, `gh release create v1.1.0` (Latest). Part B: the CurseForge file (NeoForge 1.21.1, Java
+    21, Client + Server, Markdown changelog, relations TON 618 + RimuLib required, The Shooting Star [Demo] + SS-21
+    Quasar optional), the description (his links at the top kept as live), the summary, the Source link.
+  - The description's Plans line now names the next update's items.
+
+### >>> 2026-11-17 ~19:45 (Adam's PC): shaders done properly + landing marker built; 1.1.0 jar ready <<<
+
+- **Built and harness-tested (`9549112`)**, both with Complementary Reimagined on and off (`dev/test/marker-shaders.sh`,
+  films off in the harness's own `config/rimulib.properties` so the camera stays on the land; screenshots in
+  `..\test builds\2026-11-17 marker and shaders\nopack\` and `...marker and shaders 3\pack\`):
+  - **Shaders**: `client/quasar/QuasarAtlas` bakes every look of `quasar_world` into one 6x3 texture (192 px tiles)
+    at `RenderFrameEvent.Pre` (shader uniform `Bake` = 1: light softly clipped, alpha 1 wherever there is light: packs
+    discard near-transparent pixels, which is why the first try showed only the jet's core), then `QuasarRender` draws
+    sky, stars and world at `AFTER_PARTICLES` through `QuasarGl.packing` -> `QuasarAtlas.emit` (NEW_ENTITY quads,
+    uv moved into the tile, colour x alpha x strength) with an eyes render type (additive, LEQUAL depth, no fog of
+    ours). The old late overlay (`QuasarRender.late`, its `GameRendererMixin` call, `QuasarGl.late`) is gone. Only
+    light is added with a pack: smoke and the lobe's skin don't darken. Seen with the pack: the named stars, the marker,
+    the jet, the fireball, the lobe, the pop's rings, all hidden by trees in front.
+  - **Landing marker**: a `MARK` target as wide as the crater (half size blast/0.86, so its outer ring is the crater's
+    edge), the small bright middle, a pillar of light (a `BEAM` band 170 blocks up, bright foot, fading out) and a
+    glow at its foot; a ring runs out from the middle (`QuasarRender.markPulse`: one at the cast, then every 3 s,
+    faster from SWEEP-160 to one every 0.8 s at LANDS, counted as a phase). For everyone who sees the strike, from the
+    cast to the landing. The aim preview before the second press also shows the crater's size (red when too close).
+  - Release texts: the changelog and the description mention the marker and the shader support.
+- **The jar**: `..\releases\1.1.0\jars\TON 618 Addition 1.1.0 [NeoForge 1.21.1].jar` (and `changelogs\main.md`
+  refreshed), a copy in `..\test builds\2026-11-17 TON 618 Addition 1.1.0 marker and shaders\`, and **in his instance**
+  `NeoForge 1.21.1 (1)` (the copy there of the same name was overwritten, not renamed: PowerShell's `Test-Path` reads
+  `[...]` as a wildcard; use `-LiteralPath` next time). Waiting for his look, then his OK to publish (push, GitHub
+  v1.1.0, CurseForge file + description + summary + Source link).
+
+### >>> 2026-11-17 ~19:15 (Adam's PC): before 1.1.0: real shader-pack support and a landing marker <<<
+
+- **Shaders, round 1 (`b1ed557`)**: with Iris on, every TA-02 world effect was painted over by the pack; now they are
+  drawn late (before the HUD, over the land, no depth). Visible, but Adam: "i want the mod to be compatible with
+  shaders, so when your shaders are on by pressing K, you can see stuff like the stars in the sky without them looking
+  out of place". **His pick: do it properly before the release** (clickable): like the SA Series (`GlowAtlas`: the
+  shapes painted into a texture, drawn with Minecraft's glowing-eyes render type, which every pack draws: hidden
+  behind land, fogged, the pack's bloom).
+- **"The stars are invisible with and without shaders"**: not a bug. Reproduced with his exact 31 mods and his own
+  settings (`-Pinstance`: `libs/instance/` = copies of his other mods; his `config/` and `options.txt` copied into
+  `run/clienttest/`): the stars and the lock box show. His test world was new (morning) and it was day; at
+  `/time set midnight` they show (Adam: "ok u right yes"). TON 618's own item is invisible with shaders: TON 618's
+  renderer, not ours; he said leave it (no report). The test game closing itself looked like a crash to him (it isn't:
+  "Stopping!", no crash report).
+- **New (Adam, 2026-11-17)**: "can we add one of those 3rd person things where it shows where the thing will land in
+  a cool way just like railgun and halley and luna etc": a landing marker on the ground at the mark, from the second
+  press to the landing, visible in third person and to everyone near.
+- Release 1.1.0 (NeoForge first) waits for both. Then his OK to publish.
+
+### >>> RESUME HERE (2026-11-17 ~18:00, Adam's PC): releasing 1.1.0 on NeoForge; shader test first <<<
+
+- **Adam (2026-11-17)**: "i tested it looks betetr, its good enough now ... the mod got approved [1.0.0 on CurseForge], lets
+  decide whats next and can we honestly just release it like this". His picks (clickable): **release 1.1.0 for NeoForge
+  1.21.1 now, the other six loaders later** (bends "port before CurseForge" this once; ports = 2-4 sessions, 1.21.11 and
+  26.3 hardest); **a shader test first, done by Claude** ("you do that please"): his own test had Iris on but shaders
+  off (`enableShaders=false`), and TA-02 has no shader-pack handling at all. Harness: `-Pshaders` adds `libs/shaders/`
+  (Iris 1.8.14 + Sodium 0.8.13, copied from his instance, git-ignored); `run/clienttest/shaderpacks/` has his
+  Complementary Reimagined r5.9.3 and `run/clienttest/config/iris.properties` switches it on. **Not run yet** (his game
+  was open). Sounds still unheard ("i still cant hear").
+- **Done for 1.1.0** (`8bff0cb`): Last Light's menu warning "Not yet: set TON618's Scale to ∞ and use it first" (his
+  pick; the old one was cut off); **Last Light's icon redone as pixel art** (64x32 at 4x, `tools/icons/LastLightIcon.java`;
+  Adam: "redo it in pixel style and make a rule for this": the rule "icons are pixel art, all in one style" is in his
+  personal rules). TA-02's icon was already pixel art.
+- **Release steps left**: the shader test (fix what breaks), the 1.1.0 changelog (`dev/publish/changelog-1.1.0.md`),
+  the CurseForge description (a TA-02 section, frozen light under it; his description rework is a separate job), push
+  `main`, GitHub release `v1.1.0` (NeoForge jar only), CurseForge file 1.1.0 (TON 618 + RimuLib required, SS-21 Quasar
+  and The Shooting Star optional), the **Source link** on CurseForge (written down 11-15). Ask before each outward step.
+
+### >>> RESUME HERE (2026-11-17 ~01:25, Adam's PC): the destructive landing in his instance; Fable reframes it <<<
+
+- **Adam (2026-11-17, ~00:40, couldn't listen: late)**: "it looks much better overall but the impact is still super
+  underwhelming, make it actually destructive pls". Done (`9a964a6`): `QuasarStars.Type` `blast` 20/30/45/60,
+  `blastDepth` 10/15/22/30, `blastDamage` 14/22/32/45, `debris` 60/90/130/180; the crater cut by **RimuLib's
+  `CarveApi.flatten`** (a bowl under the mark, scorched floor; the biggest: 64 chunks in 70 ms, worst tick 22 ms, logged
+  in `run/clienttest/rimulib.log` as `ton618_addition:quasar_crater`); a **blast ring** (`QuasarJets.ring`, out to
+  `RING` = 1.8 x `blast`, 4 ms a tick) flattening trees, bamboo, mushrooms and plants, coarse-dirt scorch, a few fires
+  near the rim; hit within 1.3 x `blast`, harder shove; **the mark drops through trees to the ground**
+  (`groundBelow`; the harness hit a jungle-giant treetop at y 94 before); the caster must aim at least
+  `max(lobe, blast) + 6` away (66 for supergiants). Harness defaults now `distance` 110, `perch` 35.
+- Test jar `..\test builds\2026-11-17 TA-02 destructive\TON 618 Addition 1.1.0 TA-02 destructive TEST [NeoForge
+  1.21.1].jar`, **in his instance** (the "quality and sounds" jar there renamed `.disabled`).
+- **Sent to Fable** (round 2, small): at the landing the film's camera now sits above the clouds (its framing scales
+  with `blast`); keep the impact shots under the clouds and framed on the blast; its reticle preview should use
+  `groundBelow`'s rule. Fable makes `... TA-02 impact TEST ...`; Opus commits and swaps it in.
+- **2026-11-17 ~16:35**: the PC went off during Fable's round 2 (its last activity 00:20 UTC); its six files were left
+  uncommitted on disk (cameras under the clouds, dust strips capped, the lobe as a ball in the crater, the ground
+  preview on `groundBelow`; HANDOVER "Round 2" says where it stopped) and build. Resumed (Adam: "continue work, resume
+  anything that needs to be resumed"): it checks them in the harness and makes the impact test jar. Ponytail checked:
+  still off (config `off`, no flags). Adam asked for the Last Light previz: sent him `previz/last-light-previz.html`
+  and the link https://claude.ai/artifact/Ta6Z91SRwtCYN1z27zKQtJ.
+- **Fable now needs paid usage credits** (its resume stopped: "Fable 5.2 requires usage credits"). Adam: "you can do
+  opus for now for fixes, my dad has a claude max plan and he has spare usage so i could ask him to run a prompt and give
+  me the result". So **Opus finishes round 2 and does film/visual fixes in the film files** (in Fable's style; §7b's
+  ownership rule is relaxed for fixes), and **big Fable jobs** (SA-04B / SA-03 previz, new films) get a self-contained
+  prompt Adam runs on his dad's Max plan (in his personal rules too).
+- **Round 2 finished by Opus** (`7c07cdf`): harness run clean, the impact shot under the clouds with the fireball
+  filling the frame. Test jar `..	est builds6-11-17 TA-02 impactTON 618 Addition 1.1.0 TA-02 impact TEST [NeoForge
+  1.21.1].jar`, **in his instance** (the destructive jar there renamed `.disabled`). Next: Adam's test (sounds included).
+
+### >>> RESUME HERE (2026-11-17 ~00:30, Adam's PC): TA-02 redo round 1 + sounds in his instance; his test next <<<
+
+- **Fable's first redo round is committed** (`45dd562`; its report: film look, the remote fast-forwarding the star's
+  time with two clocks, sky stars with rays and names, the lock hint clear of RimuLib's label, the ground preview, the
+  landing's flash/fireball/shock wave/dust/shake, cameras keeping a clear view, a new shot into the bowl, 12 reading
+  windows for TA-02 (~27 s longer slowed) and 8 for Last Light (~9 s), the cue sheet). Its screenshots
+  `previz/quasar-jets/redo-check/` stay on disk, kept out of git (`.git/info/exclude`: the repo is public). One of its 6
+  test runs died with a native crash and no crash file (Medal was running; the 3 runs after were clean).
+- **The sounds are made** (`0060021`, Adam's pick "Wait for sounds" = one jar with both): `art/sonniss_sounds.sh` (the
+  SA Series' recipe engine, plus stereo for the film's sounds, seamless loops by crossfade, and a level fix for sounds
+  under 0.4 s), 37 sounds in 40 files in `assets/ton618_addition/sounds/quasar/` (1.4 MB), `sounds.json`, subtitles for
+  the world ones; `art/sounds/sources.md` lists every Sonniss file used. World sounds are registered
+  (`QuasarContent.LOCK` ... `NIGHT`) and played by `QuasarJets.sounds()` (vanilla ones gone): lock (caster only), mark,
+  second sun (every overworld player at their own place), jet incoming, impact by star size, debris, beam and lobe
+  loops (replayed every 60 real ticks, stopped at the pop with `ClientboundStopSoundPacket`), lobe rise, pop, night;
+  crystal per crystal, lift per thing picked up. The film plays its 22 by name (Fable's `JetCues`). Harness run clean
+  (no missing-sound warnings of ours). **Nobody has heard them** (picked by measuring).
+- **Test jar** `..\test builds\2026-11-17 TA-02 quality and sounds\TON 618 Addition 1.1.0 TA-02 quality and sounds TEST
+  [NeoForge 1.21.1].jar` (+ SS-21 1.8.0), **in his instance** `NeoForge 1.21.1 (1)` (the TA-02 film jar there renamed
+  `.disabled`). Next: Adam's test; his notes go to Fable (look) and Opus (sounds, land, logic).
+
+### >>> RESUME HERE (2026-11-16 ~14:20, Adam's PC): Adam's first game test of TA-02; the quality redo plan <<<
+
+**Adam's test (2026-11-16, his NeoForge 1.21.1 (1) instance, Iris on; log clean: cast, film, pop all ran)**, his words:
+"it looks much worse in game, severe lack of sfx"; "the sail is supposed to make the star go really fast not over
+years"; "there should be more time to read, maybe when educational mode is enabled you get more time"; "the stars in the
+sky should only appear when you hold the ton remote specifically and they look a lil low quality and so does the
+cutscene, needs heavy work quality wise in every aspect"; "text is over itself, when u select a star theres cyan text
+over the other text"; "the quasar hitting the earth is really underwhelming, make it feel like a big impact and a proper
+explosion"; "also apply a similar educational thing to ton 618 last light so like give more time to read if neccesary".
+He asked whether ponytail made it worse: probably partly (its rules were in the context of Fable's film session and of
+this session while TA-02 was built; Fable's own "Stop ponytail" doesn't switch it off). It is off in its own setting now.
+
+**His picks (clickable, 2026-11-16)**:
+- The sail: **the remote fast-forwards the star's own time** (as Last Light fast-forwards); Earth's clock stays normal
+  (the film shows the star's years racing while seconds pass on Earth).
+- Reading time: **longer in educational mode**, slowing **only the parts with text** (the action keeps its pace), for
+  everyone watching that strike; **the same for Last Light**.
+- Named stars in the sky (and the reticle): **only while holding TON 618's item or the Stellar Remote with TA-02
+  picked** (done, `a5ec28e`: `QuasarClient.holdingQuasarJets()`). TA-02 stays on both.
+- Sounds: **the Sonniss GDC 2026 library** (as Proxima's; the project folder of the SA Series has it:
+  `C:\Users\adam_\Documents\Shooting Star Addition\sound library\sonniss gdc 2026\`, `catalogue.csv`, and its
+  `envelope.js` measuring tool); only processed sounds go in the jar.
+- The jet's landing: **a bigger crater + debris** (a real blast at LANDS: crater, blocks and debris thrown out, a shock
+  wave, flash, shake, boom; sized by the star's type, kept clear of the caster).
+- **Fable redoes film + world visuals** (the film, the named stars, the jet, the lobe, the reticle: drawing files only).
+- **Test games on his PC are allowed when he isn't playing** (check no `javaw` first), for Fable and Opus, to screenshot
+  and fix the look.
+Done already: the doubled "locked" text (the server's cyan action-bar line is gone; the HUD hint stays).
+
+**Who does what**:
+- **Opus**: (1) a test harness for `runClient` that casts TA-02 / Last Light on its own and saves screenshots by film
+  tick (for Fable and Opus); (2) educational mode's slow-down: the client sends its switch to the server, the cast
+  carries it, a time warp (real tick -> story tick) slows only the reading windows, on the server and the client alike;
+  the windows live in data files Fable owns (`quasar/QuasarReading`, `lastlight/LastLightReading`); (3) the landing
+  blast's land part (crater, debris, damage, knock-back); (4) the Sonniss sounds (files, `sounds.json`, the world's
+  sounds; Fable places the film's).
+- **Fable** (one session, its prompt `prompts\FABLE-TA02-QUALITY-PROMPT.md`): the quality redo of the film and the world
+  visuals, the sail story change, the landing blast's look, the reading windows, Last Light's reading windows.
+
+**Done by Opus (2026-11-16, built, committed, not pushed, not run in a game)**:
+- `a5ec28e` the doubled lock text; named stars + reticle only while `QuasarClient.holdingQuasarJets()`.
+- `5631da5` **educational reading time**: the client sends its switch (`net/EducationChoice`, once per world and on every
+  change, from `Ton618AdditionClient.sendEducation`), the server keeps it (`link/Education`), the cast carries it
+  (`QuasarFx.educational`, `LastLightFx.educational`), and `ReadingTime.story/real` warp real ticks <-> story ticks
+  inside the windows of `quasar/QuasarReading` / `lastlight/LastLightReading` (Fable's data files, empty until Fable
+  fills them) on the server (`Running.tick`) and the client (`QuasarCast.tick`, `LastLightCast.tick`) alike.
+  `realTick(partial)` = unslowed (soundtracks), `slowed()` = the strike's flag, `educational()` = the viewer's own
+  setting (labels). The maths checked both ways (a scratch check, all ok).
+- `5631da5` **the test harness**: source set `src/clienttest` (mod `ton618_clienttest`, never in the release jar),
+  `./gradlew --no-daemon runClientTest -Dton618test.skill=quasar|lastlight -Dton618test.star=Antares
+  -Dton618test.distance=80 -Dton618test.shots=600-1000/10 -Dton618test.edu=false` (also `world=normal|flat`,
+  `seed`, default 618): game dir `run/clienttest` (its mods synced from `libs/` by `copyTestMods`), 1280x720, a fresh
+  world at midnight, TON 618's item with TA-02 picked; shots `sky.png`, `locked.png`, then `<skill>_<story tick>.png`
+  in `run/clienttest/screenshots/`; quits after the last; its log lines start `[TON618TEST]`. Last Light: it sets the
+  devoured flag in `ton618:ton618` storage and moves the player to `ton618:devoured` (TON 618's own dark effects don't
+  run). **Works** (2026-11-16 18:45, ~3 min a run): the player stands on a glass perch 12 blocks above the trees
+  (`516ea25`: seed 618 spawns in jungle, where the second press hit leaves and was refused). Before a run, this must
+  return nothing: `Get-Process java,javaw -ErrorAction SilentlyContinue | Where-Object MainWindowTitle -like
+  'Minecraft*'`. Found by it: Adam's "cyan text over the other text" is our lock hint landing on RimuLib's
+  selected-skill label ("◆ TA-02 · Quasar Jets", above the hotbar), not the action-bar line `a5ec28e` removed:
+  Fable moves it; the film's camera at LANDS was buried in jungle trees (Fable).
+- `2647305` **the landing blast** (land part) at LANDS: `QuasarJets.blast()` (hit + shove within 1.6 x `blast`, debris =
+  surface blocks flung as falling blocks, `dropItem` off) and `crater()` (cut from the middle out over 6 ticks, scorched
+  floor: blackstone, basalt, some magma); `QuasarStars.Type.blast` 7/10/15/20, `blastDepth` 5/7/10/13, `blastDamage`
+  8/12/16/20, `debris` 20/30/45/60.
+- Fable's session [Fable: TA-02 quality redo](#local_89d133b7-381e-4222-b7db-49bd77b35ec8) (Fable 5.2, High): started
+  ~14:20 (came up on Opus: model set, then "go"), hit the 5-hour limit before writing anything, resumed 18:33 with the
+  blast numbers. **Next for Opus**: the Sonniss sounds once Fable's cue sheet (`previz/quasar-jets/SOUND-CUES.md`) is
+  in; commit Fable's files when it reports; the harness's first run when Adam isn't playing.
+
+### >>> RESUME HERE (2026-11-15 ~20:25, Adam's PC): TA-02 built on main, not tested in a game; usage limit hit <<<
+
+- **TA-02 · Quasar Jets is BUILT on `main` (NeoForge 1.21.1)**, version 1.1.0, committed (not pushed), Adam: "Build TA-02 in the mod". Code: `quasar/` (QuasarInfo, QuasarClock = Fable's ticks, QuasarStars = 8 stars + type table with the lobe/bowl/crystals x1.5 for "bigger explosion", QuasarSkill, QuasarJets = two presses + every world effect, QuasarSky = missing stars saved, QuasarContent = 4 frozen-light blocks + radio_lobe damage type), `net/QuasarFx|QuasarLock|QuasarMissing`, `client/quasar/` (QuasarClient, QuasarCast = what the film reads, QuasarRender = named stars, second-sun glare, mark, jet, dome, pop ring, QuasarReticle = lock-on HUD + pop flash, QuasarGl), `client/mixin/ClientLevelMixin` (second sun: sky light/colour/clouds/stars), `client/quasarfilm/QuasarJetsFilm` = **placeholder by Opus (bars, words, title, flood): Fable's package for the real film (Part 2)**. Server config `[quasar_jets]`. Joins only with SS-21 Quasar (`shooting_star_ss21`); `Ton618Link.showInMenu` (SA Series' fix) puts our skills back in the Stellar Remote's menu, which SS-21 freezes. Art: `tools/icons/QuasarJetsArt.java` (skill icon, crystal textures). **The mod icon is in the metadata now** (`ton618_addition_icon.png`, `logoFile`).
+- Checked: builds; dev server with TSS 1.5.2 + SS-21 1.8.0 NeoForge (downloaded with Adam's OK to `libs/extra`, 4.2 MB): TA-02 joins TON 618's menu (#3) and the remote (#8); without SS-21 it stays hidden. **Not seen in a game.**
+- Test jar: `..	est builds6-11-15 TA-02 Quasar JetsTON 618 Addition 1.1.0 TA-02 TEST [NeoForge 1.21.1].jar` + SS-21 1.8.0 NeoForge beside it.
+- **Next**: Adam's game test; then Fable's in-game film (a Part 2 prompt, contract = QuasarJetsFilm's 4 entry points + QuasarCast); open: players carried (config, off). Then the 6 ports (with the 1.0.1 fixes and Fable's P2), **only once TA-02 is tested and polished on the main version (NeoForge 1.21.1) until Adam says it's good** (Adam, 2026-11-16: "FIRST we make the main one (usually neoforge 1.21.1) we test it and polish it and make sure its good, then we make other mod loader jars"); then the other loaders' jars, then CurseForge. Fable queue after: SA-04B, SA-03A Roche.
+
+### >>> RESUME HERE (2026-11-15 ~14:30, Adam's PC): Codex's test is done; its fixes go to the next update <<<
+
+- **Codex finished all 8 runs** (Adam: "its done"; `..\codex tests\REPORT.md`, 14:16; contact sheets per build in
+  `..\codex tests\screenshots\<nn>-<build>\film-contact-sheet.jpg`):
+  - **Works on Fabric 26.3, 1.21.11, 1.21.1, 1.20.1, Forge 1.21.1 and NeoForge 1.20.1 (on retry)**: devour, the ready
+    panel, the cast, the whole film, the return on a morning ~34.5 s after the cast, educational mode, films off with
+    the countdown card; no warnings or errors of ours. NeoForge 1.21.1: load check only (Adam played it before).
+  - **All six marked FAIL for one bug: the clipped warning.** `LastLight.cast`'s `deny(...)` "Nothing to evaporate
+    yet: set TON618's Scale to ∞ and use it first, then cast Last Light in the dark" (~100 characters) goes through
+    `SkillApi.deny` to the vanilla action bar, one line; at 1280×720 (GUI scale 3) only ~70 fit. Same line on all 7
+    branches (`LastLight.java:64`; `:65` on fabric-1.21.11 and fabric-26.3).
+  - **Forge 1.20.1 crashed** twice in TON 618's dark (the second time on the loading screen), before Last Light ran: a
+    native access violation in Windows' `d3d11.dll` (offset 0x1969e1), no Minecraft crash report. NeoForge 1.20.1 with
+    the same jar crashed the same way once, then ran everything. Medal's hook DLL (Adam's clip recorder) was loaded in
+    all three. Not shown to be ours.
+  - Seen, not failures: Minecraft's movement-tutorial toast stays over the film (brand-new games only); the early hand
+    glow, floor ring and outgoing floor wave (~4.5-8.6 s) are faint on **every** version, NeoForge too (so not a port
+    bug; the rest of the film matches on all).
+- **Adam's answers (2026-11-15, clickable)**:
+  - the warning: **"fix this next update, add it to the list"** (1.0.0 ships as it is). Texts offered: "Not yet: set
+    TON618's Scale to ∞ and use it first" (50 characters, recommended) or "Not yet: TON618 must devour the world
+    first"; ask which when doing it.
+  - the 1.20.1 crash: **"idk decide later"**. Options given: retest Forge 1.20.1 with Medal closed (then TON 618 alone
+    if it still crashes), or ship anyway.
+  - the toast: **"hide but on later version"**: clear Minecraft's toasts when the film starts, on all 7 (the toast
+    API differs on 1.21.11/26.3).
+  - the faint early glow: **"idk lets do it later tho and u decide"**. Opus's call: in the next update Fable checks
+    those shots against the previz's tick table (`previz\NOTES.md`) and fixes them in its own film files
+    (`client/film/`, `shaders/film/`); Opus changes nothing there.
+- **The next update's list**: the warning text; hide toasts in the film; Fable's look at the early glow; the 1.20.1
+  crash decision; real film music; TA-02 · Quasar Jets (only with SS-21 Quasar); Last Light's in-game icon in the
+  pixel style.
+- **Building on this PC**: JDK 21 at `C:\Program Files\Eclipse Adoptium\jdk-21.0.11.10-hotspot`; Gradle-provisioned
+  JDK 25 and 17 in `C:\Users\adam_\.gradle\jdks\` (`eclipse_adoptium-25-amd64-windows.2`, `-17-...`; Loom needs a
+  Java 25 JVM), so all 7 branches can build here. This repo has `dev/publish` but no `dev/ci`. Nothing built here yet.
+- **The 7 branches are PUSHED** (Adam, 2026-11-15, clickable: "Yes, push branches"; checked first: GitHub's `main`
+  `43b0e14` was an ancestor, every new commit by the noreply address, no secrets or big files, no jars but Gradle's
+  wrapper). `main` `43b0e14..0ca0beb`; new on GitHub: forge-1.21.1 `85b8dd7`, forge-1.20.1 `3b5e2e8`, fabric-1.21.1
+  `d725beb`, fabric-1.20.1 `953edeb`, fabric-1.21.11 `87c6cea`, fabric-26.3 `ce7f85f`. Commits after `0ca0beb` (this
+  file) are local until the next push.
+- **v1.0.0 RELEASED ON GITHUB, all 7** (Adam, 2026-11-15: "Yes, make the release"; clickable "Release all 7"):
+  one release per branch, like the SA Series: tags `v1.0.0` (main, **Latest**), `v1.0.0+forge-1.21.1`,
+  `v1.0.0+forge-1.20.1`, `v1.0.0+fabric-1.21.1`, `v1.0.0+fabric-1.20.1`, `v1.0.0+fabric-1.21.11`,
+  `v1.0.0+fabric-26.3`, each at its branch head on GitHub, titled `TON 618 Addition 1.0.0 [<Loader> <MC>]`, its jar
+  attached (asset label = the jar's name). Jars = the VM's 2026-11-14 builds, checked before: each built after its
+  branch's last code commit, resources and class counts match the branch. Release files in the project folder's
+  `releases\1.0.0\` (`jars\`, `changelogs\<branch>.md` = `dev/publish/changelog-1.0.0.md` with {MC} {LOADER} {ALSO}
+  {FABRIC_API} filled: forge-1.20.1 ALSO " (also runs on NeoForge 1.20.1)", Fabric ", plus **Fabric API**").
+- **The Forge 1.20.1 crash, looked into (Adam, 2026-11-15: "ideally try to make a quick fix for forge so it works and
+  oesnt crash, then we publish it on curseforge")**: not our code. Windows' crash reports
+  (`C:\ProgramData\Microsoft\Windows\WER\ReportArchive\AppCrash_javaw*`): all three = `d3d11.dll` c0000005 at
+  0x1969e1, Mojang's Java 17 in Codex's Prism, `medal-hook64-v2.dll` loaded each time; the Forge retry died on the
+  **loading screen** (log ends at the texture atlases, before any world), and Fabric 1.20.1 on the same Java never
+  crashed: so likely Medal's DXGI hook with Forge/NeoForge 1.20.1's early loading window (`fmlearlywindow`), not
+  verified. (Adam's own Modrinth games crashed on 11-11 and 11-13 in `OpenAL.dll`, c0000409: unrelated, sound.)
+  **Adam (clickable): "Publish + known-issue note"**: the Forge 1.20.1 changelog (and its GitHub release, edited)
+  ends with a "Known issue" section: a `d3d11.dll` crash with no crash report is the graphics side, seen with Medal;
+  close screen recorders/overlays or set `earlyWindowControl = false` in `config/fml.toml`. Use it on CurseForge too.
+- **ON CURSEFORGE (2026-11-15 ~15:30)**: project **TON 618 Addition, id 1807506**
+  (https://authors.curseforge.com/#/projects/1807506), made in Adam's Chrome (he was already signed in). Adam's
+  clickable picks: "Yes, start CurseForge", distribution **"Allow 3rd party"**, "Yes, create it", "Yes, add it" (the
+  NeoForge file) and **"Yes, add all 6"** (the rest without asking each). Settings: class Mods, main category Addons +
+  Magic + Technology, comments on, license All Rights Reserved, logo `dev/publish/project-icon.png`, summary
+  `dev/publish/summary.txt` (235/256), description = `dev/publish/curseforge-description.md` (+ one "Known issue,
+  Forge and NeoForge 1.20.1" bullet under More, also in the repo copy now), social links as his profile prefilled
+  them. **Files** (all Release, Client + Server, auto-publish once approved, Markdown changelogs from
+  `releases\1.0.0\changelogs\`; TON 618 + Rimulib required, The Shooting Star [Demo] optional, + Fabric API required on
+  the four Fabric files): 9629847 NeoForge 1.21.1 (Java 21), 9629865 Forge 1.21.1 (Java 21), 9629873 Forge 1.20.1
+  (Forge + NeoForge, Java 17, with the known-issue section), 9629885 Fabric 1.21.1 (Java 21), 9629891 Fabric 1.20.1
+  (Java 17), 9629903 Fabric 1.21.11 (Java 21), 9629912 Fabric 26.3 (Java 25). Checked through
+  `/_api/project-files/1807506/files/<id>`: names, versions, Release, changelogType 5 with its lines and headings.
+  **Status then: the project waits for CurseForge's moderators** ("Until approved by a Moderator, the project will not
+  be visible"); the files were Processing.
+- **How the CurseForge forms were driven this time** (for next time): the project wizard's description is TinyMCE 6
+  (`tinymce.activeEditor.setContent(html)`); a file upload = inject an `<input type=file>`, fill it with the
+  extension's file_upload (only from this session's folders: copied to its scratchpad), then dispatch
+  dragenter/dragover/drop on `div.css-1x73roo`; the file form copies env/loader/Java/MC from the newest file but no
+  relations; MUI chips cleared one at a time (re-query after each delete); the changelog: switch the mode select to
+  Markdown first (it comes up WYSIWYG after some files), then set `textarea.mde-text` with the native setter + input
+  event; relations through the "Add related project" dialog (search by name; ids don't search), each row's MUI select
+  opened with a mousedown.
+- **Last Light polish DONE by Fable (2026-11-15), committed `27e90b7` on `main`, not seen in a game yet**: the early
+  hand glow, ring and wave weren't faint, **TON 618's post pass painted them out in the dark** (its floor is invisible,
+  so everything but players counts as sky); the film now draws them at `AFTER_LEVEL` on NeoForge, shot 2 a little
+  looser, the light stronger; toasts cleared at the film's start and held back during it (`ToastAddEvent`). Details:
+  `previz/HANDOVER.md` "Polish (2026-11)", `previz/polish-check/` (Fable's preview page). Test jar
+  `C:\Users\adam_\Documents\TON 618 Addition\test builds\2026-11-15 Last Light polish\TON 618 Addition 1.0.1 polish TEST
+  [NeoForge 1.21.1].jar` (version inside still 1.0.0: bump for the update). **For the ports**: Fable's proposal **P2**
+  (`reviews/fable/PROPOSALS.md`): Fabric has no hook after the level render, so the Fabric branches need a mixin on
+  `GameRenderer.renderLevel` after `LevelRenderer.renderLevel(...)` calling the film's dark draw (Adam picks).
+- **Next Fable job: TA-02 · Quasar Jets previz**, prompt `prompts/FABLE-TA02-QUASAR-JETS-PREVIZ-PROMPT.md` (Fable asks
+  Adam the open design points first: when it can be cast, what it does to the world, how it differs from SS-21's
+  strike, length). Not started yet: a session in this folder can only be started from Adam's own turn.
+- **Fable jobs (2026-11-15)**: the Last Light polish ran
+  ([Fable: Last Light film polish](#local_22632a54-fabf-4609-a051-0906500bfd9b), `prompts/FABLE-LAST-LIGHT-POLISH-PROMPT.md`:
+  the faint early glow + toasts hidden during the film; film files only, no git: Opus commits and ports it). Next in
+  line, one at a time: TA-02 · Quasar Jets previz (then the SA Series' SA-04B and SA-03 previz).
+- **Write-down (Adam, 2026-11-15: "add the mod icon to the mod itself in the metadata so the icon shows when its
+  installed in the downloaded mods ui in the instance")**: **TON 618 Addition ships no mod icon** (checked: no
+  `logoFile`/`"icon"` on any of the 7 branches). For the next update, on all 7: copy `dev/publish/project-icon.png`
+  (256x256 pixel art) to `src/main/resources/ton618_addition_icon.png`; `logoFile = "ton618_addition_icon.png"` in
+  `neoforge.mods.toml` (main) / `mods.toml` (Forge branches), `"icon": "ton618_addition_icon.png"` in
+  `fabric.mod.json` (Fabric branches). (The SA Series already has it on all 7.)
+- **Write-down (Adam, 2026-11-15)**: the CurseForge **Source** link is missing: add
+  https://github.com/Adamko-10/ton618-addition; and the description gets the rework all his projects get (better
+  look, links to his other projects, roadmap, Discord, emojis): the SA Series' CLAUDE.md has the list.
+- **Next**: wait for CurseForge's approval (then check the public page and that the files published); then the next
+  update's list above. Local commits after `0ca0beb` (notes, the description's known-issue line) aren't pushed.
+
+### RESUME HERE (2026-11-15 ~13:45, Adam's PC): set up here; Codex has tested 2 of the 8 runs
+
+- **This repo is on Adam's PC now**: `C:\Users\adam_\Documents\TON 618 Addition\ton 618 addition\`, cloned from
+  `ton 618 addition (all branches).bundle` (in `C:\Users\adam_\Documents\Move to PC (2026-11-15)\`). Local branches:
+  `main` (`10e125a`) and the six ports, forge-1.21.1 `85b8dd7`, forge-1.20.1 `3b5e2e8`, fabric-1.21.1 `d725beb`,
+  fabric-1.20.1 `953edeb`, fabric-1.21.11 `87c6cea`, fabric-26.3 `ce7f85f`. `origin` =
+  https://github.com/Adamko-10/ton618-addition.git (GitHub has an older `main` only; the local `origin/<port>` refs came
+  from the bundle and don't exist there). Git identity `Adamko-10 <Adamko-10@users.noreply.github.com>`. **Nothing
+  pushed.** No `ports\` worktrees yet: make them when a fix needs cherry-picking (`git worktree add ports/<branch>
+  <branch>`; the branches already exist).
+- **`libs\` filled from jars already on this PC, no download** (Adam, 2026-11-15, clickable: "Copy local, ask for
+  rest"): `libs\ton618-1.1.0-neoforge.jar` (9562579) + `libs\rimulib-1.2.3-neoforge.jar` (9562438) from
+  `..\codex tests\downloads\`; `libs\ports\` = TON 618 Forge (9562567) + Fabric (9562551), RimuLib Forge (9562444) +
+  Fabric (`rimulib-1.2.3-fabric.jar`, id `rimulib_multi` 1.2.3, from Codex's Prism instance `01-Fabric-26.3\mods\`);
+  `libs\extra\the-shooting-star-demo-1.5.2-neoforge.jar` (from the SA Series' `libs\`, for the dev runs). Not built
+  here yet (JDK 21 / Java 25 toolchains on this PC unchecked).
+- **Adam, 2026-11-15** (clickable): **"Codex finishes first"**: he resumes Codex for the other six runs; then one fix
+  round for everything it found.
+- **Test jars**: the seven 1.0.0 jars are in `C:\Users\adam_\Documents\TON 618 Addition\test builds\2026-11-14 TON 618
+  Addition 1.0.0 all loaders\`.
+- **Codex's test already ran partly on this PC** (2026-11-15 00:38-01:35, `..\codex tests\REPORT.md`, 8 portable Prism
+  instances in `..\codex tests\Prism\`, 723 screenshots):
+  - **Fabric 26.3 and Fabric 1.21.11: everything works** (load, H menu, devour, cast, the whole film, the return in
+    the morning ~34 s after the cast, educational mode, films off with the countdown card, no errors of ours). Marked
+    FAIL for one bug only: **the magenta lock warning** (casting Last Light outside the dark, in the overworld)
+    **runs off both screen edges at 1280×720**.
+  - Also seen (not failures): the vanilla movement-tutorial toast stays on top of the film (top right, also through
+    the white flash; F1 hides it); **the early hand glow, floor ring and outgoing floor wave (4.5-8.6 s) were
+    "indistinct"** in the captures on both (worth a look: those are world effects, drawn by the rewritten pipelines
+    on these two versions).
+  - **Not run yet**: Forge 1.20.1, NeoForge 1.20.1, Forge 1.21.1, Fabric 1.21.1, Fabric 1.20.1, NeoForge 1.21.1
+    (Codex waits for Adam's go-ahead for each launch; it stopped while Forge 1.20.1 was launching).
+- **Next**: Codex finishes the other six runs, then fix everything it found in one round on `main` first,
+  cherry-picked to the ports (§8a); then, each with Adam's yes: push the branches, the v1.0.0 GitHub release, the
+  CurseForge project and files (drafts already approved).
+
+### RESUME HERE (2026-11-15, moving to Adam's PC): one fresh session takes over both projects
+
+- **Adam, 2026-11-15**: "lets finalize moving this to a fresh session" (clickable: **"On my PC"**, **"Both projects"**):
+  one fresh session on his PC carries on the SA Series and this addon. Its prompt and everything it needs are in
+  `C:\Users\User\Downloads\Move to PC (2026-11-15).zip` (made by the SA Series session): this repo as a git bundle
+  with every branch (`main` + the six port branches; the `ports/` worktrees and `libs/` jars are not in it), the
+  seven 1.0.0 test jars, `Adam's notes\`, the Discord emoji icons and `HANDOFF PROMPT (2026-11-15).md`.
+- **Planned place on the PC**: the project folder `C:\Users\adam_\Documents\TON 618 Addition\` (the Codex test prompt
+  already uses it), with this repo cloned from the bundle as its `ton 618 addition\` subfolder; `origin` set back to
+  https://github.com/Adamko-10/ton618-addition.git. That GitHub repo has an older `main` only (the local `main` is
+  23 commits ahead; no port branch there): push nothing until Adam says so.
+- After the move, this VM folder is the older copy: don't work here unless Adam comes back to the VM (then bring the
+  PC's commits back with a bundle, as the SA Series does).
+
+### RESUME HERE (2026-11-14 ~21:45, the VM): all 7 ports done; drafts OK'd; new pixel icon; next Adam's test
+
+- **Adam on the CurseForge drafts (2026-11-14): "it looks good"** (summary, description, changelog: approved).
+- **New project icon** (Adam: "make the icon pixel styled like shooting star addition SA series"):
+  `tools/icons/ModIcon.java` (Java port of the SA Series' `art/make_icon.js` style: 64×64 pixel art at 4×, 256×256
+  like SA's icon) → `dev/publish/project-icon.png`: TON618 (shadow, photon ring, its disk bent over the top), gold
+  Hawking sparks escaping, blue partners falling in, a sunrise on Earth's limb, the SA icon's "Addon" tag and a
+  **gold "TA" badge** (SA's is blue). Shown to Adam (no changes asked).
+- **All of Adam's info in one place** (Adam, 2026-11-14: "take all info i told other sub conversations to write down
+  ... put it all into one path or just file"; clickable: "Everything", "Summary + your words", "Desktop, outside
+  repos"): `C:\Users\User\Desktop\Adam's notes\ALL YOUR INFO (2026-11-14).md` (Part 1 a summary by topic, Part 2 every
+  message he typed to the 3 VM sessions word for word with his clicks, Part 3 his words as the SA Series notes quote
+  them) + `full notes\` (copies of his global rules, both CLAUDE.md files, BRIEF, Fable's previz notes, SA's
+  NEXT-SKILLS and SA-05/06 plan). Outside every repo on purpose (names Hamza, his folders): never commit or upload it.
+- **Codex tests the jars on Adam's PC** (Adam, 2026-11-14: "make a prompt for codex to test for me"; clickable: "My own PC",
+  "Real game, own folder"): `prompts/CODEX-TEST-PROMPT.md` (Codex sets up its own test games in
+  `C:\Users\adam_\Documents\TON 618 Addition\codex tests\`, never his Modrinth profiles; asks before installs,
+  downloads and each run; screenshots the film at set times; writes `codex tests\REPORT.md`). Adam copies the 7 jars to
+  `C:\Users\adam_\Documents\TON 618 Addition\test builds\2026-11-14 TON 618 Addition 1.0.0 all loaders\`. When the
+  report comes back: fix what it finds on `main` first and cherry-pick (§8a).
+- **For later** (Adam: "for later lets change the icon in game aswell like the one that last light uses"): redo Last
+  Light's in-game skill icon (the two `last_light.png` sprites, 256×128, now from `tools/icons/LastLightIcon.java`) in
+  the same pixel style: **in the next update** (Adam, 2026-11-14, clickable: "Next update"; 1.0.0 keeps the current
+  one). Also possible: a mod-list logo (we ship none; SA has `shooting_star_addition_icon.png`).
+
+- **`fabric-26.3` done** (`ce7f85f`, built + dev server OK, film on 26.3's renderpearl pipelines; §8a). All 7 branches
+  are built; none pushed. **Test jars** (all 7 rebuilt from each branch's commit, 2026-11-14 ~21:20):
+  `C:\Users\User\Desktop\test builds\2026-11-14 TON 618 Addition 1.0.0 all loaders\TON 618 Addition 1.0.0 [<Loader>
+  <MC>].jar` (NeoForge 1.21.1, Forge 1.21.1, Forge 1.20.1 = also NeoForge 1.20.1, Fabric 1.21.1, 1.20.1, 1.21.11,
+  26.3; not in Downloads: the SA Series session copies jars there). Next: Adam's in-game test (above all Fabric
+  1.21.11 and 26.3, whose film drawing was rewritten and never seen on a GPU), then re-show the CurseForge drafts
+  and ask (clickable) before pushing the branches, the v1.0.0 GitHub release and CurseForge.
+- **Port status** (§8a has the how): `main` 1.0.0 (`ce64b00`: version bump + HUD fix without MixinExtras) ·
+  **`forge-1.21.1` built + dev server OK** ("Last Light joined TON 618's menu ... skill #2", worktree
+  `ports/forge-1.21.1`, commit `85b8dd7`) · **`forge-1.20.1` built** (also NeoForge 1.20.1; `ports/forge-1.20.1`,
+  `3b5e2e8`; jar checked: SRG names, refmap, `MixinConfigs`; **no dev run**: RimuLib's 1.20.1 mixins name SRG targets
+  directly, which the dev game can't remap, as the SA Series found) · **`fabric-1.21.1` built + dev server OK** (Loom on
+  the VM's JDK 25, "Last Light joined TON 618's menu", `ports/fabric-1.21.1`, `d725beb`) · **`fabric-1.20.1` built +
+  dev server OK** (`ports/fabric-1.20.1`, `953edeb`) · **`fabric-1.21.11` built + dev server OK, film on render pipelines**
+  (`ports/fabric-1.21.11`, `87c6cea`; never drawn on a GPU: no OpenGL on the VM) · **`fabric-26.3` built + dev server
+  OK** (`ports/fabric-26.3`, `ce7f85f`; never drawn on a GPU either) · none pushed.
+- **1.21.11 and 26.3 (assessed 2026-11-14)**: Minecraft's new render pipelines (1.21.5+): no `ShaderInstance`, so the
+  film's `FilmGl` (one shader, blend/depth set by `RenderSystem` per call) must become `RenderPipeline`s (one per blend
+  and depth mode, uniform blocks in the GLSL), as the SA Series did (`client/render/HalleyPipelines` 153 lines,
+  `DynamicMesh` 77, on its `fabric-1.21.11` branch: Fabric API 0.141.6+1.21.11, Loom 1.18.4). 26.3 adds
+  `Identifier`, RimuLib's `UiApi` on `GuiGraphicsExtractor` (the plate, the notice, the film's HUD), more (SA's
+  `fabric-26.3`: Fabric API 0.162.0+26.3, Loom 1.18-SNAPSHOT). Adam (2026-11-14, told ~4-8 h and a large share of usage): **"Full port, film and all"**.
+- **JDK 25 is already on the VM** as a Gradle-provisioned toolchain (`~/.gradle/jdks/eclipse_adoptium-25-amd64-windows.2`,
+  from earlier SA builds; also JDK 8, no JDK 17): the Fabric 1.21.11/26.3 builds may run locally through a Java 25
+  toolchain, without CI. 1.20.1 is compiled by JDK 21 with `options.release = 17` (nothing installed).
+- Adam (2026-11-14): **"Yes, accept it"** for Minecraft's EULA on the VM's dev test servers (`run/eula.txt`,
+  git-ignored, per port folder): Forge's dev server won't load mods without it.
+- Jars for the ports (Adam's OK, 2026-11-14, ~26 MB): `libs/ports/` holds TON 618 1.1.0 Forge (9562567) + Fabric
+  (9562551) and RimuLib 1.2.3 Forge (9562444) + Fabric (9562450); each worktree copies its loader's two into its own
+  `libs/`. `.gitignore` now ignores `libs/**/*.jar` and `ports/`.
+- Not re-shown to Adam yet: the cross-referenced CurseForge drafts (he said "just cross reference with shooting star
+  addition SA series", done).
+
+### Before that (2026-11-14 evening): release picks; repo public
 
 - **Adam tested the cast fix: "it works, i say we post it"** (via the SA Series session). NeoForge 1.21.1 (0.1.0 cast
   fix, `0e8c7e1`) is approved.
@@ -26,12 +634,13 @@ first** (Adam's brief, his own words at its end), then this file. Fable's part: 
   CI**: "Yes, wip pushes are fine" (`wip/*` branches and CI draft releases on this repo; real branches, tags,
   releases and CurseForge still wait for his yes each time).
 - **Release drafts** in `dev/publish/` (as the SA Series): `curseforge-description.md`, `summary.txt` (235 chars),
-  `changelog-1.0.0.md` (template: `{MC}`, `{LOADER}`, `{ALSO}`, `{FABRIC_API}`), `project-icon.png` (400×400, from
-  `tools/icons/LastLightIcon.java --size=400x400`). Adam: "just cross reference with shooting star addition SA
+  `changelog-1.0.0.md` (template: `{MC}`, `{LOADER}`, `{ALSO}`, `{FABRIC_API}`), `project-icon.png` (256×256 pixel
+  art from `tools/icons/ModIcon.java` since 2026-11-14 ~21:45; first a 400×400 glow from `LastLightIcon.java`). Adam: "just cross reference with shooting star addition SA
   series": done against the SA repo copy and its **live** page (summary starts with the name and ends "Needs
   RimuLib."; header lines; builds list; "The H menu" like SA's "The remote's menu"; "More"; credits and the
   distribution line word for word). Categories to pick on the site: **Addons, Magic, Technology** (the SA page's).
-  Not yet re-shown to Adam after the cross-reference.
+  Re-shown to Adam 2026-11-14 ~21:30 (two lines fixed for the ports: the Config screen is NeoForge only; TON 618
+  hides the HUD "on most versions", not 26.3); Adam: "it looks good".
 - **7 jars, not 8** (2026-11-14, from the SA precedent): SA's **Forge 1.20.1 jar also runs on NeoForge 1.20.1**
   (NeoForge 1.20.1 is the Forge 47.1 fork), so no `neoforge-1.20.1` branch. Branches: `main` (NeoForge 1.21.1),
   `forge-1.21.1`, `forge-1.20.1` (also NeoForge 1.20.1), `fabric-1.21.1`, `fabric-1.20.1`, `fabric-1.21.11`,
@@ -194,13 +803,16 @@ first** (Adam's brief, his own words at its end), then this file. Fable's part: 
 - Next: Adam's test results; Fable's film (its proposals in `reviews\fable\PROPOSALS.md`); the open questions in §3
   when they matter; then TA-02 · Quasar Jets (§10).
 
-## 0. Rules (Adam's; also in `C:\Users\User\.claude\CLAUDE.md`)
+## 0. Rules (Adam's; also in his personal rules, `C:\Users\adam_\.claude\CLAUDE.md`)
+
+2026-11-16: his personal rules now carry the general rules of every project ("Every mod project": git, releases,
+CurseForge, other people's assets, the main version first, test jars in his Modrinth instance); they apply here too.
 
 - Short replies, answer first (he skims). **Every open question as clickable choices** (AskUserQuestion); re-ask
   anything he left unanswered.
 - After coding: a list of **what he needs to do**; for testing: a list of **what to test**.
 - Budget-conscious: say what a big step costs (time, usage, money) before it; don't over-test (he tests in game).
-- **Never push, publish or upload without asking.** No GitHub repo yet. Commit as
+- **Never push, publish or upload without asking.** GitHub: https://github.com/Adamko-10/ton618-addition. Commit as
   `Adamko-10 <Adamko-10@users.noreply.github.com>` (set in this repo's git config) with the session's Co-Authored-By
   line.
 - **Never commit or ship other people's jars, code or assets** (`libs/*.jar` is git-ignored). Decompile only into a
@@ -208,7 +820,8 @@ first** (Adam's brief, his own words at its end), then this file. Fable's part: 
   Quasar's: make our own. NASA / ESO / Solar System Scope imagery is fine with credit (download from the source, ask
   first: file, source, size). **No Bedrock ports.** Credit TON 618 and RimuLib as required dependencies (The Shooting
   Star and SS-21 Quasar as optional ones).
-- New features on **NeoForge 1.21.1 first** (Adam plays it); other loaders only after he tests and approves.
+- New features **and fixes** on **NeoForge 1.21.1 first** (Adam plays it), tested and polished there until he says
+  it's good; only then the other loaders' jars, then CurseForge (his personal rules).
 - **Fable 5.2 makes the previz and the in-game film** (Adam runs it himself). Fable writes only in the film's own files
   (§7) and in `previz\`; anything else it wants goes to `reviews\fable\PROPOSALS.md`; bugs it sees go to
   `reviews\fable\FINDINGS.md`. **Opus builds everything else and applies only the proposals Adam picks.** Fable never
@@ -221,8 +834,9 @@ first** (Adam's brief, his own words at its end), then this file. Fable's part: 
   2026-11-14: copying 0.1.0 to `C:\Users\User\Downloads\` was blocked by the session's permission check; it is only in
   `test builds\` (Adam told).
 - Update this file at the end of every turn and commit it on its own.
-- Adam plays on his own PC (Modrinth, NeoForge 1.21.1), not the VM: test jars go in
-  `C:\Users\User\Desktop\test builds\<date> <what>\`; tell him the path.
+- Adam plays on his own PC (Modrinth, NeoForge 1.21.1): test jars go in `..\test builds\<date> <what>\` **and into
+  his Modrinth instance** `D:\ModrinthApp\profiles\NeoForge 1.21.1 (1)\mods` (older copies `.disabled`, never while
+  he plays); tell him the path. (On the VM: `C:\Users\User\Desktop\test builds\` and Downloads.)
 
 ## 1. What this is
 
@@ -402,6 +1016,63 @@ apart, told to Adam.
   1.1.0); `./gradlew --no-daemon runClient` opens a dev game with both (`runServer` for a server). Test jar to
   `C:\Users\User\Desktop\test builds\<date> TON 618 film\` for Adam.
 
+## 7b. For Fable: TA-02's film (Quasar Jets)
+
+**Status 2026-11-16: the real film is BUILT by Fable, not seen in a game** (replaced Opus's placeholder; committed by
+Opus). `client/quasarfilm/`: `QuasarJetsFilm` + `JetScript` (timings; captions/labels retimed longer, key ticks kept),
+`JetCamera` (framing), `JetSpace`, `JetHud`, `JetGl`, `JetSound`, `JetSynth` (soundtrack in code: no `sounds.json`, no
+sound files or textures); `shaders/quasarfilm/`. Everything is drawn in the HUD pass (no in-world drawing: Fabric
+ports need no P2 hook). Details and "To test in the game": `previz/quasar-jets/HANDOVER.md` "Part 2". Test jar:
+`..\test builds\2026-11-16 TA-02 film\TON 618 Addition 1.1.0 TA-02 film TEST [NeoForge 1.21.1].jar` (+ SS-21 1.8.0).
+**P3 and P4 applied (Adam: "Yes, build both", 2026-11-16; `2cb94f6`)**: `QuasarJets.sounds()` plays vanilla
+sounds at the mark for everyone in range (SoundSource.BLOCKS, 16 x volume blocks): BEACON_ACTIVATE at SWEEP,
+WARDEN_SONIC_CHARGE at 767, WARDEN_SONIC_BOOM + GENERIC_EXPLODE at LANDS, RESPAWN_ANCHOR_CHARGE rising at 830/845/860/875,
+GENERIC_EXPLODE + LIGHTNING_BOLT_THUNDER at POP, AMETHYST_CLUSTER_PLACE per crystal; `QuasarClient.backOnDay(star)`
+for the film. **The film side is done too** (Fable; committed): `JetSynth` no longer copies those cues (keeps the pickup pops,
+drone, music); the last reticle says "MISSING · back in N nights" ("back tomorrow night" for 1; "FED TO TON618" when
+the server keeps no star out). Test jar rebuilt in place (holds both sides). Not heard or seen in a game. Known limits: the caster isn't posed in shot 8; films off (J) = world effects only; the last
+"MISSING" text is on ~2.6 s: **the ending is 2 s longer** (Adam's pick, 2026-11-16): the film ends at tick 996
+(`JetScript.END`; `QuasarClock.END` stays 960, no world effect moved). It fits because `QuasarClient` keeps the strike
+until `QuasarClock.END + 40` = 1000: never shorten that without bringing the film's END down too. Test jar rebuilt in place.
+Earlier: READY for Part 2 when TA-02 was built on `main` (1.1.0, `63a6add`) with a placeholder film by Opus.
+
+- **The film's own files (Fable's alone; write only here):**
+  - Java package `dev.adamko.ton618addition.client.quasarfilm` (`src/main/java/dev/adamko/ton618addition/client/quasarfilm/`).
+    It holds `QuasarJetsFilm.java`, a **placeholder by Opus** (letterbox bars, each shot's words, the title card, the
+    blue-white flood): replace it freely, keeping the four entry points below;
+  - shaders `src/main/resources/assets/ton618_addition/shaders/quasarfilm/`, textures `.../textures/quasarfilm/`, film
+    sounds `.../sounds/quasarfilm/` (or made in code, as Last Light's `FilmSynth`; `sounds.json` entries by proposal).
+  Anything else: a proposal in `reviews/fable/PROPOSALS.md`; bugs: `reviews/fable/FINDINGS.md`.
+- **The contract (propose changes, don't make them):**
+  - `QuasarJetsFilm.init(IEventBus modBus)`: once, from `client/quasar/QuasarClient.init` (clients only).
+  - `QuasarJetsFilm.start(QuasarCast cast)`: the strike reached this client **and it gets the film** (the caster and
+    players within ~128 blocks of the caster or the mark; Adam: "Caster + nearby players"). Everyone else, and anyone
+    arriving mid-way, gets only the world effects. Start from `cast.tick(partial)`.
+  - `QuasarJetsFilm.stop()`: leaving the server, or 40 ticks after END. `QuasarJetsFilm.active()`: it is running.
+- **The clock**: `quasar/QuasarClock` (Opus's), the previz's ticks: MARK 0 · LOCK 38 · ENGINE 80 · PUSH 150 · FLIGHT 200
+  · ARRIVE 330 · SHRED 350 · IGNITE 440 · JETS 530 · TURN 610 · FLOOD 665 · DAY 680 · SWEEP 745 · LANDS 795 · LOBE 830 ·
+  MELT 842 · THROW 846 · POP 890 · NIGHT 905 · END 960; helpers `ramp`, `beamHead(t)`, `lobe(t)`, `day(t)`. The server
+  times every world effect by them, so the film must keep them (ask before moving one).
+- **What the film can read** (`client/quasar/QuasarCast`, Opus's): `tick(partial)`, `tick()`, `star()` (name, `type()`:
+  `QuasarStars.Type` with `color`, `size`, `swept`, `lobe`, `bowl`, `crystals`, `day`, `label`; `distance()`, `size()`,
+  `mass()`, `direction()` = its fixed sky direction), `starIndex()`, `mark()`, `quasarDirection()` (the second sun's sky
+  direction; the jet comes in along it), `caster()`, `casterUuid()`, `isCaster()`, `castPosition()`, `castYaw()`,
+  `castPitch()`, `offhand()`, `viaStellarRemote()`, `secondSun()`, `film()`, `educational()`.
+  `QuasarClient.current()` returns it anywhere on the client.
+- **Not the film's (Opus's, everyone sees them, the film must not draw them again):** `client/quasar/QuasarRender`
+  (our 8 named stars in the night sky, the second sun's glare, the ground mark, the jet's beam, the radio lobe's dome
+  and its pop ring), `client/mixin/ClientLevelMixin` + `QuasarClient.fog` (the second sun's sky light, colours,
+  clouds, stars, fog), `client/quasar/QuasarReticle` (the lock-on HUD, the pop's flash). The film may propose restyling
+  them (Adam picks).
+- **Adam's notes for the mod version** (on v1): **labels on screen a little longer** (Last Light's 2.4 to 5.9 s are
+  fine; the shortest now are 1.3 to 2.2 s); the **bigger explosion** is done in the world (lobe radii 9/15/24/33, the
+  shot-10 framing must fit them); the second sun ends with the film.
+- **Not in TON 618's dark**: everything is in the overworld, so `AFTER_WEATHER`/`AFTER_LEVEL` drawing works (no post-pass
+  problem as in Last Light's dark).
+- **Building and testing**: JDK 21, `./gradlew --no-daemon build`; `libs/extra/` holds The Shooting Star 1.5.2 and
+  SS-21 Quasar 1.8.0 NeoForge (TA-02 only appears with SS-21), so `runClient` has it all. Ask Adam before any game
+  run. Test jar to `C:\Users\adam_\Documents\TON 618 Addition\test builds\<date> TA-02 film\`.
+
 ## 8. Building
 
 Set up 2026-11-14 from the SA Series `main` (ModDevGradle 2.0.x, NeoForge 21.1.248, Parchment 2024.11.17, Gradle
@@ -419,6 +1090,120 @@ machinery (TON 618 needs none: we never name its classes).
   `timeout` on the command did).
 - Release jar name (as the SA Series): `TON 618 Addition <version> [NeoForge 1.21.1].jar`.
 - No Node, ffmpeg or JDK 25 on the VM. Other loaders only after Adam approves (§0).
+
+## 8a. The ports (one branch per loader, like the SA Series; Adam 2026-11-14)
+
+- **Layout**: `main` = NeoForge 1.21.1. Each other branch has a worktree in `ports/<branch>/` (git-ignored inside the
+  project folder): `git worktree add -b <branch> ports/<branch> main`. **Never `git stash`** (shared between
+  worktrees). Changes are made on `main` first and cherry-picked; the branches keep their own build files and the
+  loader-specific code below. Commits stay local until pushed: `wip/<branch>` pushes for CI are fine (Adam's standing
+  OK); the real branches only with his yes.
+- **Shared on every branch**: RimuLib's public API (`SkillApi`, `NetApi`/`NetClientApi`, `FilmApi`, `UiApi`, `MenuApi`)
+  and a few guarded internals (`WhiteSpace`, `ClientSkills`, `SkillHolder`); networking is RimuLib's, so no loader
+  packets. The HUD fix's `GameRendererMixin` uses plain `@Inject`s (no MixinExtras) for that reason.
+- **forge-1.21.1** (`85b8dd7`, built, dev server OK): from the SA Series' `forge-1.21.1` (ForgeGradle `[7.0.23,8.0)`,
+  Forge 52.1.16, Gradle 9.7.1 wrapper, `official` mappings, `net.minecraftforge.gradle.merge-source-sets=true`,
+  configuration cache off). `mods.toml` (`mandatory = true/false`); mixin config in the jar **manifest**
+  (`MixinConfigs`; Forge 1.21.1 doesn't read `[[mixins]]`) and `--mixin.config` for dev runs; **no Mixin annotation
+  processor** (it failed for want of obfuscation mappings; runtime names are official). Code: `@Mod` constructor takes
+  `FMLJavaModLoadingContext` (`getModEventBus()`, `registerConfig`), `FMLEnvironment.dist`; `MinecraftForge.EVENT_BUS`
+  with typed lambdas (`(TickEvent.ServerTickEvent.Post e) -> ...`) or `addListener(EventPriority, boolean, Class,
+  Consumer)`; `ForgeConfigSpec`; no generic config screen (NeoForge's `ConfigurationScreen` doesn't exist).
+  **Forge 1.21.1 has no `RenderGuiEvent`** (its HUD is layers, `AddGuiOverlayLayersEvent`): `HudRescue.afterGui` calls
+  `LastLightFilm.screen(graphics, partial)` itself every frame (made public), so the film's screen layer draws with
+  or without TON 618's HUD cancel. `RenderLevelStageEvent`: `getPartialTick()` is a float, the view matrix is
+  `getPoseStack()` (a `Matrix4f`, deprecated). Built with JDK 21 locally in ~20 s (first setup ~5 min).
+- **forge-1.20.1** (`3b5e2e8`, built from `forge-1.21.1`; jar also for NeoForge 1.20.1): ModDevGradle
+  `net.neoforged.moddev.legacyforge` 2.0.+ (Forge 1.20.1-47.4.10; `-Pneoforge` builds on NeoForge 1.20.1-47.1.106),
+  Parchment 1.20.1/2023.09.03, Gradle 8.14.3 (SA's wrapper), toolchain 21 + `options.release = 17`; RimuLib and TON 618
+  as `modCompileOnly`/`modRuntimeOnly` `local:` modules from a `flatDir libs` (they ship SRG names); Mixin annotation
+  processor 0.8.5 + `mixin { add sourceSets.main, "ton618_addition.refmap.json"; config ... }`; the branch's
+  `ton618_addition.mixins.json` has `"compatibilityLevel": "JAVA_17"` and `"refmap"`. Code: RimuLib imports
+  `mc1201`; `new ResourceLocation(ns, path)` (deprecated on 47.4, fine); HUD mixins on `Gui.render(GuiGraphics, float)`
+  and `GameRenderer.render(float, long, boolean)`, `HudRescue.afterGui(graphics, float partial)`; `LastLightFx` writes
+  the position as three doubles (no `writeVec3`); Forge 47: no-arg `@Mod` constructor + `FMLJavaModLoadingContext.get()`,
+  `ModLoadingContext.get().registerConfig`, `TickEvent.ServerTickEvent`/`ClientTickEvent` with `phase == END`,
+  `RenderLevelStageEvent.getPoseStack().last().pose()`. Film: `FilmGl.begin/vertex/draw` on 1.20.1's
+  `BufferBuilder` API (`vertex().uv().color().endVertex()`, `end()` → `RenderedBuffer`, release when empty) with four
+  builders of the film's own; `FilmSound`'s `Sound(String, ...)`. **Dev runs fail** in RimuLib's own
+  `ServerTickRelayMixin` (target `m_5705_` named directly; the SA refmap-remap trick doesn't cover configs without a
+  refmap): not run; Adam tests the jar.
+- **fabric-1.21.1** (`d725beb`, built, dev server OK; from `forge-1.21.1`): Fabric Loom **1.18.4 needs a Java 25 JVM
+  to run** (`JAVA_HOME=~/.gradle/jdks/eclipse_adoptium-25-amd64-windows.2`, already on the VM; the code still compiles
+  for 21), loader 0.19.5, Fabric API 0.116.7+1.21.1, Gradle 9.7.1 (SA's wrapper), `loom.officialMojangMappings()`.
+  **Loom remaps mixin targets in the bytecode** (no refmap; checked: `method_3192`/`method_1753`). RimuLib and TON 618:
+  the inner `+mc1.21.1` jars of their Fabric bundles (`META-INF/jars/...`), extracted into the worktree's `libs/`,
+  `modCompileOnly`/`modLocalRuntime`; inner mod ids `rimulib`, `ton618`; RimuLib's Fabric package has **no version
+  tag** (`cyou.rimuru.rimulib.api...`). `fabric.mod.json` (main `Ton618Addition`, client `Ton618AdditionClient`,
+  server `Ton618AdditionServer`; mixins `ton618_addition.mixins.json` + `ton618_addition.fabric.mixins.json`, both
+  client). Joining: like the SA Series, `client/mixin/RimulibClientMixin` (`@Pseudo`, HEAD of
+  `cyou.rimuru.rimulib.client.RimulibFabricClient.onInitializeClient`) calls `Ton618Link.install()` +
+  `Ton618AdditionClient.afterConstruction()`; dedicated servers in the `server` entrypoint; `SERVER_STARTING` too
+  (`install` runs once). Config: the SA Series' `config/ConfigFile` (same file names, sections and keys).
+  Events: `ServerTickEvents.END_SERVER_TICK`, `ServerLifecycleEvents.SERVER_STOPPED`,
+  `ServerEntityWorldChangeEvents.AFTER_PLAYER_CHANGE_WORLD` (package `api.entity.event.v1`),
+  `ServerPlayConnectionEvents.JOIN`, `ClientTickEvents.END_CLIENT_TICK`, `ClientPlayConnectionEvents.DISCONNECT`. Film:
+  `LastLightFilm.init()` (no bus), `CoreShaderRegistrationCallback` with id `ton618_addition:last_light` (**the shader
+  files sit in `shaders/core/` on Fabric**), `WorldRenderEvents.LAST` (`context.camera()`, `positionMatrix()`,
+  `projectionMatrix()`, `tickCounter()`), `ScreenEvents.AFTER_INIT` + `afterRender` for the loading screen's white,
+  `FilmSound` overrides Fabric API's `getAudioStream(SoundBufferLibrary, ResourceLocation, boolean)`.
+- **fabric-1.20.1** (`953edeb`, built, dev server OK): from `fabric-1.21.1` with `forge-1.20.1`'s Minecraft 1.20.1 files
+  (`HudRescue`, the two HUD mixins, `LastLightFx`; RimuLib imports without a tag), `new ResourceLocation`,
+  `Sound(String...)`, FilmGl's 1.20.1 vertex helpers; Fabric API 0.92.6+1.20.1, compiled for Java 17 (release 17,
+  toolchain 21; Loom on JDK 25); mixin configs JAVA_17; Fabric 1.20.1's `WorldRenderContext.tickDelta()` and
+  `matrixStack().last().pose()`; inner `+mc1.20.1` jars.
+- **fabric-1.21.11 plan (2026-11-14, from the SA Series' `fabric-1.21.11`)**: Fabric API 0.141.6+1.21.11, Loom 1.18.4
+  (JDK 25), Java 21; inner `+mc1.21.11` jars. Minecraft 1.21.11: `Identifier` for `ResourceLocation`; GUI recorded
+  then drawn later (`GuiGraphics.pose()` is a 2D `Matrix3x2fStack`: `pushMatrix/translate(x,y)/scale(x,y)/popMatrix`,
+  no `flush()`, `nextStratum()` for layering); the HUD fix needs the frame's own `GuiGraphics` (MixinExtras
+  `@WrapOperation`, bundled by Fabric Loader). The film's drawing moves to render pipelines like SA's
+  `HalleyPipelines` + `DynamicMesh` + `ProximaRender`: one `RenderPipeline` per blend/depth mode (vertex format
+  POSITION_TEX_COLOR, QUADS), uniforms in std140 blocks (`Projection` via `PerspectiveProjectionMatrixBuffer`, and a
+  film block with the view matrix, Mode, Param, Param2 written with `Std140Builder`), meshes uploaded to a GPU buffer
+  (`DynamicMesh`) before a `RenderPass` opens; the space scene (`FilmSpace`) renders into an offscreen texture of its
+  own (colour + depth) and is blitted in the HUD between `nextStratum()` calls (as `ProximaRender.present`); the world
+  effects (`FilmWorld`) draw in passes on the main target's colour and depth. Fable's GLSL is rewritten for the
+  uniform blocks.
+- **fabric-1.21.11** (`87c6cea`): done as planned above. Details: packets `LastLightFx`/`LastLightEnd` are
+  `CustomPacketPayload` records (`TYPE`, `CODEC`; RimuLib 1.21.11's `NetApi.toClient(TYPE, CODEC)`, `canSend(p, TYPE)`,
+  `NetClientApi.receive(TYPE, ...)`); `player.level().getServer()`, `permissions().hasPermission(Permissions.COMMANDS_GAMEMASTER)`,
+  `getGameProfile().name()`, `getBooleanOr`, `createCommandSourceStack()` (already top permission), 2D GUI pose,
+  `net.minecraft.util.Util`, `KeyMapping.matches(new KeyEvent(key, 0, 0))`, `LevelLoadingScreen`. RimuLib 1.21.11
+  draws its menu as a Fabric HUD element (`HudElementRegistry.addLast` → `WhiteSpace.render`), inside `Gui.render`,
+  so the rescue still draws it when TON 618 cuts the HUD (no `beforeHud()` on this version). `GameRendererMixin` =
+  MixinExtras `@WrapOperation` (checked: 1.21.11's `GameRenderer.render(DeltaTracker, boolean)` calls
+  `Gui.render(GuiGraphics, DeltaTracker)`). Film: `FilmGl` rewritten (Fable's helper API kept; pipelines
+  `pipeline/last_light_<blend>_<depth>`, `FilmParams` std140 block = view mat4 + Mode/Param/Param2, `Projection` from
+  `PerspectiveProjectionMatrixBuffer` for the space scene or `RenderSystem.getProjectionMatrixBuffer()` in the world),
+  `FilmMesh` (SA's `DynamicMesh`), the space scene in its own texture (`ton618_addition:film_scene`) blitted by
+  `FilmGl.present` in the HUD; world effects at `WorldRenderEvents.END_MAIN` (camera from the game renderer, view =
+  its rotation, world quads already camera-relative); shader `#version 330` with the blocks, `last_light.json` gone.
+- **fabric-26.3** (`ce7f85f`, 2026-11-14 ~21:15, built + dev server OK: "Last Light joined TON 618's menu
+  (ton618:ton_618) as skill #2"; worktree `ports/fabric-26.3` from `fabric-1.21.11`). Build: plugin
+  `net.fabricmc.fabric-loom` 1.18-SNAPSHOT, Fabric API 0.162.0+26.3, **no mappings** and plain
+  `implementation`/`compileOnly`/`localRuntime` (26.x is unobfuscated), Java 25 release + toolchain, mixin config
+  JAVA_25, inner `+mc26.3` jars. Minecraft 26.3's own jar for `javap`:
+  `~/.gradle/caches/fabric-loom/minecraftMaven/net/minecraft/minecraft-merged-deobf/26.3/`. What changed:
+  - Rendering is **`com.mojang.renderpearl.api`**: `FilmGl` pipelines = `BindGroupLayouts.PROJECTION` + our
+    `FilmParams` `BindGroupLayout`, `withVertexBinding(0, POSITION_TEX_COLOR)`, `PrimitiveTopology.QUADS`, a
+    `ColorTargetState` per blend, `DepthStencilState(GREATER_THAN_OR_EQUAL, false)` in the world (**reversed depth**),
+    `RenderSystem.getCompiledPipeline`, `ProjectionMatrixBuffer`, `gameRenderer.mainRenderTarget()`, Scene textures
+    `RGBA8_UNORM`/`D32_FLOAT` with `USAGE_COPY_DST`; `begin()` = `new BufferBuilder(ByteBufferBuilder, QUADS, format)`
+    from four pooled byte buffers. `FilmSpace`'s projection is `setPerspective(fov, aspect, far, near, isZZeroToOne())`
+    (far and near swapped, as SA's ProximaCosmos). Shaders: `#extension GL_ARB_separate_shader_objects : require`,
+    `#include`, `layout(location = N)` on every in/out.
+  - World effects: `LevelRenderEvents.END_MAIN` (`...rendering.v1.level`), camera from
+    `context.levelState().cameraRenderState` (`pos`, `viewRotationMatrix`) and `gameRenderer.mainCamera()`.
+  - HUD: `GuiGraphicsExtractor` (`text(...)` for `drawString`); `ScreenEvents.afterExtract`. **TON 618 26.3 has no HUD
+    mixin and RimuLib 26.3 never hides the HUD** (only reads `Hud.isHidden`), so the old HUD mixins are gone;
+    `client/mixin/GuiMixin` (MixinExtras `@WrapOperation` round `Hud.extractRenderState` in `Gui.extractRenderState`)
+    calls `HudRescue.afterHud` so the film's layer and the notice draw after the HUD even with F1; a Fabric HUD
+    element (`addLast`) draws them if that optional mixin didn't apply.
+  - Smaller: `ServerEntityLevelChangeEvents.AFTER_PLAYER_CHANGE_LEVEL`; `InputConstants.Type.KEYBOARD` and
+    `InputConstants.KEY_BACKSLASH` (26.3's key codes are SDL scancodes); `SoundInstance.getOrResolve`;
+    `swing(hand, SwingAnimation.DEFAULT, false)`; no `FriendlyByteBuf.write/readVec3` (three doubles); the day is on
+    world clocks: the sunrise = `server.clockManager().setTotalTicks(overworld.dimensionType().defaultClock(), ...)`
+    from `overworld.getDefaultClockTime()` (what `/time set` does).
 
 ## 9. Files
 
@@ -439,5 +1224,56 @@ machinery (TON 618 needs none: we never name its classes).
   its id in its jar when we get there; ask before downloading). Note: SS-21 joins the Stellar Remote by reflection and
   can hide later API skills from the H menu (SA Series `docs/ADDONS.md`); the SA Series has a workaround
   (`TssLink.showInMenu`) if our Stellar Remote skill goes missing next to it.
+- **TA-02 · Quasar Jets: the plan (Adam + Opus, 2026-11-15; draft, Adam decides on the full plan)**. Adam: "i say we
+  feed ton 618 a planet or something and it turns that planet into a quasar", then "im thinking maybe a star gets
+  launched into ton 618 and gets devoured and then that gets shot through a quasar at the earth or something" (told:
+  the black hole becomes the quasar while it eats; real: tidal disruption events, Swift J1644+57's jet at Earth, 2011).
+  Picks (clickable): **night only, pick a star** ("i really like that idea, pickign a star sounds cool"), **named real
+  stars**, **star type changes the strike**, **missing from the sky for a few nights**; world effects **radio lobe +
+  second sun + frozen light + swept along**.
+  - **Cast**: only with SS-21 Quasar installed; TON 618's item or the Stellar Remote; overworld, **at night**, looking
+    at one of our named stars (a reticle with its name and type). By day: "No stars to launch: wait for night."
+  - **The stars** (drawn by us in the night sky, real-ish colours), four tiers: **red dwarf** (e.g. Barnard's Star:
+    small), **Sun-like** (e.g. Alpha Centauri A: medium), **blue giant** (e.g. Rigel: huge), **red supergiant** (e.g.
+    Betelgeuse: the biggest, slowest). The tier sets the jet, the lobe and bowl size and the crystals' colour.
+  - **The film** (~45 s, Fable): lock-on, launch, the flight to TON 618, the meal (tidal disruption), ignition (title
+    card), the two jets, the blazar turn, second sun, swept along, the radio lobe and its pop. Shot list in
+    `prompts/FABLE-TA02-QUASAR-JETS-PREVIZ-PROMPT.md`.
+  - **In the world**: **second sun** (night turns to day worldwide for ~1 minute); **swept along** (the thin jet comes
+    in low from the horizon; mobs, items and loose blocks in its path lifted and carried toward the crosshair, capped);
+    **radio lobe** (a plasma dome at the crosshair shoves entities out, melts a shallow bowl, pops); **frozen light**
+    crystals (a new block, the star's colour) in the bowl; the launched star **gone from the sky for a few nights**.
+  - Different from SS-21 Quasar (its Milky Way black hole, a pillar straight down, a disc overhead, a spiral-galaxy
+    crater, read from its jar's description). Educational labels: star types, tidal disruption, how jets launch, blazars,
+    the faster-than-light illusion, radio lobes, TON 618's brightness.
+  - Settings to have: on/off, who can cast, terrain on/off, second sun on/off, missing-star nights.
+  - **For a FUTURE update (Adam, 2026-11-15: "in a future update write this down, lets add proxima centauri but to
+    stay consistent we keep the dyson sphere and the dyson sphere tries to fight back somehow, lets just write this
+    down only for now")**: Proxima Centauri as a pickable star, still inside its Dyson sphere (as in the SA Series'
+    SA-04 Proxima), and the Dyson sphere **fights back** when it is launched (how: not designed yet). Not in TA-02's
+    first version. **Tie-in to keep in mind (Adam, 2026-11-15)**: the star engine below "could tie in with Proxima's
+    Dyson sphere later" (a Dyson sphere is already a megastructure round a star).
+  - **The launch = a star engine** (Adam, 2026-11-15, after the wormhole gate, slingshot, warp bubble, folding space,
+    stealing a partner, reeling on the jet and a cosmic string were offered: "lets do star engine yeah"). A real idea
+    (the **Shkadov thruster**, 1987): a giant curved mirror unfolds on the side of the star facing TON 618 and bounces
+    its light back, so all its light pours out the other way and the star pushes itself toward the mirror, which stays
+    ahead of it like a sail (in reality over millions of years: the film races time, with a year counter, like Last
+    Light).
+  - **PREVIZ v1 APPROVED (2026-11-15, Fable; no v2)**: https://claude.ai/artifact/DY9xtGvDFmCVz9jUnLQKVv, source and
+    **the build notes** in `previz/quasar-jets/` (`NOTES.md`: tick table MARK 0 · LOCK 38 · ENGINE 80 · PUSH 150 ·
+    FLIGHT 200 · ARRIVE 330 · SHRED 350 · IGNITE 440 · JETS 530 · TURN 610 · FLOOD 665 · DAY 680 · SWEEP 745 · LOBE 830 ·
+    POP 890 · NIGHT 905 · END 960 (48 s); the star-type table; shot table with "how it would be drawn in the game";
+    "Things the Opus session needs to know" 1-10). Adam's answers to Fable (clickable): **two presses** (press 1 at a
+    star locks it, press 2 at the ground marks where the jet lands and starts the film); **the film for the caster and
+    players within ~128 blocks** (others see only the world effects); **"Lobe hurts, jet carries"**; **8 stars, two per
+    type**: red dwarfs Barnard's Star, Wolf 359; Sun-like Alpha Centauri A, Tau Ceti; blue giants Rigel, Spica; red
+    supergiants Betelgeuse, Antares; **the second sun ends with the film** (not a minute). Adam on v1: "its pretty good,
+    i'd say when we make the mod lets just make the explosion thing bigger is all, this is good enough, great even, good
+    job on it no need for a v2 but when we make the mod version we gotta slow down the labels a little so theres a tiny
+    bit more time to read. im telling u all this but opus will handle it". So for the mod: **a bigger radio lobe and
+    pop** (all star types) and **labels on screen longer**. Open: are players in the beam carried too.
+  - **For a LATER update (Adam, 2026-11-15: "i like the interactive thing too lets add it in a later update")**: drag
+    the star yourself: hold the button and drag the locked star across your night sky to TON 618's dark spot; let go
+    and it becomes a real shooting star falling toward it, then the film follows it.
 - Not picked yet ("we will see"): **Black hole merger** (gravitational wave ripples the land), **Time dilation**
   (everything round the caster slows), **Advancements** ("A googol of years", "Information paradox").

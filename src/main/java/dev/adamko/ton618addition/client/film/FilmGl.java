@@ -31,6 +31,7 @@ final class FilmGl {
     static final int GALAXY = 6;
     static final int GLOW = 7;
     static final int STREAK = 8;
+    static final int FLARE = 9;
 
     @Nullable
     private static ShaderInstance shader;

@@ -3,7 +3,10 @@ package dev.adamko.ton618addition;
 import com.mojang.logging.LogUtils;
 import dev.adamko.ton618addition.client.Ton618AdditionClient;
 import dev.adamko.ton618addition.lastlight.LastLight;
+import dev.adamko.ton618addition.link.Education;
 import dev.adamko.ton618addition.link.Ton618Link;
+import dev.adamko.ton618addition.quasar.QuasarContent;
+import dev.adamko.ton618addition.quasar.QuasarJets;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraftforge.common.MinecraftForge;
@@ -26,6 +29,8 @@ import org.slf4j.Logger;
  *   <li>{@link Ton618Link}: the one place that joins TON 618 (and, when installed, The Shooting Star's Stellar Remote),
  *       through RimuLib's public API, TON 618's command storage and its own commands only.</li>
  *   <li>{@link LastLight}: TA-01 · Last Light on the server (its checks, its clock, bringing the world back).</li>
+ *   <li>{@link QuasarJets}: TA-02 · Quasar Jets on the server (with SS-21 Quasar installed only); {@link QuasarContent}
+ *       its frozen-light crystals.</li>
  *   <li>{@link Ton618AdditionConfig}: the server settings; the client's are in {@code client/}.</li>
  *   <li>{@code client/film/}: the film, made by Fable (see CLAUDE.md, "For Fable: the film").</li>
  * </ul>
@@ -53,20 +58,34 @@ public final class Ton618Addition {
             Ton618AdditionClient.init(modBus, context);
         }
 
+        QuasarContent.register(modBus);
+
         MinecraftForge.EVENT_BUS.addListener((TickEvent.ServerTickEvent event) -> {
             if (event.phase == TickEvent.Phase.END) {
                 LastLight.tick(event.getServer());
+                QuasarJets.tick(event.getServer());
             }
         });
-        MinecraftForge.EVENT_BUS.addListener((ServerStoppedEvent event) -> LastLight.clear());
+        MinecraftForge.EVENT_BUS.addListener((ServerStoppedEvent event) -> {
+            LastLight.clear();
+            QuasarJets.clear();
+        });
         MinecraftForge.EVENT_BUS.addListener((PlayerEvent.PlayerChangedDimensionEvent event) -> {
             if (event.getEntity() instanceof ServerPlayer player) {
                 LastLight.arrived(player);
+                QuasarJets.arrived(player);
             }
         });
         MinecraftForge.EVENT_BUS.addListener((PlayerEvent.PlayerLoggedInEvent event) -> {
             if (event.getEntity() instanceof ServerPlayer player) {
                 LastLight.arrived(player);
+                QuasarJets.arrived(player);
+            }
+        });
+        MinecraftForge.EVENT_BUS.addListener((PlayerEvent.PlayerLoggedOutEvent event) -> {
+            if (event.getEntity() instanceof ServerPlayer player) {
+                QuasarJets.left(player);
+                Education.forget(player.getUUID());
             }
         });
     }

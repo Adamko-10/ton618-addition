@@ -6,9 +6,11 @@ import cyou.rimuru.rimulib.mc1201.client.api.NetClientApi;
 import cyou.rimuru.rimulib.mc1201.client.api.UiApi;
 import dev.adamko.ton618addition.Ton618Addition;
 import dev.adamko.ton618addition.client.film.LastLightFilm;
+import dev.adamko.ton618addition.client.quasar.QuasarClient;
 import dev.adamko.ton618addition.lastlight.LastLightClock;
 import dev.adamko.ton618addition.lastlight.LastLightInfo;
 import dev.adamko.ton618addition.link.Ton618Link;
+import dev.adamko.ton618addition.net.EducationChoice;
 import dev.adamko.ton618addition.net.LastLightEnd;
 import dev.adamko.ton618addition.net.LastLightFx;
 import javax.annotation.Nullable;
@@ -30,6 +32,9 @@ public final class Ton618AdditionClient {
     private static LastLightCast current;
     /** RimuLib's films were on last tick (to notice them being switched on mid-cast). */
     private static boolean filmsWereOn;
+    /** The educational mode last told to this server, or null when not told yet in this world. */
+    @Nullable
+    private static Boolean sentEducation;
 
     private static boolean filmsOn() {
         try {
@@ -47,6 +52,7 @@ public final class Ton618AdditionClient {
         ModLoadingContext.get().registerConfig(ModConfig.Type.CLIENT, Ton618AdditionClientConfig.SPEC);
         // (Forge has no generic config screen like NeoForge's: the H-menu plate and the toml hold the settings)
         LastLightFilm.init(modBus);
+        QuasarClient.init(modBus);
         MinecraftForge.EVENT_BUS.addListener((TickEvent.ClientTickEvent event) -> {
             if (event.phase == TickEvent.Phase.END) {
                 tick();
@@ -58,6 +64,7 @@ public final class Ton618AdditionClient {
     /** After every mod is constructed (with {@link Ton618Link#install}). */
     public static void afterConstruction() {
         NetClientApi.receive(LastLightFx.PACKET, (fx, context) -> Minecraft.getInstance().execute(() -> begin(fx)));
+        QuasarClient.afterConstruction();
         // the server dropped the cast before its end (the world came back early, or the restore failed)
         NetClientApi.receive(LastLightEnd.PACKET, (end, context) -> Minecraft.getInstance().execute(() -> {
             if (current != null && current.fx().castGameTime() == end.castGameTime()) {
@@ -75,7 +82,8 @@ public final class Ton618AdditionClient {
         LastLightInfo.selectWarning = () -> {
             Minecraft mc = Minecraft.getInstance();
             return mc.level != null && mc.level.dimension() == Ton618Link.DARK ? null
-                : "Locked: set TON618's Scale to ∞ and use it, then cast Last Light in the dark";
+                // short enough for the menu's warning line (Adam, 2026-11-17)
+                : "Not yet: set TON618's Scale to ∞ and use it first";
         };
     }
 
@@ -114,6 +122,7 @@ public final class Ton618AdditionClient {
     }
 
     private static void tick() {
+        sendEducation();
         if (current == null || Minecraft.getInstance().isPaused()) {
             return;
         }
@@ -133,6 +142,30 @@ public final class Ton618AdditionClient {
             if (LastLightFilm.active()) {
                 LastLightFilm.stop();
             }
+        }
+    }
+
+    /**
+     * Tells the server this player's educational mode once in each world and whenever it changes (the H-menu switch or
+     * the config screen): a strike they cast then runs its reading windows slower ({@code ReadingTime}).
+     */
+    private static void sendEducation() {
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.player == null || mc.getConnection() == null) {
+            sentEducation = null;
+            return;
+        }
+        boolean on = Ton618AdditionClientConfig.educational();
+        if (sentEducation != null && sentEducation == on) {
+            return;
+        }
+        try {
+            if (NetClientApi.canSend(EducationChoice.PACKET)) {
+                NetClientApi.send(new EducationChoice(on));
+                sentEducation = on;
+            }
+        } catch (RuntimeException | LinkageError unsure) {
+            sentEducation = on;
         }
     }
 

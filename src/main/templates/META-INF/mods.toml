@@ -11,6 +11,8 @@ version = "${mod_version}"
 displayName = "${mod_name}"
 authors = "${mod_authors}"
 description = '''${mod_description}'''
+# The mod's icon in the game's and launchers' mod lists (Adam, 2026-11-15: every project ships its icon).
+logoFile = "ton618_addition_icon.png"
 
 [[dependencies.${mod_id}]]
 modId = "forge"
@@ -46,6 +48,14 @@ side = "BOTH"
 # Optional: with The Shooting Star installed, its Stellar Remote gets Last Light too.
 [[dependencies.${mod_id}]]
 modId = "${shooting_star_mod_id}"
+mandatory = false
+versionRange = "*"
+ordering = "AFTER"
+side = "BOTH"
+
+# Optional: with SS-21 Quasar (Aether21's addon for The Shooting Star) installed, TA-02 Quasar Jets unlocks.
+[[dependencies.${mod_id}]]
+modId = "shooting_star_ss21"
 mandatory = false
 versionRange = "*"
 ordering = "AFTER"

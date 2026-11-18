@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "ton618_addition:block/frozen_light_red_supergiant"
+  }
+}
