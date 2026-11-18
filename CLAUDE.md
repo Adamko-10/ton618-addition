@@ -5,6 +5,39 @@ Handoff notes for every Claude session in this folder (`C:\Users\User\Desktop\to
 Started 2026-11-13 by an Opus 5.5 session (xhigh) that was started from Adam's SA Series session. **Read `BRIEF.md`
 first** (Adam's brief, his own words at its end), then this file. Fable's part: `prompts\FABLE-PREVIZ-AND-FILM-PROMPT.md`.
 
+### >>> RESUME HERE (2026-11-18 ~18:30, Adam's PC): porting 1.1.1 to the six loaders (Opus, easiest first) <<<
+
+- **Adam's picks (clickable)**: "Me, here (Recommended)" (Opus ports all six) and "Easiest first" (Forge 1.21.1, Fabric
+  1.21.1, the two 1.20.1, then 1.21.11 and 26.3; each test jar into his instance as it builds). Method: a worktree per
+  branch (`ports/<branch>`, `git worktree add ports/<b> <b>`), `git merge --no-commit --no-ff main`, resolve, adapt.
+  Scripts used (copied from the scratchpad): `C:\Users\adam_\Documents\TON 618 Addition\port scripts (2026-11-18)\`.
+- **forge-1.21.1 DONE, committed `6239002`** (local, not pushed): builds; dev client starts (Last Light #2, Quasar Jets
+  #3, locked without SS-21, no errors). Forge 1.21.1 runs official names at runtime (javap of the instance's
+  `forge-1.21.1-52.1.16-client.jar`), so main's new mixins work as is. Forge HAS `ToastAddEvent` (cancellable);
+  no RenderGuiEvent: `HudRescue.afterGui` draws `QuasarJetsFilm.screen(g, partial, calledOff)` and `QuasarClient.hud`.
+  Sound packets: `IMPACT_NEAR.getHolder().orElseThrow()`. The dev SERVER stops at Minecraft's EULA: not accepted
+  for him (don't). Jar `TON 618 Addition 1.1.1 TEST [Forge 1.21.1].jar` + `ton618-1.1.0-forge.jar` are in his
+  `Forge 1.21.1` instance (copy in `..\test builds\2026-11-18 TON 618 Addition 1.1.1 ports\`). TA-02 there needs
+  SS-21 Quasar Forge 1.8.0 (CurseForge file 9575837; Fabric 9435512): **not downloaded, ask him first**.
+- **fabric-1.21.1 IN PROGRESS, uncommitted** in `ports/fabric-1.21.1` (merge of main started): resolved build files,
+  config (`fabricconfig.js`), mod class, client class; `fabric1211.js` ran OK (rimulib imports untagged, Last Light
+  from main + Fabric hooks, shaders via `CoreShaderRegistrationCallback`, `QuasarContent.Registered<T>`, stage/shake/
+  fog/paint/toast as public methods). **Still to do**: (1) the new mixins in `client/mixin/` (failed to write; their
+  text is in this session's transcript): `LevelRendererStagesMixin` (after renderSky -> `QuasarRender.stage(AFTER_SKY)`
+  + `QuasarJetsFilm.afterSky`; after `ParticleEngine.render` -> AFTER_PARTICLES; as the SA Series' Fabric
+  `LevelRendererStagesMixin`), `QuasarGameRendererMixin` (HEAD `render(DeltaTracker,Z)` -> `QuasarRender.paint`;
+  after `Camera.setup` in `renderLevel` -> `QuasarRender.shake` + `CameraAccessor` invoker `setRotation`, roll via
+  `camera.rotation().rotationYXZ`), `FogRendererMixin` (TAIL `setupColor` -> `QuasarClient.fogColor`, as SA's),
+  `ToastComponentMixin` (HEAD `addToast` -> `LastLightFilm.holdToast || QuasarJetsFilm.holdToast`), all listed in
+  `ton618_addition.fabric.mixins.json`; (2) `git mv` `shaders/quasar/*` and `shaders/quasarfilm/*` into
+  `shaders/core/`; (3) HudRescue's Quasar lines as on Forge; (4) `libs/` (inner `+mc1.21.1` jars of RimuLib/TON 618
+  Fabric, from `libs/ports/*-fabric.jar`); build with Loom on JDK 25 (`~/.gradle/jdks/eclipse_adoptium-25-amd64-windows.2`);
+  `fabric.mod.json` already has the icon and `shooting_star_ss21_multi` in suggests.
+- Then forge-1.20.1, fabric-1.20.1, fabric-1.21.11, fabric-26.3 (the last two: TA-02's drawing rewritten for their
+  render pipelines, §8a). Then one test round in his instances, then release prompts (ports first need his test).
+- Note: the mod description in the metadata (`mod_description`) still names only Last Light, on main too: add TA-02
+  at the next release.
+
 ### >>> NEXT UPDATE (after 1.1.0): Adam's list, 2026-11-17 (started 2026-11-17 ~22:45, NeoForge first) <<<
 
 **1.1.0 is being published by ChatGPT** (Adam, 2026-11-17 ~22:40: "i am already getting chatgpt to post the update")
