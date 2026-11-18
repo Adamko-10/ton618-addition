@@ -1,0 +1,39 @@
+package dev.adamko.ton618addition.client.mixin;
+
+import dev.adamko.ton618addition.client.quasar.QuasarRender;
+import dev.adamko.ton618addition.client.quasarfilm.QuasarJetsFilm;
+import net.minecraft.client.Camera;
+import net.minecraft.client.DeltaTracker;
+import net.minecraft.client.renderer.GameRenderer;
+import net.minecraft.client.renderer.LevelRenderer;
+import net.minecraft.client.renderer.LightTexture;
+import org.joml.Matrix4f;
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+
+/**
+ * The two points of the level's drawing TA-02 draws at that Fabric API has no event for (NeoForge's AFTER_SKY and
+ * AFTER_PARTICLES, as the SA Series' Fabric branches do it): right after the vanilla sky (the sky's things without a
+ * shader pack, the film's star labels) and right after the particles (everything, from the painted looks, with a pack).
+ */
+@Mixin(LevelRenderer.class)
+abstract class LevelRendererStagesMixin {
+    @Inject(method = "renderLevel", at = @At(value = "INVOKE",
+        target = "Lnet/minecraft/client/renderer/LevelRenderer;renderSky(Lorg/joml/Matrix4f;Lorg/joml/Matrix4f;FLnet/minecraft/client/Camera;ZLjava/lang/Runnable;)V",
+        shift = At.Shift.AFTER))
+    private void ton618Addition$afterSky(DeltaTracker deltaTracker, boolean renderBlockOutline, Camera camera, GameRenderer gameRenderer,
+                                         LightTexture lightTexture, Matrix4f frustumMatrix, Matrix4f projectionMatrix, CallbackInfo ci) {
+        QuasarRender.stage(QuasarRender.Stage.AFTER_SKY, deltaTracker.getGameTimeDeltaPartialTick(true), camera, frustumMatrix, projectionMatrix);
+        QuasarJetsFilm.afterSky(frustumMatrix, projectionMatrix, camera);
+    }
+
+    @Inject(method = "renderLevel", at = @At(value = "INVOKE",
+        target = "Lnet/minecraft/client/particle/ParticleEngine;render(Lnet/minecraft/client/renderer/LightTexture;Lnet/minecraft/client/Camera;F)V",
+        shift = At.Shift.AFTER))
+    private void ton618Addition$afterParticles(DeltaTracker deltaTracker, boolean renderBlockOutline, Camera camera, GameRenderer gameRenderer,
+                                               LightTexture lightTexture, Matrix4f frustumMatrix, Matrix4f projectionMatrix, CallbackInfo ci) {
+        QuasarRender.stage(QuasarRender.Stage.AFTER_PARTICLES, deltaTracker.getGameTimeDeltaPartialTick(true), camera, frustumMatrix, projectionMatrix);
+    }
+}

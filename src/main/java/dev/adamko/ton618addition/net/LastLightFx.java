@@ -20,9 +20,10 @@ import net.minecraft.world.phys.Vec3;
  * @param pitch         ditto
  * @param offhand       the item that fired it is in their off hand
  * @param remote        it was fired from The Shooting Star's Stellar Remote (otherwise TON 618's own item)
+ * @param educational   the caster had educational mode on: the reading windows run slower ({@code ReadingTime})
  */
 public record LastLightFx(UUID caster, int casterId, long castGameTime, Vec3 position, float yaw, float pitch,
-                          boolean offhand, boolean remote) {
+                          boolean offhand, boolean remote, boolean educational) {
     public static final RimuPacket<LastLightFx> PACKET = NetApi.packet(Ton618Addition.id("last_light"), LastLightFx.class,
         LastLightFx::write, LastLightFx::read);
 
@@ -35,10 +36,11 @@ public record LastLightFx(UUID caster, int casterId, long castGameTime, Vec3 pos
         buf.writeFloat(this.pitch);
         buf.writeBoolean(this.offhand);
         buf.writeBoolean(this.remote);
+        buf.writeBoolean(this.educational);
     }
 
     private static LastLightFx read(FriendlyByteBuf buf) {
         return new LastLightFx(buf.readUUID(), buf.readVarInt(), buf.readLong(), buf.readVec3(), buf.readFloat(),
-            buf.readFloat(), buf.readBoolean(), buf.readBoolean());
+            buf.readFloat(), buf.readBoolean(), buf.readBoolean(), buf.readBoolean());
     }
 }

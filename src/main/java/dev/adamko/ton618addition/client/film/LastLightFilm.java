@@ -5,9 +5,13 @@ import cyou.rimuru.rimulib.client.cinematic.Cutscene;
 import dev.adamko.ton618addition.Ton618Addition;
 import dev.adamko.ton618addition.client.LastLightCast;
 import dev.adamko.ton618addition.lastlight.LastLightClock;
+import java.util.ArrayList;
+import java.util.List;
 import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.toasts.Toast;
+import net.minecraft.client.gui.components.toasts.ToastComponent;
 import net.minecraft.client.gui.screens.ReceivingLevelScreen;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
@@ -16,7 +20,6 @@ import net.fabricmc.fabric.api.client.rendering.v1.CoreShaderRegistrationCallbac
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
 import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents;
-import net.minecraft.client.gui.screens.Screen;
 
 /**
  * <b>FABLE'S FILE.</b> The Last Light film, built from the previz Adam approved on 2026-11-13 ({@code previz/NOTES.md},
@@ -41,6 +44,10 @@ import net.minecraft.client.gui.screens.Screen;
  * off or skip it with RimuLib's film key: then only the white of the burst is shown, so the trip back to the
  * overworld is still hidden.
  *
+ * <p><b>Toasts.</b> The game draws its toasts (tutorial hints, advancements, recipes) over everything, the film too.
+ * While this film has the camera they are kept off the screen: the ones showing when it starts are cleared, and the ones
+ * that arrive while it plays are held back and shown when it ends.
+ *
  * <p><b>The contract</b> (what the rest of the mod calls): {@link #init}, {@link #start}, {@link #stop},
  * {@link #active}.
  */
@@ -56,6 +63,8 @@ public final class LastLightFilm {
     private static int sinceFilm;
     private static int sinceSound;
     private static boolean pressed;
+    /** Toasts that arrived while the film had the camera: shown when it lets go. */
+    private static final List<Toast> HELD_TOASTS = new ArrayList<>();
 
     private LastLightFilm() {
     }
@@ -64,14 +73,15 @@ public final class LastLightFilm {
         CoreShaderRegistrationCallback.EVENT.register(FilmGl::register);
         ClientTickEvents.END_CLIENT_TICK.register(client -> tick());
         WorldRenderEvents.LAST.register(LastLightFilm::world);
-        // over the game's own HUD: Forge 1.21.1 has no RenderGuiEvent, so client/HudRescue calls screen(...) right
-        // after the HUD every frame (also when TON 618 hides the HUD)
+        // over the game's own HUD: Fabric 1.21.1's HUD callback is skipped when TON 618 hides the HUD, so
+        // client/HudRescue calls screen(...) right after the HUD every frame
         // the game's "loading terrain" screen during the trip back: kept white
         ScreenEvents.AFTER_INIT.register((client, screen, width, height) -> {
             if (screen instanceof ReceivingLevelScreen) {
                 ScreenEvents.afterRender(screen).register((shown, graphics, mouseX, mouseY, delta) -> loading(graphics));
             }
         });
+        // the game's toasts would sit on top of the film: held back while it has the camera (client/mixin/ToastComponentMixin)
     }
 
     public static void start(LastLightCast newCast) {
@@ -85,8 +95,10 @@ public final class LastLightFilm {
         if (FilmApi.automatic()) {
             film = FilmCamera.cutscene(newCast);
             FilmApi.play(film);
-            FilmSound.prepare();
+            FilmSound.prepare(newCast.slowed());
             Minecraft.getInstance().getMusicManager().stopPlaying();
+            // toasts already on screen (a new game's "Move with W, A, S and D" stays up until the player moves)
+            Minecraft.getInstance().getToasts().clear();
         }
     }
 
@@ -107,6 +119,32 @@ public final class LastLightFilm {
         if (track != null) {
             track.end();
             track = null;
+        }
+        showHeldToasts();
+    }
+
+    /** A toast the game wants to show: not over the film. It is kept (a handful at most) for when the film ends. */
+    /** A toast is about to be queued: true when the film holds it back (from client/mixin/ToastComponentMixin). */
+    public static boolean holdToast(Toast toast) {
+        if (film != null) {
+            if (HELD_TOASTS.size() < 8) {
+                HELD_TOASTS.add(toast);
+            }
+            return true;
+        }
+        return false;
+    }
+
+    /** The film has let go of the camera ({@code film} is null by now): the toasts held back are shown. */
+    private static void showHeldToasts() {
+        if (HELD_TOASTS.isEmpty() || film != null) {
+            return;
+        }
+        List<Toast> held = new ArrayList<>(HELD_TOASTS);
+        HELD_TOASTS.clear();
+        ToastComponent toasts = Minecraft.getInstance().getToasts();
+        for (Toast toast : held) {
+            toasts.addToast(toast);
         }
     }
 
@@ -138,6 +176,7 @@ public final class LastLightFilm {
                 track.end();
                 track = null;
             }
+            showHeldToasts();
             return;
         }
         // the director let go of it (another film took over, or it was cleared): hand it back
@@ -155,7 +194,8 @@ public final class LastLightFilm {
             }
             sinceSound = 0;
             try {
-                track = FilmSound.play(() -> now.tick(), () -> cast != now);
+                // the track has the cast's slow-downs in it already (educational mode), so it runs on the real clock
+                track = FilmSound.play(now.slowed(), () -> now.realTick(0F), () -> cast != now);
             } catch (RuntimeException failed) {
                 Ton618Addition.LOG.error("Last Light's soundtrack couldn't start", failed);
                 sinceSound = -100000;
@@ -238,6 +278,7 @@ public final class LastLightFilm {
             track.end();
             track = null;
         }
+        showHeldToasts();
         FilmGl.end();
     }
 }

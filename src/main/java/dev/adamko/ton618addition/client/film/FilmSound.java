@@ -2,6 +2,7 @@ package dev.adamko.ton618addition.client.film;
 
 
 import dev.adamko.ton618addition.Ton618Addition;
+import dev.adamko.ton618addition.lastlight.LastLightReading;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.concurrent.CompletableFuture;
@@ -36,8 +37,11 @@ final class FilmSound {
     private static final ResourceLocation ID = Ton618Addition.id("film/last_light");
     private static final Sound SOUND = new Sound(ID, ConstantFloat.of(1F), ConstantFloat.of(1F), 1, Sound.Type.FILE, true, false, 16);
     private static final WeighedSoundEvents EVENTS = new WeighedSoundEvents(ID, null);
+    /** The track as made for a plain cast, and for one slowed by educational mode's reading windows. */
     @Nullable
     private static CompletableFuture<short[]> rendered;
+    @Nullable
+    private static CompletableFuture<short[]> renderedSlowed;
 
     static {
         EVENTS.addSound(SOUND);
@@ -46,13 +50,29 @@ final class FilmSound {
     private FilmSound() {
     }
 
-    /** Starts making the track (off the game's thread), if it isn't made yet. */
-    static synchronized CompletableFuture<short[]> prepare() {
+    /**
+     * Starts making the track (off the game's thread), if it isn't made yet: the plain one, or the one for a cast
+     * {@code slowed} by educational mode's reading windows.
+     */
+    static synchronized CompletableFuture<short[]> prepare(boolean slowed) {
+        if (slowed) {
+            if (renderedSlowed == null) {
+                renderedSlowed = make(LastLightReading.WINDOWS);
+            }
+            return renderedSlowed;
+        }
         if (rendered == null) {
-            rendered = CompletableFuture.supplyAsync(() -> {
+            rendered = make(new float[0][]);
+        }
+        return rendered;
+    }
+
+    private static CompletableFuture<short[]> make(float[][] windows) {
+        {
+            return CompletableFuture.supplyAsync(() -> {
                 try {
                     long began = System.nanoTime();
-                    short[] pcm = FilmSynth.render();
+                    short[] pcm = FilmSynth.render(windows);
                     Ton618Addition.LOG.debug("Last Light's soundtrack made in {} ms", (System.nanoTime() - began) / 1000000L);
                     return pcm;
                 } catch (RuntimeException failed) {
@@ -61,12 +81,14 @@ final class FilmSound {
                 }
             });
         }
-        return rendered;
     }
 
-    /** Plays the track from wherever {@code clock} (game ticks from the cast) is; {@code over}: the film has ended. */
-    static Track play(DoubleSupplier clock, java.util.function.BooleanSupplier over) {
-        Track track = new Track(clock, over);
+    /**
+     * Plays the track from wherever {@code clock} is: <b>real</b> game ticks from the cast (the track already has the
+     * cast's slow-downs in it); {@code over}: the film has ended.
+     */
+    static Track play(boolean slowed, DoubleSupplier clock, java.util.function.BooleanSupplier over) {
+        Track track = new Track(clock, over, prepare(slowed));
         Minecraft.getInstance().getSoundManager().play(track);
         return track;
     }
@@ -75,15 +97,17 @@ final class FilmSound {
     static final class Track extends AbstractTickableSoundInstance {
         private final DoubleSupplier clock;
         private final java.util.function.BooleanSupplier over;
+        private final CompletableFuture<short[]> made;
         /** The film's second at which this playing started, and how much of it has played since. */
         private double startedAt = Double.NaN;
         private double played;
         private long last;
 
-        private Track(DoubleSupplier clock, java.util.function.BooleanSupplier over) {
+        private Track(DoubleSupplier clock, java.util.function.BooleanSupplier over, CompletableFuture<short[]> made) {
             super(SoundEvent.createVariableRangeEvent(ID), SoundSource.PLAYERS, SoundInstance.createUnseededRandom());
             this.clock = clock;
             this.over = over;
+            this.made = made;
             this.volume = 1F;
             this.pitch = 1F;
             this.relative = true;
@@ -100,7 +124,7 @@ final class FilmSound {
 
         @Override
         public CompletableFuture<AudioStream> getAudioStream(SoundBufferLibrary buffers, ResourceLocation id, boolean looping) {
-            return prepare().thenApply(pcm -> {
+            return this.made.thenApply(pcm -> {
                 this.startedAt = this.clock.getAsDouble() / 20.0;
                 this.played = 0.0;
                 this.last = System.nanoTime();
