@@ -64,6 +64,7 @@ final class FilmGl {
     static final int GALAXY = 6;
     static final int GLOW = 7;
     static final int STREAK = 8;
+    static final int FLARE = 9;
 
     private static final int OPAQUE = 0;
     private static final int ADDITIVE = 1;

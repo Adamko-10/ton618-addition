@@ -4,8 +4,16 @@
   "package": "dev.adamko.ton618addition.client.mixin",
   "compatibilityLevel": "JAVA_25",
   "client": [
+    "CameraAccessor",
+    "CameraShakeMixin",
+    "ClientLevelMixin",
+    "FogRendererMixin",
     "GuiMixin",
-    "RimulibClientMixin"
+    "LevelRendererStagesMixin",
+    "QuasarGameRendererMixin",
+    "RimulibClientMixin",
+    "SkyRendererMixin",
+    "ToastComponentMixin"
   ],
   "injectors": {
     "defaultRequire": 0

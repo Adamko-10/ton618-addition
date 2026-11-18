@@ -4,7 +4,10 @@ import dev.adamko.ton618addition.Ton618Addition;
 import dev.adamko.ton618addition.client.film.LastLightFilm;
 import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry;
 import net.minecraft.client.DeltaTracker;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
+import dev.adamko.ton618addition.client.quasar.QuasarClient;
+import dev.adamko.ton618addition.client.quasarfilm.QuasarJetsFilm;
 
 /**
  * The film's screen layer and Last Light's fallback notice, drawn right after the HUD (Fabric 26.3 branch).
@@ -48,6 +51,18 @@ public final class HudRescue {
             LastLightFilm.screen(graphics, partial);
         } catch (RuntimeException failed) {
             warnOnce("the film's layer", failed);
+        }
+        // TA-02 · Quasar Jets: its film's screen layer every frame, and its reticle and readout only when the HUD is shown.
+        // On 26.3 nothing calls the HUD off (TON 618 and RimuLib leave it alone): only F1 hides it
+        boolean calledOff = Minecraft.getInstance().gui.hud.isHidden();
+        float gamePartial = delta.getGameTimeDeltaPartialTick(true);
+        try {
+            QuasarJetsFilm.screen(graphics, gamePartial, calledOff);
+            if (!calledOff) {
+                QuasarClient.hud(graphics, gamePartial);
+            }
+        } catch (RuntimeException failed) {
+            warnOnce("Quasar Jets' layer", failed);
         }
         try {
             LastLightNotice.draw(graphics, partial);

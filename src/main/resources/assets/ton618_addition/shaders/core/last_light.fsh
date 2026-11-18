@@ -10,10 +10,12 @@
 //  3 the time wave on the dark's floor (uv: blocks from its centre; Param: the wave's radius, how strong, how fast time
 //    runs behind it 0-1, the dashes' travel; Param2.xy: the camera from the centre, Param2.z: the quad's half size), added
 //  4 a wall of light (uv.y 0 at its foot to 1 at its top; Color), added
-//  5 a thin ring (uv -1..1; Param.x: its inner edge 0-1; Color), added
+//  5 a thin ring (uv -1..1; Param.x: its inner edge 0-1; Param.y: a soft glow trailing inside it, Param.z: how far in
+//    that reaches 0-1; Color), added
 //  6 a far galaxy's smudge (uv already turned and squashed; Color.a how strong), added
 //  7 a wide glow with a hot core (uv -1..1; Color; Param.x a gain), added
 //  8 a streak (uv.x -1..1 across it; Color, which fades along it), added
+//  9 a flare: a thin line of light across the quad and a shorter one up it (uv -1..1; Color; Param.x a gain), added
 // Minecraft 26.3 (Fabric 26.3 branch): the parameters come in one uniform block (see client/film/FilmGl).
 layout(std140) uniform FilmParams {
     mat4 ModelViewMat;
@@ -109,14 +111,16 @@ vec3 wave(vec2 dv) {
     float wf = dc - Param.x;
     float wd = 1.5 + Param.x * 0.02;
     float front = exp(-wf * wf / (wd * wd));
+    // a white-hot line in the middle of the front, so it still reads over TON618's bright disk
+    float hot = exp(-wf * wf / (wd * wd * 0.12));
     float tail = wf < 0.0 ? exp(wf / (5.0 + Param.x * 0.1)) : 0.0;
-    vec3 c = (vec3(1.0, 0.85, 0.65) * front * 1.3 + vec3(1.0, 0.5, 0.18) * tail * 0.4) * Param.y;
+    vec3 c = (vec3(1.0, 0.85, 0.65) * front * 1.3 + vec3(1.0, 0.97, 0.9) * hot + vec3(1.0, 0.5, 0.18) * tail * 0.4) * Param.y;
     // behind the wave: dashes of light rushing outward along the floor
     float hh = h1(floor(atan(dv.y, dv.x) * 30.0));
     float dash = fract(dc * 0.035 - Param.w * (0.6 + hh) + hh * 7.0);
     float st = step(0.7, hh) * smoothstep(0.0, 0.1, dash) * (1.0 - smoothstep(0.1, 0.55, dash));
     float dist = length(dv - Param2.xy);
-    c += vec3(1.0, 0.6, 0.28) * st * Param.z * 0.55 * step(dc, Param.x) * exp(-dist * 0.02) * smoothstep(1.5, 6.0, dc);
+    c += vec3(1.0, 0.66, 0.34) * st * Param.z * 0.8 * step(dc, Param.x) * exp(-dist * 0.02) * smoothstep(1.5, 6.0, dc);
     return c * (1.0 - smoothstep(Param2.z * 0.85, Param2.z, dc));
 }
 
@@ -145,6 +149,8 @@ void main() {
         fragColor = vec4(color.rgb * (color.a * pow(clamp(1.0 - uv.y, 0.0, 1.0), 2.5)), 1.0);
     } else if (mode == 5) {
         float a = smoothstep(Param.x - 0.02, Param.x + 0.01, g) * (1.0 - smoothstep(0.96, 1.0, g));
+        float inside = clamp((g - Param.x + Param.z) / max(Param.z, 0.001), 0.0, 1.0);
+        a += Param.y * inside * inside * step(g, Param.x);
         fragColor = vec4(color.rgb * (color.a * a), 1.0);
     } else if (mode == 6) {
         vec4 s = galaxy(g);
@@ -152,7 +158,11 @@ void main() {
     } else if (mode == 7) {
         float a = (exp(-g * g * 9.0) * 0.6 + exp(-g * 26.0) * 0.9) * (1.0 - smoothstep(0.75, 1.0, g));
         fragColor = vec4(color.rgb * (color.a * a * Param.x), 1.0);
-    } else {
+    } else if (mode == 8) {
         fragColor = vec4(color.rgb * (color.a * (1.0 - abs(uv.x))), 1.0);
+    } else {
+        float across = exp(-abs(uv.y) * 60.0) * pow(max(1.0 - abs(uv.x), 0.0), 2.0);
+        float upward = exp(-abs(uv.x) * 90.0) * pow(max(1.0 - abs(uv.y) * 2.2, 0.0), 2.0);
+        fragColor = vec4(color.rgb * (color.a * (across + 0.6 * upward) * Param.x), 1.0);
     }
 }
