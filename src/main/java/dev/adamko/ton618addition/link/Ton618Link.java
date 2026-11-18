@@ -9,8 +9,16 @@ import dev.adamko.ton618addition.Ton618Addition;
 import dev.adamko.ton618addition.lastlight.LastLight;
 import dev.adamko.ton618addition.lastlight.LastLightInfo;
 import dev.adamko.ton618addition.lastlight.LastLightSkill;
+import dev.adamko.ton618addition.net.EducationChoice;
 import dev.adamko.ton618addition.net.LastLightEnd;
 import dev.adamko.ton618addition.net.LastLightFx;
+import dev.adamko.ton618addition.net.QuasarFx;
+import dev.adamko.ton618addition.net.QuasarLock;
+import dev.adamko.ton618addition.net.QuasarMissing;
+import dev.adamko.ton618addition.quasar.QuasarInfo;
+import dev.adamko.ton618addition.quasar.QuasarJets;
+import dev.adamko.ton618addition.quasar.QuasarSkill;
+import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
@@ -50,7 +58,19 @@ public final class Ton618Link {
     /** Last Light on The Shooting Star's Stellar Remote (when The Shooting Star is installed). */
     public static final LastLightSkill ON_REMOTE = new LastLightSkill(LastLightInfo.KEY_ON_REMOTE, true);
 
+    /**
+     * TA-02 · Quasar Jets on TON 618's item and on the Stellar Remote: always in the menus, locked without SS-21 Quasar
+     * (Adam, 2026-11-17: "it should be there but locked").
+     */
+    public static final QuasarSkill QUASAR_ON_TON618 = new QuasarSkill(QuasarInfo.KEY_ON_TON618, false);
+    public static final QuasarSkill QUASAR_ON_REMOTE = new QuasarSkill(QuasarInfo.KEY_ON_REMOTE, true);
+
     private static boolean installed;
+
+    /** SS-21 Quasar (Aether21's addon for The Shooting Star) is loaded: TA-02 only appears with it (Adam, 2026-11-13). */
+    public static boolean ss21Installed() {
+        return FabricLoader.getInstance().isModLoaded(QuasarInfo.SS21_MOD_ID) || FabricLoader.getInstance().isModLoaded(QuasarInfo.SS21_MOD_ID + "_multi");
+    }
 
     private Ton618Link() {
     }
@@ -68,6 +88,16 @@ public final class Ton618Link {
         RimulibApi.connect(Ton618Addition.MOD_ID, Ton618Addition.class, "1.2.3");
         NetApi.toClient(LastLightFx.PACKET);
         NetApi.toClient(LastLightEnd.PACKET);
+        NetApi.toClient(QuasarFx.PACKET);
+        NetApi.toClient(QuasarLock.PACKET);
+        NetApi.toClient(QuasarMissing.PACKET);
+        // each player's educational mode, for the reading windows of the strikes they cast
+        NetApi.toServer(EducationChoice.PACKET);
+        NetApi.receive(EducationChoice.PACKET, (choice, context) -> {
+            ServerPlayer player = context.player();
+            context.server().execute(() -> Education.set(player.getUUID(), choice.on()));
+        });
+        boolean quasar = ss21Installed();
         SkillApi.whenRegistered(TON618, set -> {
             // TON 618's one set, ton618:ton_618, held by its item
             if (set.hidden || !"ton_618".equals(set.id.getPath()) || SkillApi.setOf(ON_TON618) != null) {
@@ -75,6 +105,8 @@ public final class Ton618Link {
             }
             SkillApi.extend(set, new LastLightSkill[]{ON_TON618}, (player, skill, tuning) -> LastLight.cast(player, skill));
             logJoined(set, ON_TON618, "TON 618's menu");
+            SkillApi.extend(set, new QuasarSkill[]{QUASAR_ON_TON618}, (player, skill, tuning) -> QuasarJets.cast(player, skill, tuning));
+            logJoined(set, QUASAR_ON_TON618, "TON 618's menu");
         });
         SkillApi.whenRegistered(SHOOTING_STAR, set -> {
             // the Stellar Remote is The Shooting Star's set that holds its own skills (an enum of them)
@@ -83,7 +115,42 @@ public final class Ton618Link {
             }
             SkillApi.extend(set, new LastLightSkill[]{ON_REMOTE}, (player, skill, tuning) -> LastLight.cast(player, skill));
             logJoined(set, ON_REMOTE, "the Stellar Remote");
+            SkillApi.extend(set, new QuasarSkill[]{QUASAR_ON_REMOTE}, (player, skill, tuning) -> QuasarJets.cast(player, skill, tuning));
+            showInMenu(set);
+            logJoined(set, QUASAR_ON_REMOTE, "the Stellar Remote");
         });
+        if (!quasar) {
+            Ton618Addition.LOG.info("{} is locked: SS-21 Quasar isn't installed.", QuasarInfo.TITLE);
+        }
+    }
+
+    /**
+     * SS-21 Quasar swaps the Stellar Remote's {@code SkillSet.skills} for a frozen copy, which hides every skill added
+     * after it from the menu (castable, not shown). This puts every skill back as a live view of the set's rows, as the
+     * SA Series' {@code TssLink.showInMenu} does. RimuLib internals: if they change, only a warning.
+     */
+    private static void showInMenu(SkillSet set) {
+        try {
+            java.lang.reflect.Field rowsField = SkillSet.class.getDeclaredField("rows");
+            java.lang.reflect.Field skillsField = SkillSet.class.getDeclaredField("skills");
+            rowsField.setAccessible(true);
+            skillsField.setAccessible(true);
+            synchronized (SkillSet.class) {
+                @SuppressWarnings("unchecked")
+                java.util.List<Skill> rows = (java.util.List<Skill>) rowsField.get(set);
+                java.util.List<Skill> all = new java.util.ArrayList<>(set.skills);
+                for (Skill skill : rows) {
+                    if (!all.contains(skill)) {
+                        all.add(skill);
+                    }
+                }
+                rows.clear();
+                rows.addAll(all);
+                skillsField.set(set, java.util.Collections.unmodifiableList(rows));
+            }
+        } catch (ReflectiveOperationException | RuntimeException e) {
+            Ton618Addition.LOG.warn("Couldn't check the Stellar Remote's menu list; our skills may not show in it: {}", e.toString());
+        }
     }
 
     private static void logJoined(SkillSet set, Skill skill, String where) {

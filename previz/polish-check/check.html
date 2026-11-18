@@ -1,0 +1,168 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>Last Light polish check</title>
+<style>body{margin:0;background:#111;color:#ccc;font:12px monospace}canvas{display:block;width:1280px;height:720px}</style></head>
+<body><canvas id="c" width="1280" height="720"></canvas><div id="log"></div>
+<script>
+// Mirrors FilmCamera.dark and FilmWorld.dark (after the 2026-11 polish) and draws them with the film's real shader over
+// Codex's 3 s game frame, re-projected as a sky backdrop. `old` = the 1.0.0 numbers, for comparison.
+const log = m => { document.getElementById('log').textContent += m + '\n'; };
+const sat = x => x < 0 ? 0 : Math.min(x, 1), lerp = (a, b, u) => a + (b - a) * u, lin = (a, b, x) => sat((x - a) / (b - a));
+const ss = (a, b, x) => { const u = lin(a, b, x); return u * u * (3 - 2 * u); }, easeOut = u => 1 - (1 - u) * (1 - u);
+const RT = [[0,0],[50,65],[60,78],[90,118],[150,200],[200,270]];
+const toSb = g => { for (let i = 1; i < RT.length; i++) if (g <= RT[i][1]) return lerp(RT[i-1][0], RT[i][0], (g - RT[i-1][1]) / (RT[i][1] - RT[i-1][1])); return 200; };
+const V = (x, y, z) => [x, y, z], add = (a, b) => [a[0]+b[0], a[1]+b[1], a[2]+b[2]], sub = (a, b) => [a[0]-b[0], a[1]-b[1], a[2]-b[2]];
+const sc = (a, s) => [a[0]*s, a[1]*s, a[2]*s], dot = (a, b) => a[0]*b[0]+a[1]*b[1]+a[2]*b[2];
+const cross = (a, b) => [a[1]*b[2]-a[2]*b[1], a[2]*b[0]-a[0]*b[2], a[0]*b[1]-a[1]*b[0]], norm = a => sc(a, 1 / Math.hypot(a[0], a[1], a[2]));
+const HOLE = norm(V(0.34, 0.2, -1)), FW = norm(V(HOLE[0], 0, HOLE[2])), RTV = V(-FW[2], 0, FW[0]), UP = V(0, 1, 0), FEET = V(0, 1, 0);
+const at = (f, fwd, r, up) => V(f[0] + FW[0]*fwd + RTV[0]*r, f[1] + up, f[2] + FW[2]*fwd + RTV[2]*r);
+function camera(t, old) {
+  let pos, dir, fov;
+  if (t < 50) { const u = t / 50; pos = at(FEET, lerp(-5.4, -4.4, u), 1.9, lerp(1.45, 1.7, u)); dir = norm(sub(at(FEET, 40, 3, 6.5), pos)); fov = 46; }
+  else if (t < 90) { const u = ss(50, 90, t);
+    if (old) { pos = at(FEET, lerp(-1.6, -1.4, u), 0.7, lerp(1.48, 1.54, u)); dir = norm(add(add(sc(HOLE, 100), sc(RTV, -9)), V(0, -13, 0))); fov = 40; }
+    else { pos = at(FEET, lerp(-2.3, -2.1, u), 0.85, lerp(1.47, 1.53, u)); dir = norm(add(add(sc(HOLE, 100), sc(RTV, -7)), V(0, -21, 0))); fov = 43; } }
+  else { const m = ss(98, 150, t); pos = at(FEET, lerp(-3.6, 7, m), lerp(1.3, 0.2, m), lerp(2.2, 9, m));
+    const wide = norm(sub(at(FEET, 40, 1, 5), pos)), k = ss(100, 132, t); dir = norm(add(sc(wide, 1 - k), sc(HOLE, k))); fov = lerp(50, 11, Math.pow(lin(100, 150, t), 1.5)); }
+  const right = norm(cross(dir, UP)), up = cross(right, dir);
+  return {pos, dir, fov, right, up};
+}
+function matrices(cam) {
+  const {pos, dir, right, up} = cam, f = 1 / Math.tan(cam.fov * Math.PI / 360), n = 0.05, fr = 768;
+  const view = new Float32Array([right[0], up[0], -dir[0], 0, right[1], up[1], -dir[1], 0, right[2], up[2], -dir[2], 0, -dot(right, pos), -dot(up, pos), dot(dir, pos), 1]);
+  const proj = new Float32Array([f / (16 / 9), 0, 0, 0, 0, f, 0, 0, 0, 0, (fr + n) / (n - fr), -1, 0, 0, 2 * fr * n / (n - fr), 0]);
+  return {view, proj};
+}
+const PH = (() => { const s = [0]; for (let i = 1; i < 300; i++) { const t = i - 1; s.push(s[i-1] + (t < 90 ? 0.006 : t < 150 ? 0.006 * Math.pow(18, (t - 90) / 60) : 0.108)); } return s; })();
+const phase = t => { const x = Math.max(0, Math.min(t, 290)), i = Math.floor(x); return lerp(PH[i], PH[i+1], x - i); };
+
+const cv = document.getElementById('c'), gl = cv.getContext('webgl2', {preserveDrawingBuffer: true, antialias: true});
+let prog, bgProg, boxProg, tex, vbuf, ready = false;
+function compile(vs, fs) {
+  const p = gl.createProgram();
+  for (const [type, src] of [[gl.VERTEX_SHADER, vs], [gl.FRAGMENT_SHADER, fs]]) { const s = gl.createShader(type); gl.shaderSource(s, src); gl.compileShader(s);
+    if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) { log('SHADER ERROR ' + gl.getShaderInfoLog(s)); throw new Error('shader'); } gl.attachShader(p, s); }
+  gl.bindAttribLocation(p, 0, 'Position'); gl.bindAttribLocation(p, 1, 'UV0'); gl.bindAttribLocation(p, 2, 'Color');
+  gl.linkProgram(p); if (!gl.getProgramParameter(p, gl.LINK_STATUS)) { log('LINK ERROR ' + gl.getProgramInfoLog(p)); throw new Error('link'); }
+  return p;
+}
+const es = s => s.replace('#version 150', '#version 300 es\nprecision highp float;');
+async function init() {
+  const [fsh, vsh] = await Promise.all([fetch('/fsh').then(r => r.text()), fetch('/vsh').then(r => r.text())]);
+  prog = compile(es(vsh), es(fsh));
+  bgProg = compile(`#version 300 es
+in vec3 Position; out vec2 p; void main(){ p = Position.xy; gl_Position = vec4(Position.xy, 0.999, 1.0); }`, `#version 300 es
+precision highp float; in vec2 p; out vec4 o; uniform sampler2D T; uniform vec3 D, R, U, D0, R0, U0; uniform vec2 F;
+void main(){ vec3 ray = normalize(D + R * p.x * F.x * 1.7777778 + U * p.y * F.x);
+  float z = dot(ray, D0); vec2 q = vec2(dot(ray, R0), dot(ray, U0)) / (z * F.y); q.x /= 1.7777778;
+  vec3 c = (z > 0.0 && abs(q.x) < 1.0 && abs(q.y) < 0.78) ? texture(T, vec2(q.x, -q.y) * 0.5 + 0.5).rgb : vec3(0.015, 0.008, 0.006);
+  o = vec4(c, 1.0); }`);
+  boxProg = compile(`#version 300 es
+in vec3 Position; in vec2 UV0; in vec4 Color; uniform mat4 ModelViewMat, ProjMat; out vec4 col;
+void main(){ gl_Position = ProjMat * ModelViewMat * vec4(Position, 1.0); col = Color; }`, `#version 300 es
+precision highp float; in vec4 col; out vec4 o; void main(){ o = col; }`);
+  vbuf = gl.createBuffer();
+  const img = new Image(); img.src = '/shot3'; await img.decode();
+  tex = gl.createTexture(); gl.bindTexture(gl.TEXTURE_2D, tex); gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, img);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+  ready = true; log('ready');
+}
+let verts = [];
+const cl = v => v < 0 ? 0 : Math.min(v, 1);
+const vertex = (x, y, z, u, v, r, g, b, a) => verts.push(x, y, z, u, v, cl(r), cl(g), cl(b), cl(a));
+function quad(a, b, c, d) { for (const p of [a, b, c, a, c, d]) vertex(...p); }
+function billboard(c, cam, hw, hh, r, g, b, a) {
+  const R = sc(cam.right, hw), Uv = sc(cam.up, hh);
+  quad([...sub(sub(c, R), Uv), -1, -1, r, g, b, a], [...sub(add(c, R), Uv), 1, -1, r, g, b, a], [...add(add(c, R), Uv), 1, 1, r, g, b, a], [...add(sub(c, R), Uv), -1, 1, r, g, b, a]);
+}
+function flush(p, m, mode, P, Q) {
+  gl.useProgram(p); gl.bindBuffer(gl.ARRAY_BUFFER, vbuf); gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(verts), gl.DYNAMIC_DRAW);
+  gl.enableVertexAttribArray(0); gl.vertexAttribPointer(0, 3, gl.FLOAT, false, 36, 0);
+  gl.enableVertexAttribArray(1); gl.vertexAttribPointer(1, 2, gl.FLOAT, false, 36, 12);
+  gl.enableVertexAttribArray(2); gl.vertexAttribPointer(2, 4, gl.FLOAT, false, 36, 20);
+  if (m) { gl.uniformMatrix4fv(gl.getUniformLocation(p, 'ModelViewMat'), false, m.view); gl.uniformMatrix4fv(gl.getUniformLocation(p, 'ProjMat'), false, m.proj); }
+  if (mode !== undefined) { gl.uniform1f(gl.getUniformLocation(p, 'Mode'), mode); gl.uniform4f(gl.getUniformLocation(p, 'Param'), ...(P || [1, 0, 0, 0])); gl.uniform4f(gl.getUniformLocation(p, 'Param2'), ...(Q || [0, 0, 0, 0])); }
+  gl.drawArrays(gl.TRIANGLES, 0, verts.length / 9); verts = [];
+}
+function box(x0, x1, y0, y1, z0, z1, col) { // local: x along RTV, z along FW
+  const P = (x, y, z) => at(FEET, z, x, y), c = s => [0, 0, col[0] * s, col[1] * s, col[2] * s, 1];
+  const f = (a, b, c2, d, s) => quad([...a, ...c(s)], [...b, ...c(s)], [...c2, ...c(s)], [...d, ...c(s)]);
+  f(P(x0, y0, z0), P(x1, y0, z0), P(x1, y1, z0), P(x0, y1, z0), 0.8); f(P(x0, y0, z1), P(x1, y0, z1), P(x1, y1, z1), P(x0, y1, z1), 0.5);
+  f(P(x0, y0, z0), P(x0, y0, z1), P(x0, y1, z1), P(x0, y1, z0), 0.6); f(P(x1, y0, z0), P(x1, y0, z1), P(x1, y1, z1), P(x1, y1, z0), 0.7);
+  f(P(x0, y1, z0), P(x1, y1, z0), P(x1, y1, z1), P(x0, y1, z1), 1.0);
+}
+function wall(radius, height, r, g, b, a) {
+  for (let j = 0; j < 96; j++) { const a0 = Math.PI * 2 * j / 96, a1 = Math.PI * 2 * (j + 1) / 96;
+    const x0 = Math.cos(a0) * radius, z0 = Math.sin(a0) * radius, x1 = Math.cos(a1) * radius, z1 = Math.sin(a1) * radius;
+    quad([x0, 1, z0, 0, 0, r, g, b, a], [x1, 1, z1, 1, 0, r, g, b, a], [x1, 1 + height, z1, 1, 1, r, g, b, a], [x0, 1 + height, z0, 0, 1, r, g, b, a]); }
+}
+const MOTE = (() => { let s = 11; const rnd = () => (s = (s * 1103515245 + 12345) & 0x7fffffff) / 0x7fffffff; const m = []; for (let i = 0; i < 220; i++) m.push([(rnd() - 0.5) * 30, rnd() * 10, (rnd() - 0.5) * 30, 0.05 + rnd() * 0.06]); return m; })();
+function floorQuad(s, y, uvScale, r, g, b, a) { quad([-s, y, -s, -uvScale, -uvScale, r, g, b, a], [-s, y, s, -uvScale, uvScale, r, g, b, a], [s, y, s, uvScale, uvScale, r, g, b, a], [s, y, -s, uvScale, -uvScale, r, g, b, a]); }
+
+function draw(g, old, noFx) {
+  if (!ready) return 'not ready';
+  const t = toSb(g), cam = camera(t, old), m = matrices(cam), cam0 = camera(toSb(60), true);
+  gl.viewport(0, 0, 1280, 720); gl.disable(gl.BLEND); gl.enable(gl.DEPTH_TEST); gl.depthFunc(gl.LEQUAL); gl.depthMask(true); gl.clearColor(0, 0, 0, 1); gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+  // backdrop: the 3 s game frame as a sky at infinity (no depth)
+  gl.depthMask(false); gl.useProgram(bgProg); gl.bindTexture(gl.TEXTURE_2D, tex);
+  const u3 = (n, v) => gl.uniform3f(gl.getUniformLocation(bgProg, n), ...v);
+  u3('D', cam.dir); u3('R', cam.right); u3('U', cam.up); u3('D0', cam0.dir); u3('R0', cam0.right); u3('U0', cam0.up);
+  gl.uniform2f(gl.getUniformLocation(bgProg, 'F'), Math.tan(cam.fov * Math.PI / 360), Math.tan(cam0.fov * Math.PI / 360));
+  quad([-1, -1, 0, 0, 0, 0, 0, 0, 0], [1, -1, 0, 0, 0, 0, 0, 0, 0], [1, 1, 0, 0, 0, 0, 0, 0, 0], [-1, 1, 0, 0, 0, 0, 0, 0, 0]); flush(bgProg);
+  // the caster (boxes), writing depth
+  gl.depthMask(true); const B = [0.16, 0.42, 0.62];
+  box(-0.234, 0.234, 0.7, 1.40, -0.117, 0.117, B); box(-0.234, 0.234, 1.40, 1.87, -0.234, 0.234, [0.2, 0.5, 0.72]);
+  box(0.234, 0.469, 0.7, 1.40, -0.117, 0.117, B); box(-0.469, -0.234, 0.7, 1.40, -0.117, 0.117, B); box(-0.234, 0.234, 0.0, 0.7, -0.117, 0.117, [0.1, 0.25, 0.45]);
+  flush(boxProg, m);
+  if (!noFx) effects(t, cam, m, old);
+  // bars
+  gl.disable(gl.DEPTH_TEST); gl.disable(gl.BLEND); gl.useProgram(boxProg);
+  const I = {view: new Float32Array([1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1]), proj: new Float32Array([1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1])};
+  for (const [y0, y1] of [[0.78, 1], [-1, -0.78]]) quad([-1, y0, 0, 0, 0, 0, 0, 0, 1], [1, y0, 0, 0, 0, 0, 0, 0, 1], [1, y1, 0, 0, 0, 0, 0, 0, 1], [-1, y1, 0, 0, 0, 0, 0, 0, 1]);
+  flush(boxProg, I);
+  return 'tick ' + g + ' story ' + t.toFixed(1) + ' fov ' + cam.fov.toFixed(1);
+}
+function effects(t, cam, m, old) {
+  gl.enable(gl.BLEND); gl.blendFunc(gl.ONE, gl.ONE); gl.depthMask(false);
+  const press = t >= 60 ? Math.exp(-(t - 60) / 7) : 0, release = t >= 90 ? Math.exp(-(t - 90) / 8) : 0, race = lin(90, 150, t), out = 1 - lin(150, 154, t);
+  const idle = lin(40, 56, t), charge = 0.9 * lin(64, 90, t) * (1 - lin(90, 96, t));
+  const pool = sat((0.1 * idle + (old ? 0.5 : 0.4) * press + 0.3 * charge + (old ? 0.6 : 0.4) * release + 0.16 * race) * out);
+  if (!old && pool > 0.01) { floorQuad(15, 1.02, 1, 1, 0.62, 0.3, pool); flush(prog, m, 1, [1, 0, 0, 0]); }
+  const wu = lin(90, 135, t), radius = 520 * Math.pow(wu, 1.3), strength = t >= 90 ? 1 - ss(0.7, 1, wu) : 0, away = lin(10, 60, radius);
+  if (t >= 90) {
+    floorQuad(600, 1.03, 600, 1, 1, 1, 1);
+    flush(prog, m, 3, [wu >= 1 ? 100000 : radius, strength * (old ? 1 : lerp(1, 1.5, away)), (0.35 + 0.65 * race) * out, phase(t) * 4], [cam.pos[0], cam.pos[2], 600, 0]);
+    if (strength > 0.001) {
+      if (old) wall(Math.max(radius, 0.01), 5 + radius * 0.07, 1, 0.72, 0.47, strength * 0.6);
+      else { wall(Math.max(radius, 0.01), 5 + radius * 0.07, 1, lerp(0.72, 0.84, away), lerp(0.47, 0.62, away), strength * lerp(0.6, 0.9, away) * lin(2, 12, radius)); if (away > 0) wall(Math.max(radius, 0.01), 1.5 + radius * 0.014, 1, 0.96, 0.88, strength * away); }
+      flush(prog, m, 4);
+    }
+  }
+  const ru = (t - 60) / 30;
+  if (ru > 0 && ru < 1) { const s = 1 + 13 * easeOut(ru);
+    if (old) { const a = (1 - ru) * (1 - ru) * 0.8; quad([-s, 1.04, -s, -1, -1, 1, 0.78, 0.54, a], [-s, 1.04, s, -1, 1, 1, 0.78, 0.54, a], [s, 1.04, s, 1, 1, 1, 0.78, 0.54, a], [s, 1.04, -s, 1, -1, 1, 0.78, 0.54, a]); flush(prog, m, 5, [0.94, 0, 0, 0]); }
+    else { const a = Math.pow(1 - ru, 1.5); quad([-s, 1.04, -s, -1, -1, 1, 0.86, 0.66, a], [-s, 1.04, s, -1, 1, 1, 0.86, 0.66, a], [s, 1.04, s, 1, 1, 1, 0.86, 0.66, a], [s, 1.04, -s, 1, -1, 1, 0.86, 0.66, a]); flush(prog, m, 5, [0.9, 0.3, 0.35, 0]); } }
+  const glow = (0.25 * idle + 1.7 * press + charge + 2.6 * release + race * (0.5 + 0.3 * Math.sin(t * 1.3))) * out;
+  if (glow >= 0.03) {
+    const hand = old ? add(FEET, V(RTV[0] * 0.4 + FW[0] * 0.28, 0.82, RTV[2] * 0.4 + FW[2] * 0.28)) : add(FEET, V(RTV[0] * 0.55 + FW[0] * 0.2, 0.78, RTV[2] * 0.55 + FW[2] * 0.2));
+    if (old) { const size = (0.3 + glow) * 0.5; billboard(hand, cam, size, size, 1, 0.69, 0.38, 1); flush(prog, m, 7, [sat(0.5 + glow) * 0.9, 0, 0, 0]);
+      billboard(hand, cam, 0.09, 0.09, 1, 0.94, 0.82, sat(0.4 + glow)); flush(prog, m, 1, [1, 0, 0, 0]); }
+    else { const size = Math.min(0.3 + 0.55 * glow, 1.3); billboard(hand, cam, size, size, 1, 0.76, 0.48, 1); flush(prog, m, 7, [sat(0.5 + glow) * 1.5, 0, 0, 0]);
+      const rel = sub(hand, cam.pos), far = Math.hypot(...rel), p = add(cam.pos, sc(rel, far > 0.6 ? 1 - 0.15 / far : 1)), core = 0.12 + 0.05 * sat(glow);
+      billboard(p, cam, core, core, 1, 0.97, 0.9, 1); flush(prog, m, 1, [1.2 + 0.6 * sat(glow), 0, 0, 0]);
+      const kick = sat(press + release) * out; if (kick > 0.03) { const reach = 0.7 + 1.8 * kick; billboard(p, cam, reach, reach, 1, 0.9, 0.72, kick); flush(prog, m, 9, [0.9, 0, 0, 0]); } }
+  }
+  if (race > 0) {
+    const lift = race * race * 70, bright = (0.10 + 0.5 * race) * lin(90, 94, t) * out;
+    MOTE.forEach((mo, i) => { const k = 0.6 + (i % 7) * 0.1, y = (mo[1] + lift * k) % 10; billboard(V(mo[0], 1 + y, mo[2]), cam, mo[3], mo[3], bright, bright * 0.6, bright * 0.3, 1); });
+    flush(prog, m, 1, [1, 0, 0, 0]);
+    const streak = race * race * 2.4;
+    if (streak > 0.05) { const a = race * 0.6 * out;
+      MOTE.forEach((mo, i) => { const k = 0.6 + (i % 7) * 0.1, x = mo[0] - cam.pos[0], z = mo[2] - cam.pos[2], y = 1 + (mo[1] + lift * k) % 10; let sx = -z, sz = x; const len = Math.hypot(sx, sz); if (len < 0.001) return; sx *= 0.03 / len; sz *= 0.03 / len;
+        quad([mo[0] - sx, y, mo[2] - sz, -1, 0, a, a * 0.63, a * 0.31, 1], [mo[0] + sx, y, mo[2] + sz, 1, 0, a, a * 0.63, a * 0.31, 1], [mo[0] + sx, y - streak * k, mo[2] + sz, 1, 1, 0, 0, 0, 1], [mo[0] - sx, y - streak * k, mo[2] - sz, -1, 1, 0, 0, 0, 1]); });
+      flush(prog, m, 8); }
+  }
+  gl.depthMask(true);
+}
+window.check = {draw, ready: () => ready};
+init().catch(e => log('INIT ERROR ' + e));
+</script></body></html>

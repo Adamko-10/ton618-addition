@@ -23,14 +23,20 @@ import org.joml.Vector3f;
 /**
  * <b>FABLE'S FILE.</b> What the film draws in the world itself, hidden by whatever stands in front of it:
  * <ul>
- *   <li>in TON 618's dark (the previz's shots 2 and 3): the glow in the caster's hand, the small ring of the press,
- *       and <b>the time wave</b> at RACE: a bright front over the floor with a wall of light on it, and behind it
- *       dashes rushing over the floor and dust shooting upward;</li>
+ *   <li>in TON 618's dark (the previz's shots 2 and 3): the glow in the caster's hand and its light on the floor, the
+ *       small ring of the press, and <b>the time wave</b> at RACE: a bright front over the floor with a wall of light
+ *       on it, and behind it dashes rushing over the floor and dust shooting upward;</li>
  *   <li>back in the overworld (shots 9 and 10): <b>the returning wave</b>: the world is there inside its radius and
  *       white outside it (a white shell round the caster that grows; everything nearer than the shell shows), a wall of
  *       light on its front, and motes of light settling on the land.</li>
  * </ul>
  * The waves are pictures only: they move and hurt nothing.
+ *
+ * <p><b>When it is drawn.</b> In the dark, TON 618 paints its own picture over the finished level: every pixel that
+ * holds nothing solid becomes its sky and TON618, and the dark's floor is invisible, so that is every pixel but the
+ * players. Light drawn any earlier in the frame is painted out (the 1.0.0 film drew at AFTER_WEATHER and none of it
+ * showed there). So in the dark the film draws at AFTER_LEVEL, once that picture is done and while the level's depth
+ * is still there; in the overworld it draws at AFTER_WEATHER as before.
  */
 final class FilmWorld {
     private static final int MOTES = 220;
@@ -71,6 +77,8 @@ final class FilmWorld {
     }
 
     static void render(WorldRenderContext context, LastLightCast cast, float t) {
+        // Fabric: drawn at the end of the level (WorldRenderEvents.LAST), after TON 618's dark picture and the weather
+        boolean dark = cast.inDark();
         if (!FilmGl.ready()) {
             return;
         }
@@ -86,7 +94,7 @@ final class FilmWorld {
         Vector3f right = new Vector3f(-left.x, -left.y, -left.z);
         Matrix4f view = new Matrix4f(context.matrixStack().last().pose());
         Matrix4f proj = new Matrix4f(context.projectionMatrix());
-        if (cast.inDark()) {
+        if (dark) {
             if (t < FilmScript.S_COSMOS + 4F) {
                 dark(cast, t, partial, eye, right, up, view, proj);
             }
@@ -107,14 +115,31 @@ final class FilmWorld {
         float release = t >= FilmScript.S_RACE ? (float) Math.exp(-(t - FilmScript.S_RACE) / 8F) : 0F;
         float race = lin(FilmScript.S_RACE, FilmScript.S_COSMOS, t);
         float out = 1F - lin(FilmScript.S_COSMOS, FilmScript.S_COSMOS + 4F, t);
+        float idle = lin(40F, 56F, t);
+        float charge = 0.9F * lin(64F, FilmScript.S_RACE, t) * (1F - lin(FilmScript.S_RACE, 96F, t));
 
         FilmGl.beginWorld();
         FilmGl.additive();
+
+        // the hand's light lying on the floor round the caster: the dark's floor can't be seen, this shows it is there
+        float pool = sat((0.1F * idle + 0.4F * press + 0.3F * charge + 0.4F * release + 0.16F * race) * out);
+        if (pool > 0.01F) {
+            float s = 15F;
+            BufferBuilder b = FilmGl.begin();
+            FilmGl.vertex(b, cx - s, cy + 0.02F, cz - s, -1F, -1F, 1F, 0.62F, 0.3F, pool);
+            FilmGl.vertex(b, cx - s, cy + 0.02F, cz + s, -1F, 1F, 1F, 0.62F, 0.3F, pool);
+            FilmGl.vertex(b, cx + s, cy + 0.02F, cz + s, 1F, 1F, 1F, 0.62F, 0.3F, pool);
+            FilmGl.vertex(b, cx + s, cy + 0.02F, cz - s, 1F, -1F, 1F, 0.62F, 0.3F, pool);
+            FilmGl.draw(b, view, proj, FilmGl.DOT, 1F, 0F, 0F, 0F);
+        }
 
         // the time wave over the floor, and time running fast behind it
         float wu = lin(FilmScript.S_RACE, 135F, t);
         float radius = 520F * (float) Math.pow(wu, 1.3);
         float strength = t >= FilmScript.S_RACE ? 1F - ss(0.7F, 1F, wu) : 0F;
+        // Far off the wave is a thin line with TON618's bright disk behind it, so it is drawn stronger and whiter there
+        // than in 1.0.0; while it is still close to the caster it is big on screen and stays as it was
+        float away = lin(10F, 60F, radius);
         if (t >= FilmScript.S_RACE) {
             float half = 600F;
             float y = cy + 0.03F;
@@ -123,11 +148,17 @@ final class FilmWorld {
             FilmGl.vertex(b, cx - half, y, cz + half, -half, half, 1F, 1F, 1F, 1F);
             FilmGl.vertex(b, cx + half, y, cz + half, half, half, 1F, 1F, 1F, 1F);
             FilmGl.vertex(b, cx + half, y, cz - half, half, -half, 1F, 1F, 1F, 1F);
-            FilmGl.draw(b, view, proj, FilmGl.WAVE, wu >= 1F ? 100000F : radius, strength, (0.35F + 0.65F * race) * out,
+            FilmGl.draw(b, view, proj, FilmGl.WAVE, wu >= 1F ? 100000F : radius, strength * lerp(1F, 1.5F, away), (0.35F + 0.65F * race) * out,
                 FilmScript.phase(t) * 4F, -cx, -cz, half, 0F);
             if (strength > 0.001F) {
                 BufferBuilder w = FilmGl.begin();
-                wall(w, cx, cy, cz, Math.max(radius, 0.01F), 5F + radius * 0.07F, 1F, 0.72F, 0.47F, strength * 0.6F);
+                // the wall of light on the front (not in its first ticks: that small, it is a slab of light round the caster),
+                // and once it is away a low white-hot foot under it
+                wall(w, cx, cy, cz, Math.max(radius, 0.01F), 5F + radius * 0.07F, 1F, lerp(0.72F, 0.84F, away), lerp(0.47F, 0.62F, away),
+                    strength * lerp(0.6F, 0.9F, away) * lin(2F, 12F, radius));
+                if (away > 0F) {
+                    wall(w, cx, cy, cz, Math.max(radius, 0.01F), 1.5F + radius * 0.014F, 1F, 0.96F, 0.88F, strength * away);
+                }
                 FilmGl.draw(w, view, proj, FilmGl.WALL);
             }
         }
@@ -136,19 +167,19 @@ final class FilmWorld {
         float ru = (t - FilmScript.S_PRESS) / 30F;
         if (ru > 0F && ru < 1F) {
             float s = 1F + 13F * FilmScript.easeOut(ru);
-            float a = (1F - ru) * (1F - ru) * 0.8F;
+            // a wider, brighter band than 1.0.0's, with a soft glow trailing inside it (seen nearly edge on, a thin ring is lost)
+            float a = (float) Math.pow(1F - ru, 1.5);
             BufferBuilder b = FilmGl.begin();
-            FilmGl.vertex(b, cx - s, cy + 0.04F, cz - s, -1F, -1F, 1F, 0.78F, 0.54F, a);
-            FilmGl.vertex(b, cx - s, cy + 0.04F, cz + s, -1F, 1F, 1F, 0.78F, 0.54F, a);
-            FilmGl.vertex(b, cx + s, cy + 0.04F, cz + s, 1F, 1F, 1F, 0.78F, 0.54F, a);
-            FilmGl.vertex(b, cx + s, cy + 0.04F, cz - s, 1F, -1F, 1F, 0.78F, 0.54F, a);
-            FilmGl.draw(b, view, proj, FilmGl.RING, 0.94F, 0F, 0F, 0F);
+            FilmGl.vertex(b, cx - s, cy + 0.04F, cz - s, -1F, -1F, 1F, 0.86F, 0.66F, a);
+            FilmGl.vertex(b, cx - s, cy + 0.04F, cz + s, -1F, 1F, 1F, 0.86F, 0.66F, a);
+            FilmGl.vertex(b, cx + s, cy + 0.04F, cz + s, 1F, 1F, 1F, 0.86F, 0.66F, a);
+            FilmGl.vertex(b, cx + s, cy + 0.04F, cz - s, 1F, -1F, 1F, 0.86F, 0.66F, a);
+            FilmGl.draw(b, view, proj, FilmGl.RING, 0.9F, 0.3F, 0.35F, 0F);
         }
 
         // the glow in the hand: a flash at the press, growing while it charges, a burst as time is let go
-        float charge = 0.9F * lin(64F, FilmScript.S_RACE, t) * (1F - lin(FilmScript.S_RACE, 96F, t));
-        float glow = (0.25F * lin(40F, 56F, t) + 1.7F * press + charge + 2.6F * release + race * (0.5F + 0.3F * (float) Math.sin(t * 1.3))) * out;
-        hand(cast, partial, eye, right, up, view, proj, glow);
+        float glow = (0.25F * idle + 1.7F * press + charge + 2.6F * release + race * (0.5F + 0.3F * (float) Math.sin(t * 1.3))) * out;
+        hand(cast, partial, eye, right, up, view, proj, glow, sat(press + release) * out, true);
 
         // dust shooting upward, faster and faster
         if (race > 0F) {
@@ -262,7 +293,7 @@ final class FilmWorld {
         }
 
         float glow = 0.35F * (1F - ss(560F, 620F, t)) + 1.2F * (t >= FilmScript.S_CLEAR ? (float) Math.exp(-(t - FilmScript.S_CLEAR) / 10F) : 0F);
-        hand(cast, partial, eye, right, up, view, proj, glow);
+        hand(cast, partial, eye, right, up, view, proj, glow, 0F, false);
         FilmGl.end();
     }
 
@@ -302,19 +333,48 @@ final class FilmWorld {
         }
     }
 
-    /** A glow where the caster holds the item that fired it (either item: only its light is shown). */
+    /**
+     * A glow where the caster holds the item that fired it (either item: only its light is shown). In the dark
+     * ({@code dark}) TON618's bright disk is behind it, so it is wider and whiter there, with a white-hot core, it sits
+     * just outside the hand (so the arm can't hide it from behind), and {@code kick} (0 to 1: the press and the release)
+     * adds a flare.
+     */
     private static void hand(LastLightCast cast, float partial, Vec3 eye, Vector3f right, Vector3f up, Matrix4f view, Matrix4f proj,
-            float glow) {
+            float glow, float kick, boolean dark) {
         if (glow < 0.03F) {
             return;
         }
-        Vec3 at = hand(cast, partial);
+        Vec3 at = hand(cast, partial, dark);
         if (at == null) {
             return;
         }
         float x = (float) (at.x - eye.x);
         float y = (float) (at.y - eye.y);
         float z = (float) (at.z - eye.z);
+        if (dark) {
+            float size = Math.min(0.3F + 0.55F * glow, 1.3F);
+            BufferBuilder b = FilmGl.begin();
+            FilmGl.billboard(b, x, y, z, right, up, size, size, 1F, 0.76F, 0.48F, 1F);
+            FilmGl.draw(b, view, proj, FilmGl.GLOW, sat(0.5F + glow) * 1.5F, 0F, 0F, 0F);
+            // the core and the flare: a little nearer the camera along the line of sight (the same spot on screen), so a
+            // swinging arm doesn't cut them
+            float far = (float) Math.sqrt(x * x + y * y + z * z);
+            float pull = far > 0.6F ? 1F - 0.15F / far : 1F;
+            float px = x * pull;
+            float py = y * pull;
+            float pz = z * pull;
+            float core = 0.12F + 0.05F * sat(glow);
+            b = FilmGl.begin();
+            FilmGl.billboard(b, px, py, pz, right, up, core, core, 1F, 0.97F, 0.9F, 1F);
+            FilmGl.draw(b, view, proj, FilmGl.DOT, 1.2F + 0.6F * sat(glow), 0F, 0F, 0F);
+            if (kick > 0.03F) {
+                float reach = 0.7F + 1.8F * kick;
+                b = FilmGl.begin();
+                FilmGl.billboard(b, px, py, pz, right, up, reach, reach, 1F, 0.9F, 0.72F, kick);
+                FilmGl.draw(b, view, proj, FilmGl.FLARE, 0.9F, 0F, 0F, 0F);
+            }
+            return;
+        }
         float size = (0.3F + glow) * 0.5F;
         BufferBuilder b = FilmGl.begin();
         FilmGl.billboard(b, x, y, z, right, up, size, size, 1F, 0.69F, 0.38F, 1F);
@@ -324,9 +384,13 @@ final class FilmWorld {
         FilmGl.draw(b, view, proj, FilmGl.DOT, 1F, 0F, 0F, 0F);
     }
 
-    /** About where the hand holding the item is: at the caster's side, a little forward. */
+    /**
+     * About where the hand holding the item is: at the caster's side, a little forward. In the dark ({@code beside}) the
+     * light sits just outside the hand instead of in it: the dark's shots look from behind the caster, and the arm
+     * would hide a light in the hand itself.
+     */
     @Nullable
-    private static Vec3 hand(LastLightCast cast, float partial) {
+    private static Vec3 hand(LastLightCast cast, float partial, boolean beside) {
         Player caster = cast.caster();
         if (caster == null) {
             return null;
@@ -339,6 +403,9 @@ final class FilmWorld {
         double side = (caster.getMainArm() == HumanoidArm.RIGHT) != cast.offhand() ? 1.0 : -1.0;
         double rx = -fz * side;
         double rz = fx * side;
+        if (beside) {
+            return feet.add(rx * 0.55 + fx * 0.2, 0.78, rz * 0.55 + fz * 0.2);
+        }
         return feet.add(rx * 0.4 + fx * 0.28, 0.82, rz * 0.4 + fz * 0.28);
     }
 }

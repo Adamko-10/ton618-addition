@@ -97,11 +97,13 @@ final class FilmCamera {
             dir = at(feet, fw, rt, 40.0, 3.0, 6.5).subtract(pos).normalize();
             fov = 46F;
         } else if (t < FilmScript.S_RACE) {
-            // 2. The Press: tight over the shoulder, the caster in front, TON618 beyond
+            // 2. The Press: over the shoulder, the caster in front, TON618 beyond. The arm isn't raised as in the previz
+            //    (the film can't pose it), so the shot sits a little further back and looks a little lower than the previz's:
+            //    the hand at the caster's side, its glow and the floor in front of them are then in the picture
             float u = ss(50F, 90F, t);
-            pos = at(feet, fw, rt, lerp(-1.6F, -1.4F, u), 0.7, lerp(1.48F, 1.54F, u));
-            dir = hole.scale(100.0).add(rt.scale(-9.0)).add(0.0, -13.0, 0.0).normalize();
-            fov = 40F;
+            pos = at(feet, fw, rt, lerp(-2.3F, -2.1F, u), 0.85, lerp(1.47F, 1.53F, u));
+            dir = hole.scale(100.0).add(rt.scale(-7.0)).add(0.0, -21.0, 0.0).normalize();
+            fov = 43F;
         } else {
             // 3. Time Lets Go: wide as the wave leaves, then up past the caster and in on TON618 until its shadow fills
             //    the frame; it waits there while the space scene covers the screen
