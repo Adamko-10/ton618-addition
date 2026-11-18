@@ -37,13 +37,50 @@ first** (Adam's brief, his own words at its end), then this file. Fable's part: 
   + Quasar Forge in his `Forge 1.20.1 (1)` instance.
 - **fabric-1.20.1 DONE, committed `1958413`** (merged from fabric-1.21.1; forge-1.20.1's loader-free drawing files copied,
   `fabric1201.js`): built first try. No Fabric 1.20.1 instance on his PC: jar only in the test-builds folder.
-- **Left: fabric-1.21.11 and fabric-26.3**: every TA-02 draw rewritten for render pipelines (as `FilmGl` there:
-  pipelines per blend/depth, std140 uniform block, `FilmMesh`, a scene texture). The film's HDR glow (`JetPost`,
-  16-bit float targets) has no float texture format on 1.21.11 (`TextureFormat`: RGBA8, RED8, RED8I, DEPTH32): draw
-  without the glow there, or fake it in 8 bits. The sky pass (`renderSky` is `SkyRenderer` there), fog (no
-  `FogRenderer.setupColor`), camera and GUI (2D pose, `nextStratum`) all differ. Adam picked **a fresh session**:
-  [TON 618 Addition: Fabric 1.21.11 and 26.3 ports](#local_767018e5-bb55-4bd0-8b32-2cf3c28ff89e) (started ~20:20 with
-  a full brief; it updates this section when done). Then one test round of all six in his instances, then release prompts.
+- **fabric-1.21.11 DONE, committed `5edce9b`** (2026-11-18 ~20:50, the fresh session
+  [TON 618 Addition: Fabric 1.21.11 and 26.3 ports](#local_767018e5-bb55-4bd0-8b32-2cf3c28ff89e); merged from
+  fabric-1.21.1): builds; dev client starts (both skills join, TA-02 locked without SS-21, no warnings of ours) and **all
+  8 TA-02 render pipelines compile** (logged once at start: "TA-02 · Quasar Jets' render pipelines compiled"; the
+  pipelines would otherwise compile mid-strike). No strike was cast in a dev game (no Fabric harness): never drawn yet.
+  - Drawing as the film's `FilmGl`: `QuasarGl` (pipelines LIGHT / LIGHT_THROUGH / BAKE, `QuasarParams` std140 block =
+    view + (Mode, Bake) + Param + Param2, the level's own `Projection` buffer, a pass per draw), `QuasarMesh` (public copy
+    of `FilmMesh`), `QuasarAtlas` (painted into a texture of our own, a pass per tile; drawn with `RenderTypes.eyes` via
+    `submitCustomGeometry` at `AFTER_ENTITIES`, each quad both ways round), `JetGl` (the film's scene into its own
+    picture, `JetGl.present` blits it in the HUD between `nextStratum()`s), shaders `#version 330` with uniform blocks.
+  - **The glow (Opus's pick: real HDR, the NeoForge look)**: 1.21.11 has no float `TextureFormat`, but its GL textures
+    are made with a plain `glTexImage2D`, so `JetPost` makes each glow target as RGBA8 and at once re-specifies it as
+    `GL_RGBA16F` under the same GL name (as the NeoForge branch does with its targets); the final pass goes into an
+    8-bit picture the HUD shows. If that fails (not GL), the scene is drawn without glow (the old fallback).
+  - Hooks: the frame's matrices at `LevelRenderer.renderLevel` HEAD (`LevelRendererStagesMixin`); Fabric `START_MAIN` =
+    after the sky (no render pass open there on 1.21.11), `END_MAIN` = world, `AFTER_ENTITIES` = shader pack; shake after
+    `Camera.setup` in `GameRenderer.updateCamera`; fog at `FogRenderer.computeFogColor` RETURN; the second sun as
+    environment-attribute layers (`SKY_LIGHT_FACTOR`, `SKY_COLOR`, `CLOUD_COLOR`, `STAR_BRIGHTNESS`); `ToastManager`.
+    **Last Light in the dark now draws after `LevelRenderer.renderLevel` returns** (RimuLib paints TON 618's dark at its
+    RETURN, which painted out the hand glow/ring/wave before: Fable's P2), the overworld part stays at `END_MAIN`.
+  - With a shader pack the sky's things are glowing-eyes geometry too (no sky stage reachable for Iris here): the named
+    stars may show over the pack's clouds (as 1.1.0 did before its NeoForge fix). Not tried with Iris.
+  - Other: packets as `CustomPacketPayload` records; `QuasarSky` as `SavedDataType` + codec; block/item ids on their
+    properties + `useBlockDescriptionPrefix`; `assets/ton618_addition/items/*.json`; `isDarkOutside`, `getMinY`,
+    permissions, `snapTo`, flash particles as `ColorParticleOption`, a `notifySound` packet helper.
+- **fabric-26.3 DONE, committed `1af746e`** (merged from fabric-1.21.11): builds; dev client starts (both skills join,
+  no warnings of ours), **all TA-02 pipelines compile**. Renderpearl versions (bind groups, colour targets, reversed
+  depth, pooled `ByteBufferBuilder`s); **the glow on real `RGBA16_FLOAT` targets** (26.3 has them; `JetGl`/`JetPost`
+  keep an 8-bit and a 16-bit-float pipeline each). Fabric 26.3's `START_MAIN` fires inside an open render pass, so the
+  sky's things draw at `SkyRenderer.render` TAIL onto its target (`SkyRendererMixin`, as the SA Series); frame matrices
+  from the `CameraRenderState`; frame start `GameRenderer.extract`; shake `CameraShakeMixin` (Camera.update TAIL);
+  `COLLECT_SUBMITS` for the pack; `GuiGraphicsExtractor`, `Minecraft.gui` (toasts, overlay, `hud.isHidden()`), world
+  clocks (`getDefaultClockTime`), `syncVelocity`, `PushReaction.POPPED`, no block codec, `CreativeModeTabEvents`.
+- Scripts for both: `..\port scripts (2026-11-18)\fabric12111-*.js`, `fabric263-*.js` (+ `res.js`, the conflict helper).
+- **Test jars**: `..\test builds\2026-11-18 TON 618 Addition 1.1.1 ports\TON 618 Addition 1.1.1 TEST [Fabric 1.21.11].jar`
+  and `[Fabric 26.3].jar`. In his instances (no download needed: **SS-21 Quasar 1.8.0 Fabric was already on the PC**, a
+  multi-version jar in his `Fabric 26.3` instance with 1.20.1/1.21.1/1.21.11/26.3 inside):
+  - `Fabric 1.21.11 (1)`: + the test jar, `ton618-1.1.0-fabric.jar`, `ss-21-quasar-1.8.0.jar` (it had RimuLib 1.2.3,
+    TSS 1.5.2, Fabric API).
+  - `Fabric 26.3`: + the test jar, `rimulib-1.2.3-fabric.jar` and `ton618-1.1.0-fabric.jar`; renamed `.disabled`:
+    `rimulib-1.2.2-fabric.jar` (the addon needs 1.2.3) and `ton618-experience-1.0.1-26.3.jar` (TON 618 1.0.1, id
+    `ton618`; the addon needs 1.1.0). It has Iris + Sodium: a shader-pack test is possible there.
+- **Next: one test round of all six in his instances** (Fabric 1.20.1 has no instance), then release prompts (GitHub
+  releases per branch, CurseForge files). Pushing waits for his yes.
 - Note: the mod description in the metadata (`mod_description`) still names only Last Light, on main too: add TA-02
   at the next release.
 
