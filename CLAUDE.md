@@ -103,6 +103,11 @@ distance, pitched by the star, delayed by the speed of sound (17.15 blocks a tic
   (`SkillSet.rows/skills`) are still there, so 1.1.1 ships as is with its range `[1.2.3,2.0)`. TON 618 1.1.0 and SS-21
   Quasar 1.8.0 check clean against both too. When porting to the other loaders, take RimuLib 1.3.0's file ids
   (Forge 9676536, Fabric 9676539).
+- **2026-11-18 ~13:30: a new CurseForge description format** is drafted on the SA Series first (`C:\Users\adam_\
+  Documents\Shooting Star Addition\releases\description rework\`); Adam reads it, and once he likes it, this project's
+  description gets the same format ("i want to later apply it to all projects like ton addition"). The players'
+  roadmap (`...\Shooting Star Addition\announcements\roadmap 2026-11-18.md`) now has a TON 618 Addition section
+  (ports next, then 1.2.0's scale reveal, real music for TA-02 later).
 
 - **2026-11-18: 1.1.1 release** (NeoForge 1.21.1 only). Pushed `main` to `e805b9f`; GitHub
   `v1.1.1` is Latest, with the checked jar and changelog:
