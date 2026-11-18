@@ -19,22 +19,30 @@ first** (Adam's brief, his own words at its end), then this file. Fable's part: 
   for him (don't). Jar `TON 618 Addition 1.1.1 TEST [Forge 1.21.1].jar` + `ton618-1.1.0-forge.jar` are in his
   `Forge 1.21.1` instance (copy in `..\test builds\2026-11-18 TON 618 Addition 1.1.1 ports\`). TA-02 there needs
   SS-21 Quasar Forge 1.8.0 (CurseForge file 9575837; Fabric 9435512): **not downloaded, ask him first**.
-- **fabric-1.21.1 IN PROGRESS, uncommitted** in `ports/fabric-1.21.1` (merge of main started): resolved build files,
-  config (`fabricconfig.js`), mod class, client class; `fabric1211.js` ran OK (rimulib imports untagged, Last Light
-  from main + Fabric hooks, shaders via `CoreShaderRegistrationCallback`, `QuasarContent.Registered<T>`, stage/shake/
-  fog/paint/toast as public methods). **Still to do**: (1) the new mixins in `client/mixin/` (failed to write; their
-  text is in this session's transcript): `LevelRendererStagesMixin` (after renderSky -> `QuasarRender.stage(AFTER_SKY)`
-  + `QuasarJetsFilm.afterSky`; after `ParticleEngine.render` -> AFTER_PARTICLES; as the SA Series' Fabric
-  `LevelRendererStagesMixin`), `QuasarGameRendererMixin` (HEAD `render(DeltaTracker,Z)` -> `QuasarRender.paint`;
-  after `Camera.setup` in `renderLevel` -> `QuasarRender.shake` + `CameraAccessor` invoker `setRotation`, roll via
-  `camera.rotation().rotationYXZ`), `FogRendererMixin` (TAIL `setupColor` -> `QuasarClient.fogColor`, as SA's),
-  `ToastComponentMixin` (HEAD `addToast` -> `LastLightFilm.holdToast || QuasarJetsFilm.holdToast`), all listed in
-  `ton618_addition.fabric.mixins.json`; (2) `git mv` `shaders/quasar/*` and `shaders/quasarfilm/*` into
-  `shaders/core/`; (3) HudRescue's Quasar lines as on Forge; (4) `libs/` (inner `+mc1.21.1` jars of RimuLib/TON 618
-  Fabric, from `libs/ports/*-fabric.jar`); build with Loom on JDK 25 (`~/.gradle/jdks/eclipse_adoptium-25-amd64-windows.2`);
-  `fabric.mod.json` already has the icon and `shooting_star_ss21_multi` in suggests.
-- Then forge-1.20.1, fabric-1.20.1, fabric-1.21.11, fabric-26.3 (the last two: TA-02's drawing rewritten for their
-  render pipelines, §8a). Then one test round in his instances, then release prompts (ports first need his test).
+  **Later (~19:45)**: SS-21 Quasar Forge 1.8.0 downloaded with his OK ("Yes, download it"; 4.2 MB, mod id
+  `shooting_star_ss21`) into `libs/ports/` and his `Forge 1.21.1` and `Forge 1.20.1 (1)` instances.
+- **fabric-1.21.1 DONE, committed `326c135`**: builds (Loom on JDK 25 at `~/.gradle/jdks/eclipse_adoptium-25-amd64-windows.2`);
+  dev client starts (both skills join, no errors of ours). Fabric hooks: `LevelRendererStagesMixin` (AFTER_SKY,
+  AFTER_PARTICLES; as the SA Series' Fabric one), `QuasarGameRendererMixin` (frame start, shake via `CameraAccessor`),
+  `FogRendererMixin`, `ToastComponentMixin`; `WorldRenderEvents.LAST` = AFTER_WEATHER; shaders in `shaders/core/`
+  (`CoreShaderRegistrationCallback`); `QuasarContent.Registered<T>`. Loom remaps the mixin names in the bytecode
+  (checked: `method_`/`field_`). Jar + `ton618-1.1.0-fabric.jar` + `rimulib-1.2.3-fabric.jar` in his `Fabric 1.21.1`
+  instance (it also has TSS 1.4.2 and SS-21 Quasar 1.6.0 Fabric, left as they were).
+- **forge-1.20.1 DONE, committed `07260c7`** (merged from forge-1.21.1): 1.20.1 drawing through `client/quasar/Gl1201`
+  (pooled BufferBuilders, `vertex().uv().color().endVertex()`, `RenderedBuffer`; `RenderType.end` for the pack quads),
+  `RenderTickEvent` START for the frame's start, phased tick events, `getPoseStack().last().pose()`, the sky pass taking
+  the camera pose at `renderSky`'s HEAD (`LevelRendererMixin`), QuasarSky with `computeIfAbsent(load, new, name)`, no
+  block codec, `ClipContext(..., (Entity) null)`, `Sound(String)`, plural data folders (`loot_tables`, `tags/blocks`).
+  Refmap checked (SRG names). Dev runs don't work on this branch (RimuLib's mixin): his game test. Jar + TON 618 Forge
+  + Quasar Forge in his `Forge 1.20.1 (1)` instance.
+- **fabric-1.20.1 DONE, committed `1958413`** (merged from fabric-1.21.1; forge-1.20.1's loader-free drawing files copied,
+  `fabric1201.js`): built first try. No Fabric 1.20.1 instance on his PC: jar only in the test-builds folder.
+- **Left: fabric-1.21.11 and fabric-26.3**: every TA-02 draw rewritten for render pipelines (as `FilmGl` there:
+  pipelines per blend/depth, std140 uniform block, `FilmMesh`, a scene texture). The film's HDR glow (`JetPost`,
+  16-bit float targets) has no float texture format on 1.21.11 (`TextureFormat`: RGBA8, RED8, RED8I, DEPTH32): draw
+  without the glow there, or fake it in 8 bits. The sky pass (`renderSky` is `SkyRenderer` there), fog (no
+  `FogRenderer.setupColor`), camera and GUI (2D pose, `nextStratum`) all differ. A big job: proposed to Adam to run it
+  in a fresh session (this one's context is long). Then one test round in his instances, then release prompts.
 - Note: the mod description in the metadata (`mod_description`) still names only Last Light, on main too: add TA-02
   at the next release.
 
