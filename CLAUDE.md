@@ -104,6 +104,16 @@ distance, pitched by the star, delayed by the speed of sound (17.15 blocks a tic
   Quasar 1.8.0 check clean against both too. When porting to the other loaders, take RimuLib 1.3.0's file ids
   (Forge 9676536, Fabric 9676539).
 
+- **2026-11-18: 1.1.1 release** (NeoForge 1.21.1 only). Pushed `main` to `e805b9f`; GitHub
+  `v1.1.1` is Latest, with the checked jar and changelog:
+  https://github.com/Adamko-10/ton618-addition/releases/tag/v1.1.1.
+  CurseForge file `9680692` was **Under Review**, set to publish automatically. Verified Release,
+  Minecraft 1.21.1, NeoForge, Java 21, Client and Server, the exact Markdown changelog, and all four
+  relations (TON 618 and RimuLib required, The Shooting Star [Demo] and SS-21 Quasar optional).
+  The Summary and Source were already correct. The 1.1.1 description is awaiting a decision from Adam:
+  the supplied Quasar link under `/mc-addons/` returns 404 and the current live description uses
+  the working `/mc-mods/` link. Continue at B2 after his answer. The other six loaders are still on 1.0.0.
+
 Adam, 2026-11-17 (with a screenshot of TA-02 in third person, no film, Complementary on): "for next update write this
 down". In his words, then what it means here:
 1. **A power slider for the explosion**: "lets add a slider to select the power of the explosion just like the shooting
