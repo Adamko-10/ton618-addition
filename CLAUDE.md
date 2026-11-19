@@ -5,6 +5,20 @@ Handoff notes for every Claude session in this folder (`C:\Users\User\Desktop\to
 Started 2026-11-13 by an Opus 5.5 session (xhigh) that was started from Adam's SA Series session. **Read `BRIEF.md`
 first** (Adam's brief, his own words at its end), then this file. Fable's part: `prompts\FABLE-PREVIZ-AND-FILM-PROMPT.md`.
 
+### >>> 2026-11-19 ~15:30 (Adam's PC): all six 1.1.1 ports built; Adam's test handed to Claude, paused <<<
+
+- All six ports are committed locally (forge-1.21.1 `6239002`, fabric-1.21.1 `326c135`, forge-1.20.1 `07260c7`,
+  fabric-1.20.1 `1958413`, fabric-1.21.11 `5edce9b`, fabric-26.3 `1af746e`) with test jars in his instances (no
+  Fabric 1.20.1 instance). Nothing pushed.
+- Adam couldn't test ("Claude tests for me", clickable, 2026-11-19): the test was sent to the ports session
+  ([TON 618 Addition: Fabric 1.21.11 and 26.3 ports](#local_767018e5-bb55-4bd0-8b32-2cf3c28ff89e)). It got Fabric
+  1.21.11 running (SS-21 Quasar's multi jar crashed it at first: not ours; the right inner jar fixed it) and then
+  stopped waiting for his OK to control the game window (computer use): its question is open there. Then: the other
+  instances, fixes on their branches, then the release prompts.
+- New 2026-11-19: decisions/ideas from his Discord notes are in §10 (new UI with SA's 1.9.0 look, smoother hand-over
+  into our films + audio: check with him, locked skills both ways, CelesTech); shared notes for every session in
+  `C:\Users\adam_\Documents\Claude notes\` (`INBOX.md`, `IDEAS.md`; rule in his personal rules).
+
 ### >>> RESUME HERE (2026-11-18 ~18:30, Adam's PC): porting 1.1.1 to the six loaders (Opus, easiest first) <<<
 
 - **Adam's picks (clickable)**: "Me, here (Recommended)" (Opus ports all six) and "Easiest first" (Forge 1.21.1, Fabric
