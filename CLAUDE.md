@@ -1296,6 +1296,19 @@ machinery (TON 618 needs none: we never name its classes).
 
 ## 10. Ideas
 
+- **From Adam's Discord notes to himself** (Carl-bot DMs, exported 2026-11-19; only what wasn't written down before):
+  - **A new UI for TON 618 Addition** (2026-11-14): "make ton 618 ui new just like how the shooting star addition ui is
+    getting an update", i.e. its plates/panels redone together with the SA Series' 1.9.0 settings menu (option B).
+  - **"I will fix audio issues and make the transition from ton 618 to cutscene smoother"** (2026-11-17, a forwarded
+    message, then "Do this"): whose promise it was and whether it was done isn't in these notes: check with him (the
+    smoother hand-over from TON 618's own film or dark into ours, and the audio issues).
+  - **Locked skills both ways** (2026-11-19: "Display ton618 addition skills when shooting star addition is installed
+    but lock it and tell what u need installed"; his answer, clickable: "Both ways"): each addon lists the other's skills
+    as locked until it's installed (with the SA Series but not this addon, the remote shows Last Light and Quasar Jets
+    locked: "install TON 618 Addition and TON 618"; this addon shows the SA Series' skills the same way). Not built.
+  - **CelesTech compat** ("one sky": a star launched by Quasar Jets gone from CelesTech's radar and the other way
+    round; black holes): ideas in `C:\Users\adam_\Documents\Claude notes\IDEAS.md`.
+
 - **TA-02 · Quasar Jets** (picked 2026-11-13; **a later update**, Adam 2026-11-14, with the real film music): TON 618 is really a quasar, one of the brightest
   known; a skill firing its relativistic jets as a beam across the land. Our own film and art; **only shown when SS-21
   Quasar is installed** (Aether21, CurseForge 1739264, "The Shooting Star Addition [SS-21 Quasar]", 1.8.0 has NeoForge
