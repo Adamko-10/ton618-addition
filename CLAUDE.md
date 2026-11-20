@@ -5,6 +5,46 @@ Handoff notes for every Claude session in this folder (`C:\Users\User\Desktop\to
 Started 2026-11-13 by an Opus 5.5 session (xhigh) that was started from Adam's SA Series session. **Read `BRIEF.md`
 first** (Adam's brief, his own words at its end), then this file. Fable's part: `prompts\FABLE-PREVIZ-AND-FILM-PROMPT.md`.
 
+### >>> 2026-11-20 ~14:15 (Adam's PC): a player's report: no H menu in the dark, "quasar doesn't work" <<<
+
+Done by a side session started from the SA Series' session.
+- **The report** (Discord, player "Savini Jason", NeoForge 1.21.1, CurseForge app, "all the latest versions of
+  dependencies"): "u cant open the H menu when ton618 devoured the world" and "the quasar addition doesnt work too".
+- **Checked**: CurseForge's own file lists (`https://www.curseforge.com/api/v1/mods/<project id>/files?...`; cfwidget's
+  slug lookup for `ton618` 404s, use `https://api.cfwidget.com/1798822`): nothing newer than TON 618 1.1.0, The
+  Shooting Star 1.6.0, RimuLib 1.3.0, SS-21 Quasar 1.8.0 (= Adam's instance). RimuLib 1.3.0 still has
+  `WhiteSpace.beforeHud/render` and draws the menu at `Gui.render` TAIL as 1.2.3 did; TON 618 1.1.0's `GuiMixin` still
+  cancels `Gui.render` at HEAD in the dark or when `CutsceneDirector.hideHud()`. SS-21 Quasar 1.8.0 references no TSS
+  class at all (RimuLib only), so TSS 1.6.0 can't have broken it.
+- **Not reproduced**, harness runs with exactly those versions (`..\test builds\2026-11-20 player report, menu in the
+  dark\`): the H menu shows in the dark (`menu\`, also with the released SA Series 1.8.3: `menu with SA Series
+  1.8.3\`); SS-21 Quasar's whole strike runs, no errors (`ss21\`); TA-02 runs (`ta02\`). **Likeliest causes for him**:
+  TON 618 Addition not installed (TON 618 alone hides the menu in its dark), not holding TON 618 / the Stellar Remote
+  (RimuLib's `openMenu` needs one in a hand), or another mod in his pack; and "quasar" = trying SS-21 Quasar or TA-02
+  **in the dark**, where both refuse (overworld at night only) **with the reason hidden: TON 618's dark hides the
+  action bar too**.
+- **Fixed, `1331305` on main (local, not pushed)**: `client/HudRescue` draws the **action bar in the dark** (not during
+  a film; `client/mixin/GuiAccessor` invokes `Gui.renderOverlayMessage`), so every refusal there shows (screenshot
+  `fix normal\deny_dark.png`: "Quasar Jets: only in the overworld, at night"); a **fallback**: if another mod changes
+  `GameRenderer.render`'s HUD call and our hook after it never runs, the same is drawn at `RenderFrameEvent.Post` with
+  the HUD's matrices (tested with `-Dton618test.nohudhook=true`: `fix nohook\`); **log lines** once: "TON 618 hid the
+  game's HUD ...: TON 618 Addition draws the H menu over it" (INFO) and the fallback's WARN, so a player's log shows it.
+  Harness: `menu=true`, `skill=ss21`, `nohudhook`.
+- **TEST jar** `TON 618 Addition 1.1.1 dark HUD fix TEST [NeoForge 1.21.1].jar` (version inside 1.1.1) in his
+  `NeoForge 1.21.1 (1)` instance (the `1.1.1 limits TEST` there renamed `.disabled`); copy in the test-builds folder
+  above. Main only (his main-first rule): ports after his test.
+- **Reply for the player** (Adam pastes it): `..\test builds\2026-11-20 player report, menu in the dark\REPLY for
+  Savini Jason (Discord).md` (what to check, then `latest.log` + mod list + what he did).
+- **libs/ now**: RimuLib 1.3.0 and TSS 1.6.0 (copied from the SA Series' `libs\`, no download); 1.2.3 and TSS 1.5.2 in
+  `libs\old\`. The build still declares RimuLib `[1.2.3,2.0)` (no new API used).
+- **Found on the way (not fixed, a follow-up for Adam)**: **TA-01's and TA-02's default keys (; ' , .) never exist.**
+  RimuLib's `SkillKeys.register` skips every skill whose `selectWarning()` isn't null when it runs (at start, no world:
+  both our warnings are non-null then), so no key is made; Adam's `options.txt` has them as `key.keyboard.unknown`
+  (made unbound by the SA Series' `SkillKeysMixin`, which adds keys for such skills). Fix idea: our warnings return null
+  while there is no world, so RimuLib registers the default keys (the server still refuses with its reason).
+- Also seen: the released SA Series 1.8.3's plate at 1280x720 draws its red no-limits line over the "No cooldown" row
+  (SA's, 1.9.0 redid that menu).
+
 ### >>> 2026-11-19 ~15:30 (Adam's PC): all six 1.1.1 ports built; Adam's test handed to Claude, paused <<<
 
 - All six ports are committed locally (forge-1.21.1 `6239002`, fabric-1.21.1 `326c135`, forge-1.20.1 `07260c7`,
@@ -1320,6 +1360,13 @@ machinery (TON 618 needs none: we never name its classes).
     but lock it and tell what u need installed"; his answer, clickable: "Both ways"): each addon lists the other's skills
     as locked until it's installed (with the SA Series but not this addon, the remote shows Last Light and Quasar Jets
     locked: "install TON 618 Addition and TON 618"; this addon shows the SA Series' skills the same way). Not built.
+    **The SA Series' half is built** (SA 1.9.0 on its main, not released; from the inbox, 2026-11-20). How it does it,
+    for the reverse here: placeholder RimuLib skills with their own ids (SA uses `ton618_last_light`,
+    `ton618_quasar_jets`, never the real ids, so icons, keys and lang never clash when both are installed), joined with
+    `SkillApi.extend` only while the other mod is not loaded, `selectWarning()` = what to install (so RimuLib gives them
+    no key), the cast denies with what is missing, Convergence and commands skip them, a greyed icon with a pixel
+    padlock (SA: `art/make_locked_icons.sh`). SA code: `compat/tss/LockedSkill`, `compat/tss/client/LockedCard`. Mod id
+    to check for the SA Series: `shooting_star_addition`.
   - **CelesTech compat** ("one sky": a star launched by Quasar Jets gone from CelesTech's radar and the other way
     round; black holes): ideas in `C:\Users\adam_\Documents\Claude notes\IDEAS.md`.
 
