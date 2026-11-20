@@ -1,6 +1,7 @@
 package dev.adamko.ton618addition.clienttest;
 
 import cyou.rimuru.rimulib.mc1211.client.magic.ClientSkills;
+import cyou.rimuru.rimulib.mc1211.client.magic.SkillKeys;
 import cyou.rimuru.rimulib.mc1211.client.magic.WhiteSpace;
 import dev.adamko.ton618addition.client.LastLightCast;
 import dev.adamko.ton618addition.client.Ton618AdditionClient;
@@ -24,6 +25,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.function.Function;
 import java.util.stream.Stream;
+import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.Screenshot;
 import net.minecraft.client.gui.screens.PauseScreen;
@@ -137,6 +139,7 @@ final class Harness {
         }
         switch (step) {
             case SETUP -> {
+                logKeys();
                 Ton618AdditionClientConfig.setEducational(EDU);
                 onServer(server, Harness::setUp);
                 step = Step.SETTLE;
@@ -299,6 +302,17 @@ final class Harness {
         look(player, target.subtract(player.getEyePosition()));
         boolean cast = QuasarJets.cast(player, Ton618Link.QUASAR_ON_TON618, new Tuning(POWER, Tuning.INFINITE, 1F));
         log("press 2 at " + target + ": " + (cast ? "the strike started" : "REFUSED"));
+    }
+
+    /** Our four skills' keys as RimuLib made them at start (default, and the one options.txt set). */
+    private static void logKeys() {
+        Skill[] skills = {Ton618Link.ON_TON618, Ton618Link.ON_REMOTE, Ton618Link.QUASAR_ON_TON618, Ton618Link.QUASAR_ON_REMOTE};
+        for (Skill skill : skills) {
+            KeyMapping key = SkillKeys.of(skill);
+            SkillSet set = SkillSet.of(skill);
+            log("key for " + skill.title() + " in " + (set == null ? "?" : set.id) + ": " + (key == null ? "NONE"
+                : "default " + key.getDefaultKey().getName() + ", now " + key.getKey().getName()));
+        }
     }
 
     /** RimuLib's H menu, as the H key opens it (the held item, slot 0, is TON 618). */
