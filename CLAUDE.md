@@ -37,11 +37,16 @@ Done by a side session started from the SA Series' session.
   Savini Jason (Discord).md` (what to check, then `latest.log` + mod list + what he did).
 - **libs/ now**: RimuLib 1.3.0 and TSS 1.6.0 (copied from the SA Series' `libs\`, no download); 1.2.3 and TSS 1.5.2 in
   `libs\old\`. The build still declares RimuLib `[1.2.3,2.0)` (no new API used).
-- **Found on the way (not fixed, a follow-up for Adam)**: **TA-01's and TA-02's default keys (; ' , .) never exist.**
-  RimuLib's `SkillKeys.register` skips every skill whose `selectWarning()` isn't null when it runs (at start, no world:
-  both our warnings are non-null then), so no key is made; Adam's `options.txt` has them as `key.keyboard.unknown`
-  (made unbound by the SA Series' `SkillKeysMixin`, which adds keys for such skills). Fix idea: our warnings return null
-  while there is no world, so RimuLib registers the default keys (the server still refuses with its reason).
+- **Found on the way, then fixed (Adam: "Yes, fix the keys"), `ba14264`**: **TA-01's and TA-02's default keys (; ' , .)
+  never existed.** RimuLib's `SkillKeys.register` skips every skill whose `selectWarning()` isn't null when it runs
+  (at start, no world: both our warnings were non-null then; the warning is read nowhere else but the menu's warning
+  page). Now both warnings return null while there is no world (TA-02 stays locked, no key, without SS-21 Quasar); a
+  key only picks the skill, the server still refuses with its reason. Harness log at start (`run/clienttest/keys.log`):
+  all four keys exist, defaults semicolon, apostrophe, comma, period. **A key already saved unbound in `options.txt`
+  stays unbound**: Adam's instance has all four as `key.keyboard.unknown` (the SA Series' `SkillKeysMixin` had added
+  unbound ones), so he presses Reset next to them in Controls; players who had the SA Series installed too, same (say
+  so in the changelog). **In his instance now**: `TON 618 Addition 1.1.1 dark HUD and keys fix TEST [NeoForge
+  1.21.1].jar` (the dark HUD fix TEST `.disabled`; copy in the test-builds folder above).
 - Also seen: the released SA Series 1.8.3's plate at 1280x720 draws its red no-limits line over the "No cooldown" row
   (SA's, 1.9.0 redid that menu).
 
