@@ -55,6 +55,7 @@ public final class Ton618AdditionClient {
         container.registerExtensionPoint(IConfigScreenFactory.class, ConfigurationScreen::new);
         LastLightFilm.init(modBus);
         QuasarClient.init(modBus);
+        HudRescue.init();
         NeoForge.EVENT_BUS.addListener(ClientTickEvent.Post.class, event -> tick());
         NeoForge.EVENT_BUS.addListener(ClientPlayerNetworkEvent.LoggingOut.class, event -> stop());
     }

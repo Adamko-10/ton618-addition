@@ -1,6 +1,7 @@
 package dev.adamko.ton618addition.clienttest;
 
 import cyou.rimuru.rimulib.mc1211.client.magic.ClientSkills;
+import cyou.rimuru.rimulib.mc1211.client.magic.WhiteSpace;
 import dev.adamko.ton618addition.client.LastLightCast;
 import dev.adamko.ton618addition.client.Ton618AdditionClient;
 import dev.adamko.ton618addition.client.Ton618AdditionClientConfig;
@@ -8,6 +9,8 @@ import dev.adamko.ton618addition.client.quasar.QuasarCast;
 import dev.adamko.ton618addition.client.quasar.QuasarClient;
 import dev.adamko.ton618addition.lastlight.LastLight;
 import dev.adamko.ton618addition.lastlight.LastLightClock;
+import cyou.rimuru.rimulib.mc1211.skill.Skill;
+import cyou.rimuru.rimulib.mc1211.skill.SkillSet;
 import cyou.rimuru.rimulib.mc1211.skill.Tuning;
 import dev.adamko.ton618addition.link.Ton618Link;
 import dev.adamko.ton618addition.quasar.QuasarJets;
@@ -49,7 +52,8 @@ import net.minecraft.world.phys.Vec3;
  *
  * <p>Parameters ({@code -Dton618test.<name>=...}, forwarded by the {@code runClientTest} Gradle run):
  * <ul>
- *   <li>{@code skill}: {@code quasar} (default) or {@code lastlight};</li>
+ *   <li>{@code skill}: {@code quasar} (default), {@code lastlight}, or {@code ss21} (SS-21 Quasar's own strike, shots
+ *       by ticks from its cast);</li>
  *   <li>{@code star}: TA-02's star by name or index (default Antares);</li>
  *   <li>{@code distance}: how far from the caster the jet lands, blocks east (default 110: the biggest crater needs 66);</li>
  *   <li>{@code perch}: how high above the trees the player stands (default 35, so the aim clears the canopy);</li>
@@ -57,7 +61,13 @@ import net.minecraft.world.phys.Vec3;
  *   <li>{@code edu}: educational mode on for this run (default false);</li>
  *   <li>{@code power}: TA-02's Power slider (default 1);</li>
  *   <li>{@code world}: {@code normal} (default, fixed seed) or {@code flat};</li>
- *   <li>{@code seed}: the world seed (default 618).</li>
+ *   <li>{@code seed}: the world seed (default 618);</li>
+ *   <li>{@code menu}: {@code true} = no strike: open the H menu (holding TON 618) in the overworld, then again in TON
+ *       618's dark, a screenshot of each ({@code menu_overworld.png}, {@code menu_dark.png}; a player's report,
+ *       2026-11-20: "u cant open the H menu when ton618 devoured the world"), then TA-02 tried in the dark
+ *       ({@code deny_dark.png}: its refusal on the action bar);</li>
+ *   <li>{@code nohudhook}: {@code true} = TON 618 Addition's hook after the HUD call does nothing (as if another mod
+ *       had changed that call), to test the end-of-frame fallback in {@code HudRescue}.</li>
  * </ul>
  * Screenshots go to {@code run/clienttest/screenshots/}: {@code sky.png} (TA-02's named stars before the cast),
  * {@code locked.png} (after press 1), then {@code <skill>_<story tick>.png}. The game closes after the last one.
@@ -73,9 +83,14 @@ final class Harness {
     static final float POWER = Float.parseFloat(prop("power", "1"));
     static final String WORLD = prop("world", "normal");
     static final long SEED = Long.parseLong(prop("seed", "618"));
+    static final boolean MENU = Boolean.parseBoolean(prop("menu", "false"));
     static final float[] SHOTS = shots(prop("shots", ""), "lastlight".equals(SKILL) ? LastLightClock.END + 20 : 1000);
 
-    private enum Step { WORLD, SETUP, SETTLE, SKY, LOCK, LOCKED, CAST, FILM, DONE }
+    private enum Step { WORLD, SETUP, SETTLE, SKY, LOCK, LOCKED, CAST, FILM, MENU_SHOT, MENU_TO_DARK, MENU_OPEN, MENU_DENY, MENU_DENY_SHOT, MENU_END, SS21,
+        DONE }
+
+    private static boolean menuInDark;
+    private static long ss21At;
 
     private static Step step = Step.WORLD;
     private static long waitUntil;
@@ -129,7 +144,16 @@ final class Harness {
             }
             case SETTLE -> {
                 mc.player.getInventory().selected = 0;
-                if (!"lastlight".equals(SKILL)) {
+                if (MENU) {
+                    openMenu(mc);
+                    step = Step.MENU_SHOT;
+                    waitUntil = now + 60;
+                } else if ("ss21".equals(SKILL)) {
+                    // SS-21 Quasar's own strike (Aether21's addon), fired as the Stellar Remote would: does it run?
+                    onServer(server, Harness::castSs21);
+                    ss21At = now;
+                    step = Step.SS21;
+                } else if (!"lastlight".equals(SKILL)) {
                     ClientSkills.select(Ton618Link.QUASAR_ON_TON618);
                     onServer(server, player -> look(player, star().direction()));
                     step = Step.SKY;
@@ -160,6 +184,57 @@ final class Harness {
             case CAST -> {
                 onServer(server, Harness::castQuasar);
                 step = Step.FILM;
+            }
+            case MENU_SHOT -> {
+                log("menu " + (menuInDark ? "in the dark" : "in the overworld") + ": state=" + WhiteSpace.state()
+                    + " active=" + WhiteSpace.active() + " dimension=" + mc.level.dimension().location());
+                pendingShot = menuInDark ? "menu_dark" : "menu_overworld";
+                step = menuInDark ? Step.MENU_DENY : Step.MENU_TO_DARK;
+                waitUntil = now + 10;
+            }
+            case MENU_DENY -> {
+                // TA-02 can't be cast in the dark: its refusal goes to the action bar, which the dark hides
+                WhiteSpace.clear();
+                onServer(server, player -> log("TA-02 in the dark: "
+                    + (QuasarJets.cast(player, Ton618Link.QUASAR_ON_TON618, null) ? "cast" : "refused")));
+                step = Step.MENU_DENY_SHOT;
+                waitUntil = now + 15;
+            }
+            case MENU_DENY_SHOT -> {
+                pendingShot = "deny_dark";
+                step = Step.MENU_END;
+                waitUntil = now + 10;
+            }
+            case MENU_TO_DARK -> {
+                WhiteSpace.clear();
+                menuInDark = true;
+                onServer(server, player -> {
+                    String name = player.getGameProfile().getName();
+                    run(player.server, "data modify storage ton618:ton618 devoured set value 1b");
+                    run(player.server, "execute in ton618:devoured run tp " + name + " 0.5 1 0.5 0 0");
+                });
+                step = Step.MENU_OPEN;
+                waitUntil = now + 100;
+            }
+            case MENU_OPEN -> {
+                pendingShot = "dark";
+                mc.player.getInventory().selected = 0;
+                openMenu(mc);
+                step = Step.MENU_SHOT;
+                waitUntil = now + 60;
+            }
+            case MENU_END -> finish(mc);
+            case SS21 -> {
+                // story ticks from the cast (its jet touches the ground at 758, bursts at 998)
+                while (nextShot < SHOTS.length && now - ss21At >= SHOTS[nextShot]) {
+                    pendingShot = String.format(Locale.ROOT, "ss21_%04d", (int) SHOTS[nextShot]);
+                    nextShot++;
+                    return;
+                }
+                if (nextShot >= SHOTS.length) {
+                    step = Step.MENU_END;
+                    waitUntil = now + 5;
+                }
             }
             case FILM -> {
                 if (!started && now - waitUntil > 200) {
@@ -224,6 +299,36 @@ final class Harness {
         look(player, target.subtract(player.getEyePosition()));
         boolean cast = QuasarJets.cast(player, Ton618Link.QUASAR_ON_TON618, new Tuning(POWER, Tuning.INFINITE, 1F));
         log("press 2 at " + target + ": " + (cast ? "the strike started" : "REFUSED"));
+    }
+
+    /** RimuLib's H menu, as the H key opens it (the held item, slot 0, is TON 618). */
+    private static void openMenu(Minecraft mc) {
+        try {
+            WhiteSpace.openMenu(mc);
+            log("pressed H: state=" + WhiteSpace.state());
+        } catch (RuntimeException | LinkageError e) {
+            log("couldn't open the H menu: " + e);
+        }
+    }
+
+    /** SS-21 Quasar's skill (id {@code quasar}) on the Stellar Remote, cast at the ground {@link #DISTANCE} blocks east. */
+    private static void castSs21(ServerPlayer player) {
+        ServerLevel level = player.serverLevel();
+        int x = Mth.floor(player.getX()) + DISTANCE;
+        int z = Mth.floor(player.getZ());
+        level.getChunk(x >> 4, z >> 4);
+        Vec3 target = new Vec3(x + 0.5, level.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, x, z) - 0.5, z + 0.5);
+        look(player, target.subtract(player.getEyePosition()));
+        for (SkillSet set : SkillSet.all()) {
+            for (Skill skill : set.skills) {
+                if (skill.getClass().getName().startsWith("dev.ss21.")) {
+                    boolean cast = set.cast(player, skill, Tuning.initial(skill));
+                    log("SS-21 Quasar (" + skill.id() + " in " + set.id + ") at " + target + ": " + (cast ? "cast" : "REFUSED"));
+                    return;
+                }
+            }
+        }
+        log("FAILED: SS-21 Quasar's skill isn't in any skill set");
     }
 
     private static void castLastLight(ServerPlayer player) {
