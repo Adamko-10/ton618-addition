@@ -5,6 +5,21 @@ Handoff notes for every Claude session in this folder (`C:\Users\User\Desktop\to
 Started 2026-11-13 by an Opus 5.5 session (xhigh) that was started from Adam's SA Series session. **Read `BRIEF.md`
 first** (Adam's brief, his own words at its end), then this file. Fable's part: `prompts\FABLE-PREVIZ-AND-FILM-PROMPT.md`.
 
+### >>> STATE (2026-11-20 ~21:00, written by the SA Series' session before Adam moved to a fresh session) <<<
+
+- **Released**: TON 618 Addition 1.1.1 on NeoForge 1.21.1 (CurseForge file 9680692, GitHub v1.1.1, 2026-11-18).
+- **Built, not released**: the six 1.1.1 ports (worktrees in `ports\`: forge-1.21.1 `6239002`, fabric-1.21.1 `326c135`,
+  forge-1.20.1 `07260c7`, fabric-1.20.1 `1958413`, fabric-1.21.11 `5edce9b`, fabric-26.3 `1af746e`; test jars in his
+  instances); Adam never tested them (the test session paused waiting for his OK to control the game window).
+- **On main after 1.1.1** (`1331305` the action bar and an H-menu fallback in TON 618's dark, `ba14264` TA-01/TA-02's
+  default keys; head `8f9ccc7`): the jar `TON 618 Addition 1.1.1 dark HUD and keys fix TEST [NeoForge 1.21.1].jar` is
+  in his `NeoForge 1.21.1 (1)` instance. He resets the four TON keys in Controls (saved unbound there).
+- **Next, in order** (his main-first rule): his test of that jar -> those two fixes into the six port branches -> a
+  test of the ports (his budget is low until 2026-11-25: ChatGPT/Codex may do it, ask him) -> version (1.1.2?) and a
+  release prompt for Codex as for 1.1.1 (`releases\1.1.1\RELEASE-PROMPT.md`) -> his OK. The reply for the player of the
+  dark-menu report is in `..\test builds\2026-11-20 player report, menu in the dark\`.
+- The SA Series (1.9.0, the SA repo's CLAUDE.md "START HERE") goes first; this comes after it.
+
 ### >>> 2026-11-20 ~14:15 (Adam's PC): a player's report: no H menu in the dark, "quasar doesn't work" <<<
 
 Done by a side session started from the SA Series' session.
