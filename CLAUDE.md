@@ -31,12 +31,21 @@ fabric-1.21.11 `857204e`, fabric-26.3 `7b3674f`**. All six build (`./gradlew --n
     HUD") would never be true there, so it isn't added either.
 - **Not ported** (the SA session's call): main's end-of-frame fallback (`frameEnd`, `RenderFrameEvent`,
   `NO_HOOK_FOR_TEST`) and the harness/`build.gradle` test changes.
-- **Not run**: no dev-client start yet (his NeoForge 1.21.1 game was open, started 16:10), no game test of any port.
+- **Dev starts** (after he closed his game; ~50 s each, closed by the script): forge-1.21.1, fabric-1.21.1,
+  fabric-1.21.11, fabric-26.3 all loaded, both skills joined TON 618's menu, 0 warnings/errors of ours, no mixin errors;
+  26.3 logged its TA-02 pipelines compiled. No game test of any port yet.
 - **Test jars**: `..\test builds\2026-11-23 fixes into the ports\TON 618 Addition 1.1.1 dark HUD and keys fix TEST
-  [<Loader> <MC>].jar` (all six, each opened as a zip). **Not yet in his instances** (his game was open: ask first).
-- **Next**: his answers (who tests; version 1.1.2?; the release prompt for Codex, model `..\releases\1.1.1\RELEASE-
-  PROMPT.md`, with TA-02 added to the metadata's `mod_description` on every branch). The ports' changelog says: keys
-  reset in Controls if saved unbound; 26.3 needed only the keys fix.
+  [<Loader> <MC>].jar` (all six, each opened as a zip), **and in his instances** (each opened as a zip; the old
+  `TON 618 Addition 1.1.1 TEST [...]` renamed `.disabled`): `Forge 1.21.1`, `Forge 1.20.1 (1)`, `Fabric 1.21.1`,
+  `Fabric 1.21.11 (1)`, `Fabric 26.3` (no Fabric 1.20.1 instance).
+- **Adam's picks (clickable, 2026-11-23 ~17:15)**: **Codex/ChatGPT tests the ports**; version **1.1.2**; the release
+  prompt **after the test**. Codex's prompt: `prompts/CODEX-TEST-PROMPT-PORTS-1.1.2.md` (reuses its Prism instances in
+  `..\codex tests\`, TSS + SS-21 Quasar copied from his instances for TA-02, report `..\codex tests\REPORT-ports-1.1.2.md`).
+  He hands it to Codex.
+- **Next**: Codex's report -> fix what it finds on the port branches (main first if it's main's bug too) -> version
+  1.1.2 on all seven (main has the fixes too: its 1.1.2 = the two fixes + the fallback) -> the release prompt for Codex
+  (model `..\releases\1.1.1\RELEASE-PROMPT.md`; add TA-02 to the metadata's `mod_description` on every branch) -> his
+  word. Changelog: keys reset in Controls if saved unbound; 26.3 needed only the keys fix.
 
 ### >>> STATE (2026-11-20 ~21:00, written by the SA Series' session before Adam moved to a fresh session) <<<
 
