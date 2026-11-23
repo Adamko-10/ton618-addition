@@ -22,6 +22,16 @@ first** (Adam's brief, his own words at its end), then this file. Fable's part: 
 - **2026-11-23**: SA 1.9.0 is released; Adam picked "TON update first" and tests the dark HUD and keys fix TEST jar now
   (enabled in `NeoForge 1.21.1 (1)` with SA 1.9.0, TSS 1.6.0, RimuLib 1.3.0, TON 618 1.1.0, SS-21 Quasar 1.8.0). On
   his OK: the two fixes into the six port worktrees, CI, a release prompt for Codex (version: ask, 1.1.2 likely).
+- **2026-11-23 ~16:20: TESTED by Claude in his real game** (his ask: "test for me pls"; computer use on his
+  `NeoForge 1.21.1 (1)` instance, a new creative superflat world "TON test (Claude)", his own worlds untouched). The
+  four TON keys were reset to their defaults in his `options.txt` first (`;` `,` on TON 618, `'` `.` on the remote; a
+  backup `options.txt.before-ton-key-reset` beside it). Results, all **pass**: `.` picks TA-02 on the remote (menu +
+  the remote's screen); the dark (the harness's way: `data modify storage ton618:ton618 devoured set value 1b` + `tp`
+  into `ton618:devoured`): **the H menu shows** (with the SA plate), **TA-02's refusal shows on the action bar**
+  ("Quasar Jets: only in the overworld, at night"), **Last Light** casts with `'`, its film plays (Hawking-radiation
+  note) and the world comes back with the HUD. Log: the INFO "TON 618 hid the game's HUD ..." once, no errors of ours
+  (only Chunky/C2ME's chunk event and Complementary's unknown variables). Not tried: the real devour by TON 618's
+  Scale ∞ slider (the commands give the same state). Next: the two fixes into the six ports (his OK).
 
 ### >>> 2026-11-20 ~14:15 (Adam's PC): a player's report: no H menu in the dark, "quasar doesn't work" <<<
 
