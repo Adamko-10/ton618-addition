@@ -46,6 +46,11 @@ fabric-1.21.11 `857204e`, fabric-26.3 `7b3674f`**. All six build (`./gradlew --n
   1.1.2 on all seven (main has the fixes too: its 1.1.2 = the two fixes + the fallback) -> the release prompt for Codex
   (model `..\releases\1.1.1\RELEASE-PROMPT.md`; add TA-02 to the metadata's `mod_description` on every branch) -> his
   word. Changelog: keys reset in Controls if saved unbound; 26.3 needed only the keys fix.
+- **Codex test STARTED 2026-11-23 ~18:05** (by the SA session, computer use; his pick "You start it"): the old Codex
+  project "TON 618 Addition" was gone, so a new one was made on `C:\Users\adam_\Documents\TON 618 Addition`; chat
+  "Follow ports test prompt" (GPT-6.2 Astra, High, "Approve for me") got "Read
+  ...\prompts\CODEX-TEST-PROMPT-PORTS-1.1.2.md and do exactly what it says". Report: `..\codex tests\REPORT-ports-1.1.2.md`.
+  If Codex hits its usage limit: "The usage limit has reset. Continue where you left off".
 
 ### >>> STATE (2026-11-20 ~21:00, written by the SA Series' session before Adam moved to a fresh session) <<<
 
