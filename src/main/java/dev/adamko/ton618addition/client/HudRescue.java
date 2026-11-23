@@ -1,6 +1,13 @@
 package dev.adamko.ton618addition.client;
 
 import cyou.rimuru.rimulib.client.magic.WhiteSpace;
+import cyou.rimuru.rimulib.client.cinematic.CutsceneDirector;
+import dev.adamko.ton618addition.client.mixin.GuiAccessor;
+import dev.adamko.ton618addition.link.Ton618Link;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.Font;
+import net.minecraft.network.chat.Component;
+import net.minecraft.util.Mth;
 import dev.adamko.ton618addition.Ton618Addition;
 import net.minecraft.client.gui.GuiGraphics;
 import dev.adamko.ton618addition.client.film.LastLightFilm;
@@ -16,18 +23,23 @@ import dev.adamko.ton618addition.client.quasarfilm.QuasarJetsFilm;
  * drawn at the end of {@code Gui.render}: RimuLib's H menu ({@code WhiteSpace.render}). So right after the HUD call
  * (the same layer, before screens):
  * <ol>
+ *   <li>when {@code Gui.render} didn't reach its end this frame and the player is in the dark (not during a film):
+ *       the action bar, so the reason a skill can't be cast there shows (a player's report, 2026-11-20: "the quasar
+ *       addition doesnt work too": TA-02's "only in the overworld, at night", SS-21 Quasar's and RimuLib's own
+ *       refusals all go to the action bar, which the dark hid);</li>
  *   <li>when {@code Gui.render} didn't reach its end this frame, RimuLib's menu is drawn as RimuLib would at the end of
  *       the HUD (RimuLib internals, the only way: if they change, a warning in the log and the menu stays hidden);</li>
  *   <li>every frame, the Last Light film's screen layer ({@code LastLightFilm.screen}: words, space scene, white).
  *       Forge 1.21.1 has no {@code RenderGuiEvent} (NeoForge's branch draws the film there), so it's drawn here;</li>
  *   <li>every frame, Last Light's fallback notice.</li>
  * </ol>
- * The vanilla HUD (hotbar, chat) stays hidden in the dark, as TON 618 wants. Driven by {@code client/mixin/GuiMixin}
- * and {@code GameRendererMixin}.
+ * The rest of the vanilla HUD (hotbar, chat) stays hidden in the dark, as TON 618 wants. Driven by
+ * {@code client/mixin/GuiMixin} and {@code GameRendererMixin}.
  */
 public final class HudRescue {
     private static boolean reached;
     private static boolean warned;
+    private static boolean toldRescue;
 
     private HudRescue() {
     }
@@ -80,6 +92,19 @@ public final class HudRescue {
 
     private static void rescue(GuiGraphics graphics, float partial) {
         reached = true;
+        Minecraft mc = Minecraft.getInstance();
+        if (!toldRescue) {
+            toldRescue = true;
+            Ton618Addition.LOG.info("TON 618 hid the game's HUD (its dark or a film): TON 618 Addition draws the H menu "
+                + "over it{}.", inDark(mc) ? ", and the action bar in the dark" : "");
+        }
+        if (inDark(mc) && !filmHidesHud() && !LastLightFilm.active() && !QuasarJetsFilm.active()) {
+            try {
+                actionBar(mc, graphics, partial);
+            } catch (RuntimeException | LinkageError failed) {
+                warnOnce("the action bar", failed);
+            }
+        }
         try {
             WhiteSpace.beforeHud();
             WhiteSpace.render(graphics, partial);
@@ -87,6 +112,47 @@ public final class HudRescue {
             warnOnce("RimuLib's menu", failed);
         }
         graphics.flush();
+    }
+
+    private static boolean inDark(Minecraft mc) {
+        return mc.level != null && mc.level.dimension() == Ton618Link.DARK;
+    }
+
+    /** A RimuLib film hides the HUD (TON 618 cuts the HUD then too). RimuLib internals: false if they change. */
+    private static boolean filmHidesHud() {
+        try {
+            return CutsceneDirector.hideHud();
+        } catch (RuntimeException | LinkageError unsure) {
+            return false;
+        }
+    }
+
+    /**
+     * The action bar as vanilla 1.20.1 draws it inside {@code Gui.render} (it has no method of its own there): its
+     * lines, copied (fade over the last second, centred 68 above the bottom, the record colours, the backdrop).
+     */
+    private static void actionBar(Minecraft mc, GuiGraphics graphics, float partial) {
+        GuiAccessor gui = (GuiAccessor) mc.gui;
+        Component message = gui.ton618Addition$overlayMessageString();
+        int time = gui.ton618Addition$overlayMessageTime();
+        if (message == null || time <= 0) {
+            return;
+        }
+        float left = time - partial;
+        int alpha = Math.min((int) (left * 255.0F / 20.0F), 255);
+        if (alpha <= 8) {
+            return;
+        }
+        Font font = mc.gui.getFont();
+        graphics.pose().pushPose();
+        graphics.pose().translate((float) (graphics.guiWidth() / 2), (float) (graphics.guiHeight() - 68), 0.0F);
+        int colour = gui.ton618Addition$animateOverlayMessageColor()
+            ? Mth.hsvToRgb(left / 50.0F, 0.7F, 0.6F) & 0xFFFFFF : 0xFFFFFF;
+        int fade = alpha << 24 & 0xFF000000;
+        int width = font.width(message);
+        gui.ton618Addition$drawBackdrop(graphics, font, -4, width, 0xFFFFFF | fade);
+        graphics.drawString(font, message, -width / 2, -4, colour | fade);
+        graphics.pose().popPose();
     }
 
     private static void warnOnce(String what, Throwable failed) {
