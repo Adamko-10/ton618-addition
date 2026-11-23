@@ -19,6 +19,9 @@ first** (Adam's brief, his own words at its end), then this file. Fable's part: 
   release prompt for Codex as for 1.1.1 (`releases\1.1.1\RELEASE-PROMPT.md`) -> his OK. The reply for the player of the
   dark-menu report is in `..\test builds\2026-11-20 player report, menu in the dark\`.
 - The SA Series (1.9.0, the SA repo's CLAUDE.md "START HERE") goes first; this comes after it.
+- **2026-11-23**: SA 1.9.0 is released; Adam picked "TON update first" and tests the dark HUD and keys fix TEST jar now
+  (enabled in `NeoForge 1.21.1 (1)` with SA 1.9.0, TSS 1.6.0, RimuLib 1.3.0, TON 618 1.1.0, SS-21 Quasar 1.8.0). On
+  his OK: the two fixes into the six port worktrees, CI, a release prompt for Codex (version: ask, 1.1.2 likely).
 
 ### >>> 2026-11-20 ~14:15 (Adam's PC): a player's report: no H menu in the dark, "quasar doesn't work" <<<
 
