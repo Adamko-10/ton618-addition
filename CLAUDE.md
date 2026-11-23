@@ -32,6 +32,9 @@ first** (Adam's brief, his own words at its end), then this file. Fable's part: 
   note) and the world comes back with the HUD. Log: the INFO "TON 618 hid the game's HUD ..." once, no errors of ours
   (only Chunky/C2ME's chunk event and Complementary's unknown variables). Not tried: the real devour by TON 618's
   Scale ∞ slider (the commands give the same state). Next: the two fixes into the six ports (his OK).
+- **The port goes to a fresh Claude session** (his pick, clickable "Fresh Claude session": the SA chat was long and
+  his 5-hour usage at 81%): its brief is `C:\Users\adam_\Documents\TON 618 Addition\BRIEF fixes into ports
+  (2026-11-23).md` (keys + action bar + log line on all six where clean; main's end-of-frame fallback stays main-only).
 
 ### >>> 2026-11-20 ~14:15 (Adam's PC): a player's report: no H menu in the dark, "quasar doesn't work" <<<
 
