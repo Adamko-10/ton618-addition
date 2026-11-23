@@ -5,6 +5,39 @@ Handoff notes for every Claude session in this folder (`C:\Users\User\Desktop\to
 Started 2026-11-13 by an Opus 5.5 session (xhigh) that was started from Adam's SA Series session. **Read `BRIEF.md`
 first** (Adam's brief, his own words at its end), then this file. Fable's part: `prompts\FABLE-PREVIZ-AND-FILM-PROMPT.md`.
 
+### >>> 2026-11-23 ~17:00: main's two fixes are in all six ports (committed locally, built, not pushed) <<<
+
+Done by a fresh session (brief `..\BRIEF fixes into ports (2026-11-23).md`). New heads, one commit each on top of the
+1.1.1 ports: **forge-1.21.1 `90e25a9`, forge-1.20.1 `9e637d4`, fabric-1.21.1 `6965317`, fabric-1.20.1 `3dffb04`,
+fabric-1.21.11 `857204e`, fabric-26.3 `7b3674f`**. All six build (`./gradlew --no-daemon build -x test`; Forge on JDK
+21, Fabric on Loom's JDK 25); nothing pushed, no release.
+- **Keys** (`ba14264`), all six: both `selectWarning`s return null while there is no world (`mc.level == null || ...`,
+  each branch's own night check kept: `isNight` / `isDarkOutside`), main's comments.
+- **Action bar in TON 618's dark + the one-time INFO line** (`1331305`), in `HudRescue.rescue`, before RimuLib's menu,
+  only in `Ton618Link.DARK` with no RimuLib film hiding the HUD (`CutsceneDirector.hideHud()`, guarded) and neither of
+  our films running; checked with javap first:
+  - forge-1.21.1, fabric-1.21.1, fabric-1.21.11: main's `client/mixin/GuiAccessor` (`@Invoker` of
+    `Gui.renderOverlayMessage(GuiGraphics, DeltaTracker)`, private on all three), added to `ton618_addition.mixins.json`.
+    Forge 1.21.1 runs official names (no refmap needed); Loom remapped it (`method_55800` in the Fabric jars).
+  - forge-1.20.1 (also NeoForge 1.20.1): no mixin: `ForgeGui.renderRecordOverlay` is protected, so through Forge 47's
+    public overlay entry `VanillaGuiOverlay.RECORD_OVERLAY.type().overlay().render((ForgeGui) mc.gui, graphics,
+    partial, guiWidth, guiHeight)` (it skips itself under F1).
+  - fabric-1.20.1: vanilla 1.20.1 draws the action bar inline in `Gui.render`, so `GuiAccessor` = accessors for
+    `overlayMessageString`, `overlayMessageTime`, `animateOverlayMessageColor` + invoker `drawBackdrop`, and
+    `HudRescue.actionBar` copies vanilla's lines (checked against its bytecode: fade /20, centred at height-68, record
+    colours hsv(t/50, 0.7, 0.6), backdrop).
+  - **fabric-26.3: keys only.** Not needed there: TON 618 26.3 has no Gui mixin and nothing of it or RimuLib 26.3 hides
+    the HUD (checked in both jars), so the action bar already shows in its dark; the log line ("TON 618 hid the game's
+    HUD") would never be true there, so it isn't added either.
+- **Not ported** (the SA session's call): main's end-of-frame fallback (`frameEnd`, `RenderFrameEvent`,
+  `NO_HOOK_FOR_TEST`) and the harness/`build.gradle` test changes.
+- **Not run**: no dev-client start yet (his NeoForge 1.21.1 game was open, started 16:10), no game test of any port.
+- **Test jars**: `..\test builds\2026-11-23 fixes into the ports\TON 618 Addition 1.1.1 dark HUD and keys fix TEST
+  [<Loader> <MC>].jar` (all six, each opened as a zip). **Not yet in his instances** (his game was open: ask first).
+- **Next**: his answers (who tests; version 1.1.2?; the release prompt for Codex, model `..\releases\1.1.1\RELEASE-
+  PROMPT.md`, with TA-02 added to the metadata's `mod_description` on every branch). The ports' changelog says: keys
+  reset in Controls if saved unbound; 26.3 needed only the keys fix.
+
 ### >>> STATE (2026-11-20 ~21:00, written by the SA Series' session before Adam moved to a fresh session) <<<
 
 - **Released**: TON 618 Addition 1.1.1 on NeoForge 1.21.1 (CurseForge file 9680692, GitHub v1.1.1, 2026-11-18).
