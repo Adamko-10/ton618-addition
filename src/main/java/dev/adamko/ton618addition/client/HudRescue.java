@@ -1,6 +1,10 @@
 package dev.adamko.ton618addition.client;
 
 import cyou.rimuru.rimulib.client.magic.WhiteSpace;
+import cyou.rimuru.rimulib.client.cinematic.CutsceneDirector;
+import dev.adamko.ton618addition.client.mixin.GuiAccessor;
+import dev.adamko.ton618addition.link.Ton618Link;
+import net.minecraft.client.Minecraft;
 import dev.adamko.ton618addition.Ton618Addition;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.gui.GuiGraphics;
@@ -17,18 +21,23 @@ import dev.adamko.ton618addition.client.quasarfilm.QuasarJetsFilm;
  * drawn at the end of {@code Gui.render}: RimuLib's H menu ({@code WhiteSpace.render}). So right after the HUD call
  * (the same layer, before screens):
  * <ol>
+ *   <li>when {@code Gui.render} didn't reach its end this frame and the player is in the dark (not during a film):
+ *       the action bar, so the reason a skill can't be cast there shows (a player's report, 2026-11-20: "the quasar
+ *       addition doesnt work too": TA-02's "only in the overworld, at night", SS-21 Quasar's and RimuLib's own
+ *       refusals all go to the action bar, which the dark hid);</li>
  *   <li>when {@code Gui.render} didn't reach its end this frame, RimuLib's menu is drawn as RimuLib would at the end of
  *       the HUD (RimuLib internals, the only way: if they change, a warning in the log and the menu stays hidden);</li>
  *   <li>every frame, the Last Light film's screen layer ({@code LastLightFilm.screen}: words, space scene, white).
  *       Forge 1.21.1 has no {@code RenderGuiEvent} (NeoForge's branch draws the film there), so it's drawn here;</li>
  *   <li>every frame, Last Light's fallback notice.</li>
  * </ol>
- * The vanilla HUD (hotbar, chat) stays hidden in the dark, as TON 618 wants. Driven by {@code client/mixin/GuiMixin}
- * and {@code GameRendererMixin}.
+ * The rest of the vanilla HUD (hotbar, chat) stays hidden in the dark, as TON 618 wants. Driven by
+ * {@code client/mixin/GuiMixin} and {@code GameRendererMixin}.
  */
 public final class HudRescue {
     private static boolean reached;
     private static boolean warned;
+    private static boolean toldRescue;
 
     private HudRescue() {
     }
@@ -79,10 +88,36 @@ public final class HudRescue {
 
     private static void rescue(GuiGraphics graphics, DeltaTracker delta) {
         reached = true;
+        Minecraft mc = Minecraft.getInstance();
+        if (!toldRescue) {
+            toldRescue = true;
+            Ton618Addition.LOG.info("TON 618 hid the game's HUD (its dark or a film): TON 618 Addition draws the H menu "
+                + "over it{}.", inDark(mc) ? ", and the action bar in the dark" : "");
+        }
+        if (inDark(mc) && !filmHidesHud() && !LastLightFilm.active() && !QuasarJetsFilm.active()) {
+            try {
+                ((GuiAccessor) mc.gui).ton618Addition$renderOverlayMessage(graphics, delta);
+            } catch (RuntimeException | LinkageError failed) {
+                warnOnce("the action bar", failed);
+            }
+        }
         try {
             WhiteSpace.render(graphics, delta.getGameTimeDeltaPartialTick(true));
         } catch (RuntimeException | LinkageError failed) {
             warnOnce("RimuLib's menu", failed);
+        }
+    }
+
+    private static boolean inDark(Minecraft mc) {
+        return mc.level != null && mc.level.dimension() == Ton618Link.DARK;
+    }
+
+    /** A RimuLib film hides the HUD (TON 618 cuts the HUD then too). RimuLib internals: false if they change. */
+    private static boolean filmHidesHud() {
+        try {
+            return CutsceneDirector.hideHud();
+        } catch (RuntimeException | LinkageError unsure) {
+            return false;
         }
     }
 
