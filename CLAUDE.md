@@ -1513,3 +1513,6 @@ machinery (TON 618 needs none: we never name its classes).
     and it becomes a real shooting star falling toward it, then the film follows it.
 - Not picked yet ("we will see"): **Black hole merger** (gravitational wave ripples the land), **Time dilation**
   (everything round the caster slows), **Advancements** ("A googol of years", "Information paradox").
+
+## Adam's website (added 2026-11-23)
+His website is `C:Usersadam_DocumentsWebsite`: the only one we use; keep its theme and layout on every edit (his words: "i love this design and the layout ... this is the one we will be using"). Its rules and how it works: `C:Usersadam_DocumentsWebsiteCLAUDE.md` (also in his personal rules).
