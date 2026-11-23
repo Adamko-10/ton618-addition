@@ -72,8 +72,9 @@ public final class QuasarClient {
             if (!Ton618Link.ss21Installed()) {
                 return "Locked: needs the SS-21 Quasar addon (The Shooting Star: SS-21 Quasar)";
             }
+            // none while there is no world (unlocked only), so RimuLib makes its key (, and .) at start, as Last Light's
             Minecraft mc = Minecraft.getInstance();
-            return mc.level != null && mc.level.dimension() == Level.OVERWORLD && mc.level.isNight() ? null
+            return mc.level == null || mc.level.dimension() == Level.OVERWORLD && mc.level.isNight() ? null
                 : "Night only, in the overworld: cast at a named star, then at the ground";
         };
         // the menu's Power line: the locked star's crater width at 1x (else a Sun-like star's)
