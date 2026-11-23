@@ -68,10 +68,12 @@ public final class Ton618AdditionClient implements ClientModInitializer {
         } catch (RuntimeException | LinkageError failed) {
             Ton618Addition.LOG.warn("Couldn't add the educational-mode switch to the H menu: {}", failed.toString());
         }
-        // the menu's warning when Last Light is picked anywhere but in TON 618's dark
+        // the menu's warning when Last Light is picked anywhere but in TON 618's dark. None while there is no world: RimuLib
+        // makes the skill keys once at start and gives none to a skill with a warning then (its default keys ; and '
+        // never existed before 2026-11-20); a key only picks the skill, the server still says why it can't be cast
         LastLightInfo.selectWarning = () -> {
             Minecraft mc = Minecraft.getInstance();
-            return mc.level != null && mc.level.dimension() == Ton618Link.DARK ? null
+            return mc.level == null || mc.level.dimension() == Ton618Link.DARK ? null
                 // short enough for the menu's warning line (Adam, 2026-11-17)
                 : "Not yet: set TON618's Scale to ∞ and use it first";
         };
