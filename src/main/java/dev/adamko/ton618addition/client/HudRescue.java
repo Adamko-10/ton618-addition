@@ -150,7 +150,7 @@ public final class HudRescue {
         } catch (RuntimeException failed) {
             warnOnce("the film's layer", failed);
         }
-        if (inDark(mc) && !filmHidesHud() && !LastLightFilm.active() && !QuasarJetsFilm.active()) {
+        if (inDark(mc) && !filmHidesHud() && !LastLightFilm.showingNow() && !QuasarJetsFilm.hasCamera()) {
             try {
                 ((GuiAccessor) mc.gui).ton618Addition$renderOverlayMessage(graphics, delta);
             } catch (RuntimeException | LinkageError failed) {
