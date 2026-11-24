@@ -36,6 +36,10 @@ usage: **no computer use / browser automation until ~18:50**, Codex out of usage
   fields, how the form was driven) in `..\releases\1.1.2\CURSEFORGE-TODO.md`. Tell Adam when ready (after ~18:50).
 - **Untested in a game**: the six ports (Codex got part way into 26.3 only: TA-02 strikes ran clean there); the 26.3
   fixes were checked by a build and a dev start only.
+- **Codex review (2026-11-24 ~16:50, Adam's ask, via the SA session)**: a read-only code review of the six port
+  branches (no edits, builds or computer use), into `..\codex tests\REVIEW-ports-1.1.2.md` (+ the 26.3 row of
+  `REPORT-ports-1.1.2.md`). Started after 1.1.2 was already pushed and released on GitHub: read it when it lands; a
+  serious finding means a fix (1.1.3) and, if a file isn't on CurseForge yet, fixing before that upload.
 
 ### >>> 2026-11-23 ~17:00: main's two fixes are in all six ports (committed locally, built, not pushed) <<<
 
