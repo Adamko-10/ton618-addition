@@ -51,6 +51,11 @@ fabric-1.21.11 `857204e`, fabric-26.3 `7b3674f`**. All six build (`./gradlew --n
   "Follow ports test prompt" (GPT-6.2 Astra, High, "Approve for me") got "Read
   ...\prompts\CODEX-TEST-PROMPT-PORTS-1.1.2.md and do exactly what it says". Report: `..\codex tests\REPORT-ports-1.1.2.md`.
   If Codex hits its usage limit: "The usage limit has reset. Continue where you left off".
+  **2026-11-23 18:43 it stopped on purpose** after its setup (all six jars and seven Prism instances found; report: all
+  seven NOT RUN), asking for Adam's go to use his mouse and keyboard. **2026-11-24 ~12:46: GO sent** (Adam: "Ton test
+  pls"; by the SA session, computer use; no java running): run all seven in its order without waiting between them,
+  report after each, stop only for a download, a deletion, his sign-in or if he starts playing. Codex: "Allow roughly
+  two hours". Next: read the report, fix what it finds on the ports, version 1.1.2, release prompt, his word.
 
 ### >>> STATE (2026-11-20 ~21:00, written by the SA Series' session before Adam moved to a fresh session) <<<
 
