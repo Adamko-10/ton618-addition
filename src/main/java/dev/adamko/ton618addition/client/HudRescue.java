@@ -1,5 +1,8 @@
 package dev.adamko.ton618addition.client;
 
+import cyou.rimuru.rimulib.client.cinematic.CutsceneDirector;
+import dev.adamko.ton618addition.client.mixin.HudAccessor;
+import dev.adamko.ton618addition.link.Ton618Link;
 import dev.adamko.ton618addition.Ton618Addition;
 import dev.adamko.ton618addition.client.film.LastLightFilm;
 import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry;
@@ -22,6 +25,7 @@ import dev.adamko.ton618addition.client.quasarfilm.QuasarJetsFilm;
 public final class HudRescue {
     private static boolean viaMixin;
     private static boolean warned;
+    private static boolean toldDark;
 
     private HudRescue() {
     }
@@ -46,6 +50,7 @@ public final class HudRescue {
     }
 
     private static void draw(GuiGraphicsExtractor graphics, DeltaTracker delta) {
+        darkActionBar(graphics, delta);
         float partial = delta.getGameTimeDeltaPartialTick(false);
         try {
             LastLightFilm.screen(graphics, partial);
@@ -68,6 +73,38 @@ public final class HudRescue {
             LastLightNotice.draw(graphics, partial);
         } catch (RuntimeException failed) {
             warnOnce("Last Light's notice", failed);
+        }
+    }
+
+    /**
+     * The action bar in TON 618's dark: on 26.3 TON 618 doesn't call the HUD off, it wraps the game's HUD elements
+     * and hides them all there, the action bar too, so every "can't cast here" reason was hidden (Codex's review,
+     * 2026-11-24). Drawn here once a frame; not during one of our films or a RimuLib film that hides the HUD, not
+     * under F1.
+     */
+    private static void darkActionBar(GuiGraphicsExtractor graphics, DeltaTracker delta) {
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.gui.hud.isHidden() || mc.level == null || mc.level.dimension() != Ton618Link.DARK || filmHidesHud()
+            || LastLightFilm.showingNow() || QuasarJetsFilm.hasCamera()) {
+            return;
+        }
+        if (!toldDark) {
+            toldDark = true;
+            Ton618Addition.LOG.info("TON 618 hides the game's HUD in its dark: TON 618 Addition draws the action bar there.");
+        }
+        try {
+            ((HudAccessor) mc.gui.hud).ton618Addition$extractOverlayMessage(graphics, delta);
+        } catch (RuntimeException | LinkageError failed) {
+            warnOnce("the action bar", failed);
+        }
+    }
+
+    /** A RimuLib film hides the HUD (TON 618 hides the HUD then too). RimuLib internals: false if they change. */
+    private static boolean filmHidesHud() {
+        try {
+            return CutsceneDirector.hideHud();
+        } catch (RuntimeException | LinkageError unsure) {
+            return false;
         }
     }
 
