@@ -3,7 +3,7 @@
   "id": "ton618_addition",
   "version": "${version}",
   "name": "TON 618 Addition",
-  "description": "An unofficial addon for TON 618 by rimuru_dev. TA-01 Last Light: after TON 618 has devoured the world, fast-forward time until TON618 evaporates by Hawking radiation, and its last light brings the world back. Needs TON 618 and RimuLib.",
+  "description": "An unofficial addon for TON 618 by rimuru_dev. TA-01 Last Light: after TON 618 has devoured the world, fast-forward time until TON618 evaporates by Hawking radiation, and its last light brings the world back. TA-02 Quasar Jets (with SS-21 Quasar): launch a named star into TON618, and its quasar jet strikes the ground. Needs TON 618 and RimuLib.",
   "authors": [
     "adamko_10"
   ],
