@@ -5,6 +5,23 @@ Handoff notes for every Claude session in this folder (`C:\Users\User\Desktop\to
 Started 2026-11-13 by an Opus 5.5 session (xhigh) that was started from Adam's SA Series session. **Read `BRIEF.md`
 first** (Adam's brief, his own words at its end), then this file. Fable's part: `prompts\FABLE-PREVIZ-AND-FILM-PROMPT.md`.
 
+### >>> 2026-11-24 ~17:45: 1.1.3 (Codex's review fixes) COMMITTED on all 7, built; NOT pushed or released <<<
+
+Adam's go relayed by the SA session: "i say we ship ton update with the quasar jets and the fixes". All six findings of
+`..\codex tests\REVIEW-ports-1.1.2.md` checked in the code (all real) and fixed where they apply, main first: 1 Fabric
+1.21.11/26.3 dark action bar (TON 618 wraps every vanilla HUD element there; `HudRescue.darkActionBar`, 26.3 via a new
+`mixin/HudAccessor` invoker of `Hud.extractOverlayMessage`); 2 Forge 1.20.1 (`RenderGuiEvent.Post` marks a finished HUD:
+`ForgeGui.render` never ends vanilla `Gui.render`; TON 618 Forge cancels Pre in its dark); 3 the dark action bar hidden
+only while a film is on screen (`LastLightFilm.showingNow`, `QuasarJetsFilm.hasCamera` = `showing`); 4 a queued TA-02
+film waits (no camera, cues or soundtrack until shown); 5 `filmsOn && other` before `FilmApi.skip`; 6 the four keys'
+names in `lang/en_us.json`. Version 1.1.3 on all 7. Heads: main `8751dc2`, forge-1.21.1 `a429fbb`, forge-1.20.1
+`619a53f`, fabric-1.21.1 `4a8007b`, fabric-1.20.1 `0877675`, fabric-1.21.11 `649fb1f`, fabric-26.3 `be609b5`. All 7
+built before the version bump (rebuild for the release jars). Changelogs `..\releases\1.1.3\changelogs\` (+
+`changelogs.json` for the CurseForge page helper), template `dev/publish/changelog-1.1.3.md`.
+**Left (usage ran out)**: rebuild at 1.1.3 + stage jars as for 1.1.2; ask Adam (clickable) before pushing; push, 7 `gh`
+releases (`v1.1.3` Latest); CurseForge x7 as in `..\releases\1.1.2\CURSEFORGE-TODO.md` (Fabric API on the 4 Fabric);
+description lines 1.1.2 -> 1.1.3. Not run at all yet: no dev start, no game test (a NeoForge game was open).
+
 ### >>> 2026-11-24 ~17:15: 1.1.2 RELEASED, all 7, on GitHub AND CurseForge <<<
 
 - **2026-11-24 ~17:15: CurseForge DONE, all 7** (Adam: "oh is the update ready? just use the extension to upload it";
