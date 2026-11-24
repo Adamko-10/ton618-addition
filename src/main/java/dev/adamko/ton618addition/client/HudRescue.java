@@ -38,6 +38,7 @@ public final class HudRescue {
     private static boolean reached;
     private static boolean warned;
     private static boolean toldRescue;
+    private static boolean toldDark;
 
     private HudRescue() {
     }
@@ -61,6 +62,7 @@ public final class HudRescue {
         if (calledOff) {
             rescue(graphics, delta);
         }
+        darkActionBar(graphics, delta);
         // Fabric's HUD callback is skipped when TON 618 hides the HUD: the films' screen layers are drawn from here,
         // every frame, whether or not TON 618 hid the HUD
         try {
@@ -88,23 +90,36 @@ public final class HudRescue {
 
     private static void rescue(GuiGraphics graphics, DeltaTracker delta) {
         reached = true;
-        Minecraft mc = Minecraft.getInstance();
         if (!toldRescue) {
             toldRescue = true;
-            Ton618Addition.LOG.info("TON 618 hid the game's HUD (its dark or a film): TON 618 Addition draws the H menu "
-                + "over it{}.", inDark(mc) ? ", and the action bar in the dark" : "");
-        }
-        if (inDark(mc) && !filmHidesHud() && !LastLightFilm.active() && !QuasarJetsFilm.active()) {
-            try {
-                ((GuiAccessor) mc.gui).ton618Addition$renderOverlayMessage(graphics, delta);
-            } catch (RuntimeException | LinkageError failed) {
-                warnOnce("the action bar", failed);
-            }
+            Ton618Addition.LOG.info("The game's HUD was called off: TON 618 Addition draws the H menu over it.");
         }
         try {
             WhiteSpace.render(graphics, delta.getGameTimeDeltaPartialTick(true));
         } catch (RuntimeException | LinkageError failed) {
             warnOnce("RimuLib's menu", failed);
+        }
+    }
+
+    /**
+     * The action bar in TON 618's dark: on 1.21.11 TON 618 doesn't call the HUD off, it wraps the game's HUD elements
+     * and hides them all there, the action bar too, so every "can't cast here" reason was hidden (Codex's review,
+     * 2026-11-24). Drawn here once a frame; not during one of our films or a RimuLib film that hides the HUD, not
+     * under F1.
+     */
+    private static void darkActionBar(GuiGraphics graphics, DeltaTracker delta) {
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.options.hideGui || !inDark(mc) || filmHidesHud() || LastLightFilm.showingNow() || QuasarJetsFilm.hasCamera()) {
+            return;
+        }
+        if (!toldDark) {
+            toldDark = true;
+            Ton618Addition.LOG.info("TON 618 hides the game's HUD in its dark: TON 618 Addition draws the action bar there.");
+        }
+        try {
+            ((GuiAccessor) mc.gui).ton618Addition$renderOverlayMessage(graphics, delta);
+        } catch (RuntimeException | LinkageError failed) {
+            warnOnce("the action bar", failed);
         }
     }
 
