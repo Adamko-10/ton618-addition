@@ -100,7 +100,7 @@ fabric-1.21.11 `857204e`, fabric-26.3 `7b3674f`**. All six build (`./gradlew --n
 ### >>> 2026-11-20 ~14:15 (Adam's PC): a player's report: no H menu in the dark, "quasar doesn't work" <<<
 
 Done by a side session started from the SA Series' session.
-- **The report** (Discord, player "Savini Jason", NeoForge 1.21.1, CurseForge app, "all the latest versions of
+- **The report** (Discord, NeoForge 1.21.1, CurseForge app, "all the latest versions of
   dependencies"): "u cant open the H menu when ton618 devoured the world" and "the quasar addition doesnt work too".
 - **Checked**: CurseForge's own file lists (`https://www.curseforge.com/api/v1/mods/<project id>/files?...`; cfwidget's
   slug lookup for `ton618` 404s, use `https://api.cfwidget.com/1798822`): nothing newer than TON 618 1.1.0, The
@@ -126,7 +126,7 @@ Done by a side session started from the SA Series' session.
   `NeoForge 1.21.1 (1)` instance (the `1.1.1 limits TEST` there renamed `.disabled`); copy in the test-builds folder
   above. Main only (his main-first rule): ports after his test.
 - **Reply for the player** (Adam pastes it): `..\test builds\2026-11-20 player report, menu in the dark\REPLY for
-  Savini Jason (Discord).md` (what to check, then `latest.log` + mod list + what he did).
+  <the player> (Discord).md` (what to check, then `latest.log` + mod list + what he did).
 - **libs/ now**: RimuLib 1.3.0 and TSS 1.6.0 (copied from the SA Series' `libs\`, no download); 1.2.3 and TSS 1.5.2 in
   `libs\old\`. The build still declares RimuLib `[1.2.3,2.0)` (no new API used).
 - **Found on the way, then fixed (Adam: "Yes, fix the keys"), `ba14264`**: **TA-01's and TA-02's default keys (; ' , .)
