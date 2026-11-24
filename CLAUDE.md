@@ -5,8 +5,18 @@ Handoff notes for every Claude session in this folder (`C:\Users\User\Desktop\to
 Started 2026-11-13 by an Opus 5.5 session (xhigh) that was started from Adam's SA Series session. **Read `BRIEF.md`
 first** (Adam's brief, his own words at its end), then this file. Fable's part: `prompts\FABLE-PREVIZ-AND-FILM-PROMPT.md`.
 
-### >>> 2026-11-24 ~16:50: 1.1.2 RELEASED on GitHub (all 7); CurseForge 2 of 7 done, the rest after ~18:50 <<<
+### >>> 2026-11-24 ~17:15: 1.1.2 RELEASED, all 7, on GitHub AND CurseForge <<<
 
+- **2026-11-24 ~17:15: CurseForge DONE, all 7** (Adam: "oh is the update ready? just use the extension to upload it";
+  Claude in Chrome, his signed-in session). Files: NeoForge 1.21.1 `9791354`, Forge 1.21.1 `9791382`, Forge 1.20.1
+  `9793443` (Forge + NeoForge, Java 17, with the Known issue section), Fabric 1.21.1 `9793471`, Fabric 1.20.1 `9793492`
+  (Java 17), Fabric 1.21.11 `9793513`, Fabric 26.3 `9793537` (Java 25). Checked through the `_api`: all Release,
+  Markdown changelogs with their headings, the right game versions; the first three Approved, the Fabric four Under
+  Review / scanning at 17:15. Relations on each (seen in the form): TON 618 + Rimulib required, The Shooting Star
+  [Demo] + SS-21 Quasar optional, + Fabric API (306612) required on the four Fabric files. The project description's
+  three version lines updated (saved, checked after a reload; his links at the top untouched). How the forms were
+  driven this time: `..\releases\1.1.2\CURSEFORGE-TODO.md` (drop on `div.css-1x73roo`; the four dropdowns set by an
+  in-page helper; Markdown mode first; Fabric API via "Add related project", picked by refs).
 Adam (relayed by the SA session, ~14:10): "Try doing some ton stuff and post the update with the uasar jets"; then in
 the ports session, clickable: **"Publish all 7 now"** (told: the 6 ports are not game-tested). At 16:45 he ran out of
 usage: **no computer use / browser automation until ~18:50**, Codex out of usage too.
