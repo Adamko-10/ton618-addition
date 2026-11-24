@@ -56,6 +56,15 @@ fabric-1.21.11 `857204e`, fabric-26.3 `7b3674f`**. All six build (`./gradlew --n
   pls"; by the SA session, computer use; no java running): run all seven in its order without waiting between them,
   report after each, stop only for a download, a deletion, his sign-in or if he starts playing. Codex: "Allow roughly
   two hours". Next: read the report, fix what it finds on the ports, version 1.1.2, release prompt, his word.
+  **Codex hit its usage limit at 13:04 (resets 16:47 local)**, mid Fabric 26.3 (its report file not updated yet; its
+  chat log and the Prism 26.3 instance's `logs/latest.log` show): **(1) fabric-26.3 BUG: Last Light's film dies in the
+  dark on its first frame**: `NullPointerException: ... LevelRenderContext.levelState() because "context" is null` at
+  `client/film/FilmWorld.render(FilmWorld.java:91)` <- `LastLightFilm.drawWorld:241` <- `LastLightFilm.afterLevel:232`
+  <- the `GameRenderer` mixin `afterLevel` (the "draw after the level returns" path, Fable's P2 on 1.21.11); only the
+  white shows, the world comes back. A 1.1.1 port bug (never game-tested), not from the 2026-11-23 fixes; check
+  fabric-1.21.11 too (26.3 was merged from it). **(2) fabric-26.3: all four TA keys "Not Bound" with Reset disabled**
+  (= no default keys on 26.3: the keys fix doesn't take there). Codex then bound them by hand in its test instance.
+  Screenshots in `..\codex tests\Prism\instances\01-Fabric-26.3\.minecraft\screenshots\2026-11-24_13.0*.png`.
 
 ### >>> STATE (2026-11-20 ~21:00, written by the SA Series' session before Adam moved to a fresh session) <<<
 
