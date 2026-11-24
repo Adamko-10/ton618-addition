@@ -96,7 +96,7 @@ public final class HudRescue {
             Ton618Addition.LOG.info("TON 618 hid the game's HUD (its dark or a film): TON 618 Addition draws the H menu "
                 + "over it{}.", inDark(mc) ? ", and the action bar in the dark" : "");
         }
-        if (inDark(mc) && !filmHidesHud() && !LastLightFilm.active() && !QuasarJetsFilm.active()) {
+        if (inDark(mc) && !filmHidesHud() && !LastLightFilm.showingNow() && !QuasarJetsFilm.hasCamera()) {
             try {
                 // Forge 47 draws it as a HUD overlay (ForgeGui.renderRecordOverlay, protected): its public entry
                 VanillaGuiOverlay.RECORD_OVERLAY.type().overlay().render((ForgeGui) mc.gui, graphics, partial,
