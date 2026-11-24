@@ -5,6 +5,38 @@ Handoff notes for every Claude session in this folder (`C:\Users\User\Desktop\to
 Started 2026-11-13 by an Opus 5.5 session (xhigh) that was started from Adam's SA Series session. **Read `BRIEF.md`
 first** (Adam's brief, his own words at its end), then this file. Fable's part: `prompts\FABLE-PREVIZ-AND-FILM-PROMPT.md`.
 
+### >>> 2026-11-24 ~16:50: 1.1.2 RELEASED on GitHub (all 7); CurseForge 2 of 7 done, the rest after ~18:50 <<<
+
+Adam (relayed by the SA session, ~14:10): "Try doing some ton stuff and post the update with the uasar jets"; then in
+the ports session, clickable: **"Publish all 7 now"** (told: the 6 ports are not game-tested). At 16:45 he ran out of
+usage: **no computer use / browser automation until ~18:50**, Codex out of usage too.
+- **Codex's two 26.3 bugs fixed** (`f1a8622` on fabric-26.3): (1) Last Light's film died in the dark on its first frame
+  (`afterLevel` passes no context; `FilmWorld` read the camera from it): the camera is kept at each frame's `END_MAIN`
+  (`LastLightFilm.camera()`). fabric-1.21.11 reads the camera from the game renderer: not hit. (2) No default keys on
+  26.3: **RimuLib 26.3 turns only GLFW A-Z into 26.3's scancodes and makes every other key unbound**, so `; ' , .` had no
+  default. `client/SkillKeyDefaults` gives ours their defaults right after RimuLib makes them (TAIL of
+  `RimulibFabricClient.onInitializeClient`, via `RimulibClientMixin`; before options.txt is read), through
+  `client/mixin/KeyMappingAccessor` (`@Mutable @Accessor defaultKey`); only where RimuLib left the default unbound.
+  Dev start logged "Gave 1 of TA-01's and TA-02's keys their defaults" (no TSS/SS-21 in the dev game). RimuLib 1.21.11
+  maps GLFW codes directly (checked): no issue there. Neither fix seen in a real game.
+- **1.1.2 on all seven** (`mod_version`; TA-02 added to `mod_description` / `fabric.mod.json`; icons already in the
+  metadata on all 7). Changelogs: `dev/publish/changelog-1.1.2.md` (NeoForge) and `changelog-1.1.2-ports.md` (a
+  template with `{only:..}`/`{not:..}` line tags), made into `..\releases\1.1.2\changelogs\<branch>.md`. The CurseForge
+  description's version lines updated in the repo copy (`d54444e`). A player's Discord name taken out of this file
+  before the push (`9f361a3`; the repo is public).
+- **Builds**: all 7 locally (no CI workflow exists in this repo, so no wip/ round). Release jars
+  `..\releases\1.1.2\jars\TON 618 Addition 1.1.2 [<Loader> <MC>].jar` (version 1.1.2 inside, TA-02 in the description,
+  icon, no harness). Also in his 6 instances (old TON 618 Addition jars renamed `.disabled`, each copy opened as a zip).
+- **Pushed** (fast-forward, no jars in the diffs): main `9f361a3`, forge-1.21.1 `3abc106`, forge-1.20.1 `05514ec`,
+  fabric-1.21.1 `fd038d3`, fabric-1.20.1 `1a5e673`, fabric-1.21.11 `d11e0da`, fabric-26.3 `b70420d`.
+- **GitHub releases**: `v1.1.2` (main, **Latest**) and `v1.1.2+<branch>` for the six, titled `TON 618 Addition 1.1.2
+  [<Loader> <MC>]`, jar attached (sizes checked), notes = the changelogs.
+- **CurseForge**: NeoForge 1.21.1 and Forge 1.21.1 files uploaded (Processing at ~15:05; not yet checked through the
+  API). **Left**: Forge 1.20.1 and the four Fabric files, then the description's three lines: everything (table,
+  fields, how the form was driven) in `..\releases\1.1.2\CURSEFORGE-TODO.md`. Tell Adam when ready (after ~18:50).
+- **Untested in a game**: the six ports (Codex got part way into 26.3 only: TA-02 strikes ran clean there); the 26.3
+  fixes were checked by a build and a dev start only.
+
 ### >>> 2026-11-23 ~17:00: main's two fixes are in all six ports (committed locally, built, not pushed) <<<
 
 Done by a fresh session (brief `..\BRIEF fixes into ports (2026-11-23).md`). New heads, one commit each on top of the
