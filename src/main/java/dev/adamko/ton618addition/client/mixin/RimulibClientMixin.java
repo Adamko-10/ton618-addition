@@ -21,4 +21,10 @@ abstract class RimulibClientMixin {
         Ton618Link.install();
         Ton618AdditionClient.afterConstruction();
     }
+
+    /** Right after RimuLib made the skills' keys: ours get their defaults (RimuLib 26.3 gives only letter keys one). */
+    @Inject(method = "onInitializeClient()V", at = @At("TAIL"), require = 0, remap = false)
+    private void ton618Addition$keys(CallbackInfo ci) {
+        dev.adamko.ton618addition.client.SkillKeyDefaults.give();
+    }
 }

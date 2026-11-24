@@ -9,6 +9,7 @@
     "ClientLevelMixin",
     "FogRendererMixin",
     "GuiMixin",
+    "KeyMappingAccessor",
     "LevelRendererStagesMixin",
     "QuasarGameRendererMixin",
     "RimulibClientMixin",

@@ -54,6 +54,8 @@ import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents;
 public final class LastLightFilm {
     @Nullable
     private static LastLightCast cast;
+    @Nullable
+    private static net.minecraft.client.renderer.state.level.CameraRenderState camera;
     /** The film's camera with RimuLib's director; null while only the white is shown. */
     @Nullable
     private static Cutscene film;
@@ -216,11 +218,18 @@ public final class LastLightFilm {
      * ({@link #afterLevel}), or it would paint our light out (the NeoForge branch draws there at AFTER_LEVEL).
      */
     private static void world(LevelRenderContext context) {
+        // this frame's camera, for the dark's draw after the level (afterLevel has no context: Codex's test, 2026-11-24)
+        camera = context.levelState().cameraRenderState;
         LastLightCast now = cast;
         if (now == null || now.inDark()) {
             return;
         }
         drawWorld(now, context);
+    }
+
+    /** The level's camera this frame (kept at END_MAIN), or null before the first frame. */
+    static net.minecraft.client.renderer.state.level.CameraRenderState camera() {
+        return camera;
     }
 
     /** Right after the level is drawn, TON 618's dark picture included (client/mixin/QuasarGameRendererMixin). */

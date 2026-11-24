@@ -88,7 +88,11 @@ final class FilmWorld {
             return;
         }
         float partial = mc.getDeltaTracker().getGameTimeDeltaPartialTick(true);
-        CameraRenderState state = context.levelState().cameraRenderState;
+        // in the dark there is no context (drawn after the level returns): the camera kept at this frame's END_MAIN
+        CameraRenderState state = context != null ? context.levelState().cameraRenderState : LastLightFilm.camera();
+        if (state == null) {
+            return;
+        }
         Camera camera = mc.gameRenderer.mainCamera();
         Vec3 eye = state.pos;
         Vector3f left = new Vector3f(camera.leftVector());
