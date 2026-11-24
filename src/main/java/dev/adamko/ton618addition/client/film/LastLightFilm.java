@@ -110,6 +110,14 @@ public final class LastLightFilm {
         return cast != null;
     }
 
+    /**
+     * RimuLib's director is showing this film right now: not just a cast running (with films off, or skipped, there is
+     * none). For the HUD rescue (Codex's review, 2026-11-24).
+     */
+    public static boolean showingNow() {
+        return cast != null && showing(0F);
+    }
+
     private static void end() {
         cast = null;
         if (film != null) {

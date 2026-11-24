@@ -102,7 +102,8 @@ public final class Ton618AdditionClient {
             other = FilmApi.active();
             // RimuLib plays one film at a time and queues a new one behind any film still running, whatever its
             // priority: TON 618's own film runs on for a while in the dark, so Last Light's would wait unseen
-            if (other) {
+            // with films off nothing would replace it: another mod's film is left alone (Codex's review, 2026-11-24)
+            if (filmsOn && other) {
                 FilmApi.skip();
             }
         } catch (RuntimeException | LinkageError unsure) {
@@ -110,7 +111,7 @@ public final class Ton618AdditionClient {
         }
         filmsWereOn = filmsOn;
         Ton618Addition.LOG.info("{} reached this game at film tick {} (films {}{}).", LastLightInfo.TITLE, current.tick(),
-            filmsOn ? "on" : "off: RimuLib's film key turns them on", other ? "; another film was playing and was skipped" : "");
+            filmsOn ? "on" : "off: RimuLib's film key turns them on", filmsOn && other ? "; another film was playing and was skipped" : "");
         try {
             LastLightFilm.start(current);
         } catch (RuntimeException failed) {

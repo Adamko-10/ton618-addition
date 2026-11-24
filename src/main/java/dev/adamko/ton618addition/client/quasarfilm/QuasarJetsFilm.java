@@ -56,6 +56,8 @@ public final class QuasarJetsFilm {
     /** Ticks since the camera was last handed to the director, and since the soundtrack was last started. */
     private static int sinceFilm;
     private static int sinceSound;
+    /** The film isn't on screen yet (queued behind another film, or handed back): its sound waits for it. */
+    private static boolean waiting;
     /** Toasts that arrived while the film had the camera: shown when it lets go. */
     private static final List<Toast> HELD_TOASTS = new ArrayList<>();
 
@@ -82,6 +84,7 @@ public final class QuasarJetsFilm {
         cast = newCast;
         sinceFilm = 0;
         sinceSound = 1000;
+        waiting = false;
         JetSpace.forget();
         JetHud.forget();
         if (FilmApi.automatic()) {
@@ -104,9 +107,12 @@ public final class QuasarJetsFilm {
         return cast != null;
     }
 
-    /** The film has this player's camera right now (so the world effects leave the shaking of the view to it). */
+    /**
+     * The film has this player's camera right now (so the world effects leave the shaking of the view to it): shown by
+     * RimuLib's director, not just started (a film queued behind another one doesn't have it yet; Codex's review, 2026-11-24).
+     */
     public static boolean hasCamera() {
-        return cast != null && film != null && !film.skipped;
+        return cast != null && showing(0F);
     }
 
     private static void end() {
@@ -181,6 +187,20 @@ public final class QuasarJetsFilm {
             sinceFilm = 0;
             FilmApi.play(film);
         }
+        // not on screen (queued behind another film, or handed back): its cues and soundtrack wait for it, so they never
+        // play over another film or before it shows (Codex's review, 2026-11-24); the strike itself runs on
+        if (g < JetScript.LAST_SHOT_END - 5 && !showing(0F)) {
+            if (!waiting) {
+                waiting = true;
+                JetCues.start();
+                if (track != null) {
+                    track.end();
+                    track = null;
+                }
+            }
+            return;
+        }
+        waiting = false;
         // the cues that have sound files of their own (previz/quasar-jets/SOUND-CUES.md)
         JetCues.tick(now.tick(0F), () -> now.tick(0F), () -> cast != now || film == null);
         // the soundtrack: started here, and again whenever it has stopped or drifted too far from the film's clock
