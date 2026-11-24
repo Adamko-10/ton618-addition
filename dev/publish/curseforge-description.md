@@ -14,9 +14,9 @@ An **unofficial**, fan-made addon for **[TON 618](https://www.curseforge.com/min
 
 ## ⚠️ Compatibility — please read
 
-Version **1.1.1** works with **TON 618 1.1.0** and needs **RimuLib 1.2.3** or newer (TON 618 needs it too). **TA-02 · Quasar Jets** also needs **[The Shooting Star: SS-21 Quasar](https://www.curseforge.com/minecraft/mc-mods/the-shooting-star-addition-ss-21-quasar)**; without it, TA-02 shows in the menus but stays locked.
+Version **1.1.2** works with **TON 618 1.1.0** and needs **RimuLib 1.2.3** or newer (TON 618 needs it too). **TA-02 · Quasar Jets** also needs **[The Shooting Star: SS-21 Quasar](https://www.curseforge.com/minecraft/mc-mods/the-shooting-star-addition-ss-21-quasar)**; without it, TA-02 shows in the menus but stays locked.
 
-**1.1.1 is out for NeoForge 1.21.1 first.** The other builds below are still **1.0.0** (Last Light only) and get TA-02 in a later update.
+**1.1.2 brings TA-02 · Quasar Jets to every build below.** If TA-01's or TA-02's keys show as unbound in Options > Controls, press **Reset** next to them.
 
 ### Available builds
 
@@ -106,7 +106,7 @@ It joins TON 618 through RimuLib's official addon API and TON 618's own `/ton618
 
 ## Plans
 
-This is version **1.1.1**. Planned: TA-02 for the other loaders; a film moment showing just how big TON 618 is; better sounds in both films; and real music for the films. Comments, bug reports and ideas are very welcome!
+This is version **1.1.2**. Planned: a film moment showing just how big TON 618 is; better sounds in both films; and real music for the films. Comments, bug reports and ideas are very welcome!
 
 ## Credits
 
